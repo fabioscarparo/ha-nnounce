@@ -1,0 +1,155 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "HA-nnounce is already set up."
+    },
+    "step": {
+      "user": {
+        "title": "HA-nnounce",
+        "description": "Record your voice from the phone or the browser and play it on your speakers: Google Home and Nest, Sonos, ESPHome and every media player that plays audio from Home Assistant. You can change these settings later.",
+        "data": {
+          "speakers": "Speakers",
+          "set_volume": "Set the volume for messages",
+          "volume": "Message volume",
+          "announce_volume": "Use the announcement volume of the speaker",
+          "chime": "Chime before the message",
+          "normalize": "Even out the loudness",
+          "max_duration": "Longest message",
+          "show_panel": "Show Announcements in the sidebar",
+          "intercom": "Intercom cameras (Labs two-way audio)"
+        },
+        "data_description": {
+          "speakers": "Leave empty to offer every speaker of a supported integration (Google Cast, Sonos, ESPHome, DLNA, Music Assistant and more), televisions excluded. Choose here to add other media players, such as those of custom integrations.",
+          "set_volume": "The speaker goes back to its own volume when the message ends.",
+          "announce_volume": "On Sonos, Music Assistant, Squeezebox and Bang & Olufsen the message plays at its own volume over the music, and the volume of the music is not touched. Off: the speaker volume is changed and then restored, like on the others.",
+          "normalize": "Makes quiet and loud recordings sound the same.",
+          "intercom": "Adds one camera per speaker with a talk button, using Home Assistant's two-way audio (Settings > System > Labs). Installs aiortc the first time."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA-nnounce",
+        "data": {
+          "speakers": "[%key:component::hannounce::config::step::user::data::speakers%]",
+          "set_volume": "[%key:component::hannounce::config::step::user::data::set_volume%]",
+          "volume": "[%key:component::hannounce::config::step::user::data::volume%]",
+          "announce_volume": "[%key:component::hannounce::config::step::user::data::announce_volume%]",
+          "chime": "[%key:component::hannounce::config::step::user::data::chime%]",
+          "normalize": "[%key:component::hannounce::config::step::user::data::normalize%]",
+          "max_duration": "[%key:component::hannounce::config::step::user::data::max_duration%]",
+          "show_panel": "[%key:component::hannounce::config::step::user::data::show_panel%]",
+          "intercom": "[%key:component::hannounce::config::step::user::data::intercom%]"
+        },
+        "data_description": {
+          "speakers": "[%key:component::hannounce::config::step::user::data_description::speakers%]",
+          "set_volume": "[%key:component::hannounce::config::step::user::data_description::set_volume%]",
+          "announce_volume": "[%key:component::hannounce::config::step::user::data_description::announce_volume%]",
+          "normalize": "[%key:component::hannounce::config::step::user::data_description::normalize%]",
+          "intercom": "[%key:component::hannounce::config::step::user::data_description::intercom%]"
+        }
+      }
+    }
+  },
+  "selector": {
+    "chime": {
+      "options": {
+        "none": "None",
+        "ding_dong": "Ding dong",
+        "soft": "Soft",
+        "three_tone": "Three tones"
+      }
+    }
+  },
+  "entity": {
+    "camera": {
+      "intercom": {
+        "name": "{speaker}"
+      },
+      "intercom_all": {
+        "name": "All speakers"
+      }
+    }
+  },
+  "device": {
+    "intercom": {
+      "name": "Intercom"
+    }
+  },
+  "issues": {
+    "intercom_requirements": {
+      "title": "The intercom could not be installed",
+      "description": "The intercom cameras need {requirement}, which could not be installed on this system. Recording from the card and the panel still works. Check the logs, or turn the intercom off in the options."
+    }
+  },
+  "exceptions": {
+    "not_set_up": {
+      "message": "HA-nnounce is not set up."
+    },
+    "path_not_allowed": {
+      "message": "{path} is not in a folder Home Assistant may read (allowlist_external_dirs)."
+    },
+    "file_not_found": {
+      "message": "{path} does not exist."
+    },
+    "no_voice": {
+      "message": "The audio is empty or silent."
+    },
+    "audio_error": {
+      "message": "Could not process the audio: {error}"
+    },
+    "too_large": {
+      "message": "The audio file is too large."
+    },
+    "download_failed": {
+      "message": "Could not download the audio: {error}"
+    },
+    "no_message": {
+      "message": "There is no recent message to replay."
+    }
+  },
+  "services": {
+    "announce": {
+      "name": "Announce",
+      "description": "Plays an audio file or URL on speakers, with the chime and volume of the announcements.",
+      "fields": {
+        "entity_id": {
+          "name": "Speakers",
+          "description": "Where to play it. Empty plays on every speaker offered by the integration."
+        },
+        "file": {
+          "name": "File",
+          "description": "Path of an audio file in a folder Home Assistant may read."
+        },
+        "url": {
+          "name": "URL",
+          "description": "Address of an audio file to download."
+        },
+        "volume": {
+          "name": "Volume",
+          "description": "Volume while playing. Empty uses the integration setting."
+        },
+        "chime": {
+          "name": "Chime",
+          "description": "Chime before the audio. Empty uses the integration setting."
+        }
+      }
+    },
+    "replay": {
+      "name": "Replay last message",
+      "description": "Plays the last message again (messages are kept for one hour).",
+      "fields": {
+        "entity_id": {
+          "name": "Speakers",
+          "description": "Where to play it. Empty uses the speakers of the last message."
+        },
+        "volume": {
+          "name": "Volume",
+          "description": "Volume while playing. Empty uses the integration setting."
+        }
+      }
+    }
+  }
+}

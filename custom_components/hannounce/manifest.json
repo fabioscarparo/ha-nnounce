@@ -1,0 +1,29 @@
+{
+  "domain": "hannounce",
+  "name": "HA-nnounce",
+  "after_dependencies": [
+    "camera",
+    "cast",
+    "labs"
+  ],
+  "codeowners": [
+    "@fabioscarparo"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "ffmpeg",
+    "frontend",
+    "http",
+    "media_player",
+    "media_source",
+    "panel_custom",
+    "websocket_api"
+  ],
+  "documentation": "https://github.com/fabioscarparo/ha-nnounce",
+  "integration_type": "service",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/fabioscarparo/ha-nnounce/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

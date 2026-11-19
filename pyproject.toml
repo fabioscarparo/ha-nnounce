@@ -1,0 +1,12 @@
+# Only the test settings: the integration itself is installed by copying custom_components/hannounce.
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+# Let Home Assistant install its httpx alias before respx is imported
+addopts = "-p no:respx"
+pythonpath = ["."]
+testpaths = ["tests"]
+timeout = 60
+timeout_method = "thread"
+filterwarnings = ["ignore::DeprecationWarning:aiortc.*"]

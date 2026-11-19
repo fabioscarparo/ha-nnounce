@@ -1,0 +1,46 @@
+announce:
+  fields:
+    entity_id:
+      selector:
+        entity:
+          domain: media_player
+          multiple: true
+    file:
+      example: /media/messages/dinner.mp3
+      selector:
+        text:
+    url:
+      example: https://example.com/message.mp3
+      selector:
+        text:
+          type: url
+    volume:
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 5
+          unit_of_measurement: "%"
+    chime:
+      selector:
+        select:
+          translation_key: chime
+          options:
+            - none
+            - ding_dong
+            - soft
+            - three_tone
+replay:
+  fields:
+    entity_id:
+      selector:
+        entity:
+          domain: media_player
+          multiple: true
+    volume:
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 5
+          unit_of_measurement: "%"

@@ -1,0 +1,10 @@
+# Tests of the integration: pip install -r requirements_test.txt, then pytest.
+# Keep pytest-homeassistant on the same release as the Home Assistant you test against.
+pytest-homeassistant==2026.11.1
+pytest-timeout==2.4.0
+# Libraries of the integrations the tests set up (with skip_pip nothing is installed)
+home-assistant-frontend==20261028.5
+ha-ffmpeg==3.2.2
+PyTurboJPEG==1.8.3
+mutagen==1.48.1
+aiortc==1.16.0

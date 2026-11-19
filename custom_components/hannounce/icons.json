@@ -1,0 +1,12 @@
+{
+  "entity": {
+    "camera": {
+      "intercom": { "default": "mdi:account-voice" },
+      "intercom_all": { "default": "mdi:bullhorn" }
+    }
+  },
+  "services": {
+    "announce": { "service": "mdi:bullhorn" },
+    "replay": { "service": "mdi:replay" }
+  }
+}

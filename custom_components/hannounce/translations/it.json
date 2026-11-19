@@ -1,0 +1,155 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "HA-nnounce è già configurato."
+    },
+    "step": {
+      "user": {
+        "title": "HA-nnounce",
+        "description": "Registra la tua voce dal telefono o dal browser e falla ascoltare sui tuoi altoparlanti: Google Home e Nest, Sonos, ESPHome e ogni lettore multimediale che riproduce audio da Home Assistant. Puoi cambiare queste impostazioni in seguito.",
+        "data": {
+          "speakers": "Altoparlanti",
+          "set_volume": "Imposta il volume dei messaggi",
+          "volume": "Volume dei messaggi",
+          "announce_volume": "Usa il volume degli annunci dell'altoparlante",
+          "chime": "Suono prima del messaggio",
+          "normalize": "Uniforma il volume della voce",
+          "max_duration": "Durata massima del messaggio",
+          "show_panel": "Mostra Annunci nella barra laterale",
+          "intercom": "Interfono come telecamera (audio bidirezionale di Labs)"
+        },
+        "data_description": {
+          "speakers": "Lascia vuoto per proporre tutti gli altoparlanti delle integrazioni supportate (Google Cast, Sonos, ESPHome, DLNA, Music Assistant e altre), esclusi i televisori. Sceglili qui per aggiungere altri lettori, come quelli di integrazioni personalizzate.",
+          "set_volume": "Alla fine del messaggio l'altoparlante torna al suo volume.",
+          "announce_volume": "Su Sonos, Music Assistant, Squeezebox e Bang & Olufsen il messaggio si sente al suo volume sopra la musica, senza toccare il volume della musica. Se disattivato, il volume dell'altoparlante viene cambiato e poi ripristinato, come sugli altri.",
+          "normalize": "Le registrazioni piano e forti si sentono allo stesso livello.",
+          "intercom": "Aggiunge una telecamera per ogni altoparlante con il pulsante per parlare, usando l'audio bidirezionale di Home Assistant (Two-way audio in Impostazioni > Sistema > Laboratori). La prima volta installa aiortc."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA-nnounce",
+        "data": {
+          "speakers": "Altoparlanti",
+          "set_volume": "Imposta il volume dei messaggi",
+          "volume": "Volume dei messaggi",
+          "announce_volume": "Usa il volume degli annunci dell'altoparlante",
+          "chime": "Suono prima del messaggio",
+          "normalize": "Uniforma il volume della voce",
+          "max_duration": "Durata massima del messaggio",
+          "show_panel": "Mostra Annunci nella barra laterale",
+          "intercom": "Interfono come telecamera (audio bidirezionale di Labs)"
+        },
+        "data_description": {
+          "speakers": "Lascia vuoto per proporre tutti gli altoparlanti delle integrazioni supportate (Google Cast, Sonos, ESPHome, DLNA, Music Assistant e altre), esclusi i televisori. Sceglili qui per aggiungere altri lettori, come quelli di integrazioni personalizzate.",
+          "set_volume": "Alla fine del messaggio l'altoparlante torna al suo volume.",
+          "announce_volume": "Su Sonos, Music Assistant, Squeezebox e Bang & Olufsen il messaggio si sente al suo volume sopra la musica, senza toccare il volume della musica. Se disattivato, il volume dell'altoparlante viene cambiato e poi ripristinato, come sugli altri.",
+          "normalize": "Le registrazioni piano e forti si sentono allo stesso livello.",
+          "intercom": "Aggiunge una telecamera per ogni altoparlante con il pulsante per parlare, usando l'audio bidirezionale di Home Assistant (Two-way audio in Impostazioni > Sistema > Laboratori). La prima volta installa aiortc."
+        }
+      }
+    }
+  },
+  "selector": {
+    "chime": {
+      "options": {
+        "none": "Nessuno",
+        "ding_dong": "Din don",
+        "soft": "Leggero",
+        "three_tone": "Tre note"
+      }
+    }
+  },
+  "entity": {
+    "camera": {
+      "intercom": {
+        "name": "{speaker}"
+      },
+      "intercom_all": {
+        "name": "Tutti gli altoparlanti"
+      }
+    }
+  },
+  "device": {
+    "intercom": {
+      "name": "Interfono"
+    }
+  },
+  "issues": {
+    "intercom_requirements": {
+      "title": "Non è stato possibile installare l'interfono",
+      "description": "Le telecamere interfono richiedono {requirement}, che non si è potuto installare su questo sistema. La registrazione dalla scheda e dal pannello funziona comunque. Controlla i log oppure disattiva l'interfono nelle opzioni."
+    }
+  },
+  "exceptions": {
+    "not_set_up": {
+      "message": "HA-nnounce non è configurato."
+    },
+    "path_not_allowed": {
+      "message": "{path} non è in una cartella che Home Assistant può leggere (allowlist_external_dirs)."
+    },
+    "file_not_found": {
+      "message": "{path} non esiste."
+    },
+    "no_voice": {
+      "message": "L'audio è vuoto o silenzioso."
+    },
+    "audio_error": {
+      "message": "Non è stato possibile elaborare l'audio: {error}"
+    },
+    "too_large": {
+      "message": "Il file audio è troppo grande."
+    },
+    "download_failed": {
+      "message": "Non è stato possibile scaricare l'audio: {error}"
+    },
+    "no_message": {
+      "message": "Non c'è un messaggio recente da ripetere."
+    }
+  },
+  "services": {
+    "announce": {
+      "name": "Annuncia",
+      "description": "Riproduce un file audio o un URL sugli altoparlanti, con il suono e il volume degli annunci.",
+      "fields": {
+        "entity_id": {
+          "name": "Altoparlanti",
+          "description": "Dove riprodurlo. Se vuoto, su tutti gli altoparlanti proposti dall'integrazione."
+        },
+        "file": {
+          "name": "File",
+          "description": "Percorso di un file audio in una cartella che Home Assistant può leggere."
+        },
+        "url": {
+          "name": "URL",
+          "description": "Indirizzo di un file audio da scaricare."
+        },
+        "volume": {
+          "name": "Volume",
+          "description": "Volume durante la riproduzione. Se vuoto, usa l'impostazione dell'integrazione."
+        },
+        "chime": {
+          "name": "Suono",
+          "description": "Suono prima dell'audio. Se vuoto, usa l'impostazione dell'integrazione."
+        }
+      }
+    },
+    "replay": {
+      "name": "Ripeti l'ultimo messaggio",
+      "description": "Riproduce di nuovo l'ultimo messaggio (i messaggi restano disponibili per un'ora).",
+      "fields": {
+        "entity_id": {
+          "name": "Altoparlanti",
+          "description": "Dove riprodurlo. Se vuoto, gli stessi altoparlanti dell'ultimo messaggio."
+        },
+        "volume": {
+          "name": "Volume",
+          "description": "Volume durante la riproduzione. Se vuoto, usa l'impostazione dell'integrazione."
+        }
+      }
+    }
+  }
+}
