@@ -1,4 +1,10 @@
-<h1 align="center">HA-nnounce</h1>
+<p align="center">
+  <img src="docs/images/icon.svg" alt="" width="80">
+</p>
+
+<p align="center">
+  <img src="docs/images/header.svg" alt="HA-nnounce" width="280">
+</p>
 
 <p align="center">
   <strong>Record your voice from your phone or browser,<br>
