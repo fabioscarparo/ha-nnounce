@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Added integration brand icons (`icon.png` and `icon@2x.png`) for Home Assistant.
+
 ## 0.1.0
 
 First release.
