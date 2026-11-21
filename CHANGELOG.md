@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0
+
+- Automatic unmute and mute restoration during announcements (when not using native speaker announcement volume), preserving manual mid-playback volume changes.
+- Native Home Assistant targets (`entity_id`, `area_id`, `floor_id`, `device_id`, `label_id`) in `hannounce.announce` and `hannounce.replay`.
+- Chime preview button in the card and panel options dialog (synthesized via Web Audio API).
+- Diagnostics download (`Settings > Devices & services > HA-nnounce > Download diagnostics`) for troubleshooting without exposing URLs or user data.
+- Added German (`de`), French (`fr`), Spanish (`es`), and Dutch (`nl`) translations for both backend and frontend.
+- Added GitHub Actions CI workflow running `ruff`, `pytest`, and frontend unit tests.
+
 ## 0.1.1
 
 - Added integration brand icons (`icon.png` and `icon@2x.png`) for Home Assistant.

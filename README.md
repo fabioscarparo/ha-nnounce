@@ -92,7 +92,7 @@ Works with any Home Assistant `media_player` integration capable of playing audi
 | Option | Default | Description |
 |---|---|---|
 | Speakers | All supported | Filter available speakers or manually add custom integrations (TVs excluded by default). |
-| Set volume / Message volume | On / 60% | Temporarily sets volume and restores it after playback (preserves manual changes made mid-playback). |
+| Set volume / Message volume | On / 60% | Temporarily sets volume (and unmutes muted speakers) and restores them after playback (preserves manual changes made mid-playback). |
 | Use speaker announcement volume | On | Uses native announcement volume on Sonos, Music Assistant, Squeezebox, and B&O. |
 | Chime | Ding dong | Synthesized pre-message chime: `None`, `Ding dong`, `Soft`, `3 tones`. |
 | Even out loudness | On | EBU R128 loudness normalization. |
@@ -104,7 +104,7 @@ Works with any Home Assistant `media_player` integration capable of playing audi
 
 ### Card & Panel
 
-Hold the mic button to talk and release to send (or tap to start/stop, `Esc` to cancel). Per-device preferences (selected speakers, chime, keep each speaker's volume, listen before sending) are stored locally. The options dialog can also send an audio file.
+Hold the mic button to talk and release to send (or tap to start/stop, `Esc` to cancel). Per-device preferences (selected speakers, chime, keep each speaker's volume, listen before sending) are stored locally. The options dialog lets you preview chimes and send an audio file.
 
 ```yaml
 type: custom:hannounce-card
@@ -169,12 +169,13 @@ Fired on every announcement with payload: `id`, `targets`, `duration` (seconds, 
 
 - **Synchronization:** Selecting multiple individual speakers starts playback roughly simultaneously but is not synced. Use native speaker groups (Google Home, Sonos, or HA `media_player` groups) for synchronized audio.
 - **Retention & Privacy:** Audio is processed by Home Assistant and served to speakers on your local network. Files and signed URLs expire and are auto-deleted after **1 hour**, and are excluded from HA backups.
+- **Diagnostics:** Download diagnostics from **Settings > Devices & services > HA-nnounce > ⋮ > Download diagnostics** when reporting issues (no URLs, tokens, user IDs, or audio are included).
 
 ## Development & License
 
 See [tools/README.md](tools/README.md).
 
 - **Backend tests:** `pip install -r requirements_test.txt && pytest` (38 tests via `pytest-homeassistant`).
-- **Frontend tests:** `node --test tools/tests`.
+- **Frontend tests:** `node --test tools/tests/*.test.mjs`.
 
 Released under the [MIT License](LICENSE).

@@ -4,7 +4,7 @@
  * Served by the integration itself: no dashboard resource to add, no build step.
  */
 
-export const VERSION = "0.1.1";
+export const VERSION = "0.2.0";
 const DOMAIN = "hannounce";
 const CARD_TYPE = "hannounce-card";
 const EDITOR_TYPE = "hannounce-card-editor";
