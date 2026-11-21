@@ -1,10 +1,8 @@
 announce:
+  target:
+    entity:
+      domain: media_player
   fields:
-    entity_id:
-      selector:
-        entity:
-          domain: media_player
-          multiple: true
     file:
       example: /media/messages/dinner.mp3
       selector:
@@ -31,12 +29,10 @@ announce:
             - soft
             - three_tone
 replay:
+  target:
+    entity:
+      domain: media_player
   fields:
-    entity_id:
-      selector:
-        entity:
-          domain: media_player
-          multiple: true
     volume:
       selector:
         number:

@@ -1,0 +1,147 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "HA-nnounce ist bereits eingerichtet."
+    },
+    "step": {
+      "user": {
+        "title": "HA-nnounce",
+        "description": "Nimm deine Stimme auf dem Smartphone oder im Browser auf und spiele sie auf deinen Lautsprechern ab: Google Home und Nest, Sonos, ESPHome und jedem Mediaplayer, der Audio von Home Assistant abspielt. Du kannst diese Einstellungen später ändern.",
+        "data": {
+          "speakers": "Lautsprecher",
+          "set_volume": "Lautstärke für Durchsagen festlegen",
+          "volume": "Lautstärke der Durchsage",
+          "announce_volume": "Durchsagelautstärke des Lautsprechers verwenden",
+          "chime": "Signalton vor der Durchsage",
+          "normalize": "Lautstärke angleichen",
+          "max_duration": "Maximale Länge",
+          "show_panel": "Durchsagen in der Seitenleiste anzeigen",
+          "intercom": "Gegensprech-Kameras (Labs Zwei-Wege-Audio)"
+        },
+        "data_description": {
+          "speakers": "Leer lassen, um alle Lautsprecher unterstützter Integrationen (Google Cast, Sonos, ESPHome, DLNA, Music Assistant und weitere) ohne Fernseher anzubieten. Hier auswählen, um weitere Mediaplayer wie benutzerdefinierte Integrationen hinzuzufügen.",
+          "set_volume": "Nach der Durchsage kehrt der Lautsprecher zu seiner ursprünglichen Lautstärke zurück.",
+          "announce_volume": "Auf Sonos, Music Assistant, Squeezebox und Bang & Olufsen wird die Durchsage mit eigener Lautstärke über die Musik gespielt, ohne die Musiklautstärke zu ändern. Aus: Die Lautstärke wird geändert und danach wiederhergestellt, wie bei den anderen.",
+          "normalize": "Lässt leise und laute Aufnahmen gleich laut klingen.",
+          "intercom": "Fügt pro Lautsprecher eine Kamera mit Sprechtaste hinzu, über das Zwei-Wege-Audio von Home Assistant (Einstellungen > System > Labs). Installiert beim ersten Mal aiortc."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA-nnounce",
+        "data": {
+          "speakers": "Lautsprecher",
+          "set_volume": "Lautstärke für Durchsagen festlegen",
+          "volume": "Lautstärke der Durchsage",
+          "announce_volume": "Durchsagelautstärke des Lautsprechers verwenden",
+          "chime": "Signalton vor der Durchsage",
+          "normalize": "Lautstärke angleichen",
+          "max_duration": "Maximale Länge",
+          "show_panel": "Durchsagen in der Seitenleiste anzeigen",
+          "intercom": "Gegensprech-Kameras (Labs Zwei-Wege-Audio)"
+        },
+        "data_description": {
+          "speakers": "Leer lassen, um alle Lautsprecher unterstützter Integrationen (Google Cast, Sonos, ESPHome, DLNA, Music Assistant und weitere) ohne Fernseher anzubieten. Hier auswählen, um weitere Mediaplayer wie benutzerdefinierte Integrationen hinzuzufügen.",
+          "set_volume": "Nach der Durchsage kehrt der Lautsprecher zu seiner ursprünglichen Lautstärke zurück.",
+          "announce_volume": "Auf Sonos, Music Assistant, Squeezebox und Bang & Olufsen wird die Durchsage mit eigener Lautstärke über die Musik gespielt, ohne die Musiklautstärke zu ändern. Aus: Die Lautstärke wird geändert und danach wiederhergestellt, wie bei den anderen.",
+          "normalize": "Lässt leise und laute Aufnahmen gleich laut klingen.",
+          "intercom": "Fügt pro Lautsprecher eine Kamera mit Sprechtaste hinzu, über das Zwei-Wege-Audio von Home Assistant (Einstellungen > System > Labs). Installiert beim ersten Mal aiortc."
+        }
+      }
+    }
+  },
+  "selector": {
+    "chime": {
+      "options": {
+        "none": "Keiner",
+        "ding_dong": "Ding-Dong",
+        "soft": "Sanft",
+        "three_tone": "Drei Töne"
+      }
+    }
+  },
+  "entity": {
+    "camera": {
+      "intercom": {
+        "name": "{speaker}"
+      },
+      "intercom_all": {
+        "name": "Alle Lautsprecher"
+      }
+    }
+  },
+  "device": {
+    "intercom": {
+      "name": "Gegensprechanlage"
+    }
+  },
+  "issues": {
+    "intercom_requirements": {
+      "title": "Die Gegensprechanlage konnte nicht installiert werden",
+      "description": "Die Gegensprech-Kameras benötigen {requirement}, was auf diesem System nicht installiert werden konnte. Aufnahmen über die Karte und das Panel funktionieren weiterhin. Prüfe die Protokolle oder deaktiviere die Gegensprechanlage in den Optionen."
+    }
+  },
+  "exceptions": {
+    "not_set_up": {
+      "message": "HA-nnounce ist nicht eingerichtet."
+    },
+    "path_not_allowed": {
+      "message": "{path} liegt nicht in einem Ordner, den Home Assistant lesen darf (allowlist_external_dirs)."
+    },
+    "file_not_found": {
+      "message": "{path} existiert nicht."
+    },
+    "no_voice": {
+      "message": "Das Audio ist leer oder stumm."
+    },
+    "audio_error": {
+      "message": "Das Audio konnte nicht verarbeitet werden: {error}"
+    },
+    "too_large": {
+      "message": "Die Audiodatei ist zu groß."
+    },
+    "download_failed": {
+      "message": "Das Audio konnte nicht heruntergeladen werden: {error}"
+    },
+    "no_message": {
+      "message": "Es gibt keine aktuelle Durchsage zum Wiederholen."
+    }
+  },
+  "services": {
+    "announce": {
+      "name": "Durchsage abspielen",
+      "description": "Spielt eine Audiodatei oder URL auf Lautsprechern mit dem Signalton und der Lautstärke für Durchsagen ab.",
+      "fields": {
+        "file": {
+          "name": "Datei",
+          "description": "Pfad zu einer Audiodatei in einem Ordner, den Home Assistant lesen darf."
+        },
+        "url": {
+          "name": "URL",
+          "description": "Adresse einer herunterzuladenden Audiodatei."
+        },
+        "volume": {
+          "name": "Lautstärke",
+          "description": "Lautstärke während der Wiedergabe. Leer verwendet die Einstellung der Integration."
+        },
+        "chime": {
+          "name": "Signalton",
+          "description": "Signalton vor dem Audio. Leer verwendet die Einstellung der Integration."
+        }
+      }
+    },
+    "replay": {
+      "name": "Letzte Durchsage wiederholen",
+      "description": "Spielt die letzte Durchsage erneut ab (Durchsagen bleiben eine Stunde verfügbar).",
+      "fields": {
+        "volume": {
+          "name": "Lautstärke",
+          "description": "Lautstärke während der Wiedergabe. Leer verwendet die Einstellung der Integration."
+        }
+      }
+    }
+  }
+}

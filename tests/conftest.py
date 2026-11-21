@@ -16,6 +16,7 @@ import pytest
 from homeassistant.components.media_player import (
     ATTR_MEDIA_CONTENT_ID,
     ATTR_MEDIA_VOLUME_LEVEL,
+    ATTR_MEDIA_VOLUME_MUTED,
     MediaPlayerEntityFeature,
 )
 from homeassistant.components.media_player import (
@@ -30,7 +31,11 @@ from custom_components.hannounce.const import DOMAIN
 
 needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg is not installed")
 
-BASE_FEATURES = MediaPlayerEntityFeature.PLAY_MEDIA | MediaPlayerEntityFeature.VOLUME_SET
+BASE_FEATURES = (
+    MediaPlayerEntityFeature.PLAY_MEDIA
+    | MediaPlayerEntityFeature.VOLUME_SET
+    | MediaPlayerEntityFeature.VOLUME_MUTE
+)
 ANNOUNCE = MediaPlayerEntityFeature.MEDIA_ANNOUNCE
 
 # entity_id: (integration, supported features, device class)
@@ -68,6 +73,13 @@ class FakePlayers:
             entity_id, state.state, {**state.attributes, ATTR_MEDIA_VOLUME_LEVEL: volume}
         )
 
+    def set_muted(self, entity_id: str, muted: bool) -> None:
+        """Change the mute state of a speaker."""
+        state = self.hass.states.get(entity_id)
+        self.hass.states.async_set(
+            entity_id, state.state, {**state.attributes, ATTR_MEDIA_VOLUME_MUTED: muted}
+        )
+
 
 @pytest.fixture
 async def players(hass: HomeAssistant) -> AsyncGenerator[FakePlayers]:
@@ -99,6 +111,11 @@ async def players(hass: HomeAssistant) -> AsyncGenerator[FakePlayers]:
             fake.calls.append(("volume_set", {**call.data, ATTR_ENTITY_ID: entity_id}))
             fake.set_volume(entity_id, call.data[ATTR_MEDIA_VOLUME_LEVEL])
 
+    async def volume_mute(call: ServiceCall) -> None:
+        for entity_id in _entity_ids(call):
+            fake.calls.append(("volume_mute", {**call.data, ATTR_ENTITY_ID: entity_id}))
+            fake.set_muted(entity_id, call.data[ATTR_MEDIA_VOLUME_MUTED])
+
     async def play_media(call: ServiceCall) -> None:
         for entity_id in _entity_ids(call):
             fake.calls.append(("play_media", {**call.data, ATTR_ENTITY_ID: entity_id}))
@@ -117,6 +134,7 @@ async def players(hass: HomeAssistant) -> AsyncGenerator[FakePlayers]:
 
     assert await async_setup_component(hass, MEDIA_PLAYER_DOMAIN, {})
     hass.services.async_register(MEDIA_PLAYER_DOMAIN, "volume_set", volume_set)
+    hass.services.async_register(MEDIA_PLAYER_DOMAIN, "volume_mute", volume_mute)
     hass.services.async_register(MEDIA_PLAYER_DOMAIN, "play_media", play_media)
     yield fake
     for timer in fake.timers:

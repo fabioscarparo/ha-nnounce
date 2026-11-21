@@ -10,3 +10,7 @@ testpaths = ["tests"]
 timeout = 60
 timeout_method = "thread"
 filterwarnings = ["ignore::DeprecationWarning:aiortc.*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501"]

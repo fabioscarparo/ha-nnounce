@@ -1,0 +1,147 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "HA-nnounce is al ingesteld."
+    },
+    "step": {
+      "user": {
+        "title": "HA-nnounce",
+        "description": "Neem je stem op vanaf je telefoon of browser en speel deze af op je luidsprekers: Google Home en Nest, Sonos, ESPHome en elke mediaspeler die audio van Home Assistant afspeelt. Je kunt deze instellingen later wijzigen.",
+        "data": {
+          "speakers": "Luidsprekers",
+          "set_volume": "Volume voor berichten instellen",
+          "volume": "Berichtvolume",
+          "announce_volume": "Omroepvolume van de luidspreker gebruiken",
+          "chime": "Geluid voor het bericht",
+          "normalize": "Luidheid gelijktrekken",
+          "max_duration": "Maximale berichtduur",
+          "show_panel": "Omroepen tonen in de zijbalk",
+          "intercom": "Intercomcamera's (Labs tweerichtingsaudio)"
+        },
+        "data_description": {
+          "speakers": "Laat leeg om alle luidsprekers van ondersteunde integraties aan te bieden (Google Cast, Sonos, ESPHome, DLNA, Music Assistant en meer), exclusief televisies. Kies hier om andere mediaspelers toe te voegen, zoals aangepaste integraties.",
+          "set_volume": "De luidspreker keert na het bericht terug naar het vorige volume.",
+          "announce_volume": "Op Sonos, Music Assistant, Squeezebox en Bang & Olufsen speelt het bericht op eigen volume over de muziek heen, zonder het muziekvolume te wijzigen. Uit: het volume wordt tijdelijk gewijzigd en daarna hersteld, zoals bij de andere.",
+          "normalize": "Laat zachte en luide opnames even luid klinken.",
+          "intercom": "Voegt per luidspreker een camera met spreekknop toe via tweerichtingsaudio van Home Assistant (Instellingen > Systeem > Labs). Installeert de eerste keer aiortc."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA-nnounce",
+        "data": {
+          "speakers": "Luidsprekers",
+          "set_volume": "Volume voor berichten instellen",
+          "volume": "Berichtvolume",
+          "announce_volume": "Omroepvolume van de luidspreker gebruiken",
+          "chime": "Geluid voor het bericht",
+          "normalize": "Luidheid gelijktrekken",
+          "max_duration": "Maximale berichtduur",
+          "show_panel": "Omroepen tonen in de zijbalk",
+          "intercom": "Intercomcamera's (Labs tweerichtingsaudio)"
+        },
+        "data_description": {
+          "speakers": "Laat leeg om alle luidsprekers van ondersteunde integraties aan te bieden (Google Cast, Sonos, ESPHome, DLNA, Music Assistant en meer), exclusief televisies. Kies hier om andere mediaspelers toe te voegen, zoals aangepaste integraties.",
+          "set_volume": "De luidspreker keert na het bericht terug naar het vorige volume.",
+          "announce_volume": "Op Sonos, Music Assistant, Squeezebox en Bang & Olufsen speelt het bericht op eigen volume over de muziek heen, zonder het muziekvolume te wijzigen. Uit: het volume wordt tijdelijk gewijzigd en daarna hersteld, zoals bij de andere.",
+          "normalize": "Laat zachte en luide opnames even luid klinken.",
+          "intercom": "Voegt per luidspreker een camera met spreekknop toe via tweerichtingsaudio van Home Assistant (Instellingen > Systeem > Labs). Installeert de eerste keer aiortc."
+        }
+      }
+    }
+  },
+  "selector": {
+    "chime": {
+      "options": {
+        "none": "Geen",
+        "ding_dong": "Ding dong",
+        "soft": "Zacht",
+        "three_tone": "Drie tonen"
+      }
+    }
+  },
+  "entity": {
+    "camera": {
+      "intercom": {
+        "name": "{speaker}"
+      },
+      "intercom_all": {
+        "name": "Alle luidsprekers"
+      }
+    }
+  },
+  "device": {
+    "intercom": {
+      "name": "Intercom"
+    }
+  },
+  "issues": {
+    "intercom_requirements": {
+      "title": "De intercom kon niet worden geïnstalleerd",
+      "description": "De intercomcamera's hebben {requirement} nodig, maar dit kon niet op dit systeem worden geïnstalleerd. Opnemen via de kaart en het paneel werkt nog steeds. Controleer de logboeken of schakel de intercom uit in de opties."
+    }
+  },
+  "exceptions": {
+    "not_set_up": {
+      "message": "HA-nnounce is niet ingesteld."
+    },
+    "path_not_allowed": {
+      "message": "{path} staat niet in een map die Home Assistant mag lezen (allowlist_external_dirs)."
+    },
+    "file_not_found": {
+      "message": "{path} bestaat niet."
+    },
+    "no_voice": {
+      "message": "De audio is leeg of stil."
+    },
+    "audio_error": {
+      "message": "Kon de audio niet verwerken: {error}"
+    },
+    "too_large": {
+      "message": "Het audiobestand is te groot."
+    },
+    "download_failed": {
+      "message": "Kon de audio niet downloaden: {error}"
+    },
+    "no_message": {
+      "message": "Er is geen recent bericht om opnieuw af te spelen."
+    }
+  },
+  "services": {
+    "announce": {
+      "name": "Omroepen",
+      "description": "Speelt een audiobestand of URL af op luidsprekers, met het geluid en volume van de omroepen.",
+      "fields": {
+        "file": {
+          "name": "Bestand",
+          "description": "Pad naar een audiobestand in een map die Home Assistant mag lezen."
+        },
+        "url": {
+          "name": "URL",
+          "description": "Adres van een audiobestand om te downloaden."
+        },
+        "volume": {
+          "name": "Volume",
+          "description": "Volume tijdens het afspelen. Leeg gebruikt de instelling van de integratie."
+        },
+        "chime": {
+          "name": "Geluid",
+          "description": "Geluid voor de audio. Leeg gebruikt de instelling van de integratie."
+        }
+      }
+    },
+    "replay": {
+      "name": "Laatste bericht herhalen",
+      "description": "Speelt het laatste bericht opnieuw af (berichten blijven een uur bewaard).",
+      "fields": {
+        "volume": {
+          "name": "Volume",
+          "description": "Volume tijdens het afspelen. Leeg gebruikt de instelling van de integratie."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "HA-nnounce est déjà configuré."
+    },
+    "step": {
+      "user": {
+        "title": "HA-nnounce",
+        "description": "Enregistrez votre voix depuis votre téléphone ou votre navigateur et diffusez-la sur vos haut-parleurs : Google Home et Nest, Sonos, ESPHome et tout lecteur multimédia lisant l'audio de Home Assistant. Vous pouvez modifier ces réglages plus tard.",
+        "data": {
+          "speakers": "Haut-parleurs",
+          "set_volume": "Définir le volume des messages",
+          "volume": "Volume des messages",
+          "announce_volume": "Utiliser le volume d'annonce du haut-parleur",
+          "chime": "Carillon avant le message",
+          "normalize": "Égaliser le niveau sonore",
+          "max_duration": "Durée maximale du message",
+          "show_panel": "Afficher Annonces dans la barre latérale",
+          "intercom": "Caméras interphone (audio bidirectionnel Labs)"
+        },
+        "data_description": {
+          "speakers": "Laissez vide pour proposer tous les haut-parleurs des intégrations prises en charge (Google Cast, Sonos, ESPHome, DLNA, Music Assistant et autres), sans les téléviseurs. Choisissez ici pour ajouter d'autres lecteurs, comme des intégrations personnalisées.",
+          "set_volume": "Le haut-parleur revient à son volume précédent à la fin du message.",
+          "announce_volume": "Sur Sonos, Music Assistant, Squeezebox et Bang & Olufsen, le message est diffusé à son propre volume par-dessus la musique, sans modifier le volume de la musique. Désactivé : le volume est modifié puis rétabli, comme sur les autres.",
+          "normalize": "Rend les enregistrements faibles et forts audibles au même niveau.",
+          "intercom": "Ajoute une caméra par haut-parleur avec un bouton pour parler, en utilisant l'audio bidirectionnel de Home Assistant (Paramètres > Système > Labs). Installe aiortc la première fois."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA-nnounce",
+        "data": {
+          "speakers": "Haut-parleurs",
+          "set_volume": "Définir le volume des messages",
+          "volume": "Volume des messages",
+          "announce_volume": "Utiliser le volume d'annonce du haut-parleur",
+          "chime": "Carillon avant le message",
+          "normalize": "Égaliser le niveau sonore",
+          "max_duration": "Durée maximale du message",
+          "show_panel": "Afficher Annonces dans la barre latérale",
+          "intercom": "Caméras interphone (audio bidirectionnel Labs)"
+        },
+        "data_description": {
+          "speakers": "Laissez vide pour proposer tous les haut-parleurs des intégrations prises en charge (Google Cast, Sonos, ESPHome, DLNA, Music Assistant et autres), sans les téléviseurs. Choisissez ici pour ajouter d'autres lecteurs, comme des intégrations personnalisées.",
+          "set_volume": "Le haut-parleur revient à son volume précédent à la fin du message.",
+          "announce_volume": "Sur Sonos, Music Assistant, Squeezebox et Bang & Olufsen, le message est diffusé à son propre volume par-dessus la musique, sans modifier le volume de la musique. Désactivé : le volume est modifié puis rétabli, comme sur les autres.",
+          "normalize": "Rend les enregistrements faibles et forts audibles au même niveau.",
+          "intercom": "Ajoute une caméra par haut-parleur avec un bouton pour parler, en utilisant l'audio bidirectionnel de Home Assistant (Paramètres > Système > Labs). Installe aiortc la première fois."
+        }
+      }
+    }
+  },
+  "selector": {
+    "chime": {
+      "options": {
+        "none": "Aucun",
+        "ding_dong": "Ding dong",
+        "soft": "Doux",
+        "three_tone": "Trois notes"
+      }
+    }
+  },
+  "entity": {
+    "camera": {
+      "intercom": {
+        "name": "{speaker}"
+      },
+      "intercom_all": {
+        "name": "Tous les haut-parleurs"
+      }
+    }
+  },
+  "device": {
+    "intercom": {
+      "name": "Interphone"
+    }
+  },
+  "issues": {
+    "intercom_requirements": {
+      "title": "Impossible d'installer l'interphone",
+      "description": "Les caméras interphone nécessitent {requirement}, qui n'a pas pu être installé sur ce système. L'enregistrement depuis la carte et le panneau fonctionne toujours. Vérifiez les journaux ou désactivez l'interphone dans les options."
+    }
+  },
+  "exceptions": {
+    "not_set_up": {
+      "message": "HA-nnounce n'est pas configuré."
+    },
+    "path_not_allowed": {
+      "message": "{path} ne se trouve pas dans un dossier que Home Assistant peut lire (allowlist_external_dirs)."
+    },
+    "file_not_found": {
+      "message": "{path} n'existe pas."
+    },
+    "no_voice": {
+      "message": "L'audio est vide ou silencieux."
+    },
+    "audio_error": {
+      "message": "Impossible de traiter l'audio : {error}"
+    },
+    "too_large": {
+      "message": "Le fichier audio est trop volumineux."
+    },
+    "download_failed": {
+      "message": "Impossible de télécharger l'audio : {error}"
+    },
+    "no_message": {
+      "message": "Il n'y a aucun message récent à réécouter."
+    }
+  },
+  "services": {
+    "announce": {
+      "name": "Annoncer",
+      "description": "Diffuse un fichier audio ou une URL sur les haut-parleurs, avec le carillon et le volume des annonces.",
+      "fields": {
+        "file": {
+          "name": "Fichier",
+          "description": "Chemin d'un fichier audio dans un dossier que Home Assistant peut lire."
+        },
+        "url": {
+          "name": "URL",
+          "description": "Adresse d'un fichier audio à télécharger."
+        },
+        "volume": {
+          "name": "Volume",
+          "description": "Volume pendant la lecture. Vide utilise le réglage de l'intégration."
+        },
+        "chime": {
+          "name": "Carillon",
+          "description": "Carillon avant l'audio. Vide utilise le réglage de l'intégration."
+        }
+      }
+    },
+    "replay": {
+      "name": "Répéter le dernier message",
+      "description": "Rediffuse le dernier message (les messages sont conservés pendant une heure).",
+      "fields": {
+        "volume": {
+          "name": "Volume",
+          "description": "Volume pendant la lecture. Vide utilise le réglage de l'intégration."
+        }
+      }
+    }
+  }
+}

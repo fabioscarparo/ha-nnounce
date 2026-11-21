@@ -3,6 +3,10 @@
 import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.helpers import area_registry as ar
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import floor_registry as fr
+from homeassistant.helpers import label_registry as lr
 
 from custom_components.hannounce.const import DOMAIN
 
@@ -107,3 +111,55 @@ async def test_announce_service_downloads_url(hass: HomeAssistant, players, setu
     with pytest.raises(HomeAssistantError) as err:
         await hass.services.async_call(DOMAIN, "announce", {"url": "http://example.com/missing.wav"}, blocking=True)
     assert err.value.translation_key == "download_failed"
+
+
+@needs_ffmpeg
+async def test_service_supports_area_floor_and_label_targets(
+    hass: HomeAssistant, players, setup_integration, make_wav, tmp_path
+) -> None:
+    hass.config.allowlist_external_dirs = {str(tmp_path)}
+    await setup_integration()
+
+    floors = fr.async_get(hass)
+    areas = ar.async_get(hass)
+    labels = lr.async_get(hass)
+    entities = er.async_get(hass)
+
+    ground = floors.async_create("Ground Floor")
+    kitchen = areas.async_create("Kitchen", floor_id=ground.floor_id)
+    living = areas.async_create("Living", floor_id=ground.floor_id)
+    empty = areas.async_create("Attic")
+    tag = labels.async_create("Voice")
+
+    # TV is in the same area as kitchen speaker and must be skipped on area expansion
+    entities.async_update_entity("media_player.kitchen", area_id=kitchen.id)
+    entities.async_update_entity("media_player.tv", area_id=kitchen.id)
+    entities.async_update_entity("media_player.living_room", area_id=living.id)
+    entities.async_update_entity("media_player.desk", labels={tag.label_id})
+
+    wav = str(make_wav())
+
+    by_area = await hass.services.async_call(
+        DOMAIN, "announce", {"file": wav, "chime": "none"}, target={"area_id": kitchen.id},
+        blocking=True, return_response=True,
+    )
+    assert by_area["targets"] == ["media_player.kitchen"]
+
+    by_floor = await hass.services.async_call(
+        DOMAIN, "announce", {"file": wav, "chime": "none"}, target={"floor_id": ground.floor_id},
+        blocking=True, return_response=True,
+    )
+    assert by_floor["targets"] == ["media_player.kitchen", "media_player.living_room"]
+
+    by_label = await hass.services.async_call(
+        DOMAIN, "replay", {}, target={"label_id": tag.label_id},
+        blocking=True, return_response=True,
+    )
+    assert by_label["targets"] == ["media_player.desk"]
+
+    # An area with no eligible speakers fails instead of falling back to all speakers
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            DOMAIN, "announce", {"file": wav, "chime": "none"}, target={"area_id": empty.id},
+            blocking=True,
+        )

@@ -19,6 +19,55 @@ const SUCCESS_MS = 5000;
 const STORAGE_KEY = "hannounce";
 const CHIMES = ["none", "ding_dong", "soft", "three_tone"];
 
+/* Matches CHIME_EXPRESSIONS in audio.py so previews sound identical to playback. */
+export const CHIME_SPECS = {
+  ding_dong: {
+    duration: 1.55,
+    notes: [
+      { freq: 659.25, start: 0, decay: 3.6, gain: 0.42 },
+      { freq: 523.25, start: 0.45, decay: 2.8, gain: 0.42 },
+    ],
+  },
+  soft: {
+    duration: 1.1,
+    notes: [
+      { freq: 880.0, start: 0, decay: 4.5, gain: 0.3 },
+      { freq: 1174.66, start: 0.16, decay: 3.8, gain: 0.26 },
+    ],
+  },
+  three_tone: {
+    duration: 1.6,
+    notes: [
+      { freq: 523.25, start: 0, decay: 4.0, gain: 0.34 },
+      { freq: 659.25, start: 0.22, decay: 4.0, gain: 0.34 },
+      { freq: 783.99, start: 0.44, decay: 3.0, gain: 0.36 },
+    ],
+  },
+};
+
+export const renderChimeSamples = (chime, sampleRate = 44100) => {
+  const spec = CHIME_SPECS[chime];
+  if (!spec) return null;
+  const length = Math.ceil(spec.duration * sampleRate);
+  const samples = new Float32Array(length);
+  for (let i = 0; i < length; i++) {
+    const tSec = i / sampleRate;
+    let sum = 0;
+    for (const note of spec.notes) {
+      const dt = tSec - note.start;
+      if (dt < 0) continue;
+      const env = note.gain * Math.min(1, dt * 250) * Math.exp(-note.decay * dt);
+      sum +=
+        env *
+        (Math.sin(2 * Math.PI * note.freq * dt) +
+          0.28 * Math.sin(2 * Math.PI * note.freq * 2 * dt) +
+          0.08 * Math.sin(2 * Math.PI * note.freq * 2.76 * dt));
+    }
+    samples[i] = Math.max(-1, Math.min(1, sum));
+  }
+  return samples;
+};
+
 /* One table for every string the card shows, English as fallback. */
 export const STRINGS = {
   en: {
@@ -54,6 +103,7 @@ export const STRINGS = {
     volume_helper: "The message plays at this volume, then each speaker goes back to its own.",
     volume_keep: "Each speaker's own volume",
     chime: "Chime before the message",
+    chime_preview: "Preview chime",
     chime_none: "None",
     chime_ding_dong: "Ding dong",
     chime_soft: "Soft",
@@ -125,6 +175,7 @@ export const STRINGS = {
     volume_helper: "Il messaggio si sente a questo volume, poi ogni altoparlante torna al suo.",
     volume_keep: "Volume di ogni altoparlante",
     chime: "Suono prima del messaggio",
+    chime_preview: "Ascolta il suono",
     chime_none: "Nessuno",
     chime_ding_dong: "Din don",
     chime_soft: "Leggero",
@@ -163,6 +214,294 @@ export const STRINGS = {
     editor_show_settings: "Pulsante delle opzioni",
     editor_review: "Ascolta prima di inviare",
     helper_review: "Ognuno può comunque cambiarlo nelle opzioni.",
+  },
+  de: {
+    title: "Durchsage",
+    panel_title: "Durchsagen",
+    loading: "Laden…",
+    no_selection: "Kein Lautsprecher gewählt",
+    n_speakers: "{n} Lautsprecher",
+    all: "Alle",
+    speakers: "Lautsprecher",
+    group: "Lautsprechergruppe",
+    unavailable: "Nicht verfügbar",
+    hint_idle: "Halten zum Sprechen oder tippen zum Starten",
+    hint_choose: "Wähle mindestens einen Lautsprecher",
+    hint_preparing: "Mikrofon wird geöffnet…",
+    hint_hold: "{time} · Loslassen zum Senden",
+    hint_toggle: "{time} · Tippen zum Senden",
+    hint_review: "{time} · Anhören, dann senden oder verwerfen",
+    hint_sending: "Wird gesendet…",
+    sent: "Gesendet an {targets}",
+    replayed: "Erneut abgespielt auf {targets}",
+    sent_intercom: "An Gegensprechanlage gesendet",
+    talk: "Sprechen",
+    stop_send: "Stoppen und senden",
+    play: "Anhören",
+    stop: "Stopp",
+    send: "Senden",
+    discard: "Verwerfen",
+    replay: "Letzte Durchsage wiederholen",
+    settings: "Durchsage-Optionen",
+    close: "Schließen",
+    volume: "Lautstärke der Durchsage",
+    volume_helper: "Die Durchsage wird in dieser Lautstärke abgespielt, danach kehrt jeder Lautsprecher zu seiner zurück.",
+    volume_keep: "Eigene Lautstärke jedes Lautsprechers",
+    chime: "Signalton vor der Durchsage",
+    chime_preview: "Signalton anhören",
+    chime_none: "Keiner",
+    chime_ding_dong: "Ding-Dong",
+    chime_soft: "Sanft",
+    chime_three_tone: "3 Töne",
+    keep_volume: "Lautstärke jedes Lautsprechers beibehalten",
+    keep_volume_helper: "Aus: Die Durchsage nutzt die gewählte Lautstärke, danach kehrt jeder Lautsprecher zu seiner zurück.",
+    review: "Vor dem Senden anhören",
+    upload: "Audiodatei senden",
+    intercom: "Gegensprechanlage",
+    intercom_helper: "Öffne eine Gegensprechanlage und tippe auf Sprechen starten, um über diesen Lautsprecher zu sprechen.",
+    intercom_labs: "Aktiviere Zwei-Wege-Audio unter Einstellungen > System > Labs, um die Sprechtaste zu sehen.",
+    open_intercom: "Zum Sprechen öffnen",
+    menu: "Menü",
+    err_no_voice: "Keine Stimme erkannt. Versuche es näher am Mikrofon.",
+    err_audio: "Dieses Audio kann nicht gelesen werden. Versuche eine andere Datei oder nimm erneut auf.",
+    err_too_large: "Die Audiodatei ist zu groß.",
+    err_unavailable: "Keiner der gewählten Lautsprecher ist derzeit verfügbar.",
+    err_too_short: "Zu kurz. Halte die Taste gedrückt, während du sprichst.",
+    err_mic_denied: "Der Mikrofonzugriff ist blockiert. Erlaube ihn in den Browser- oder App-Einstellungen.",
+    err_mic_missing: "Auf diesem Gerät wurde kein Mikrofon gefunden.",
+    err_insecure:
+      "Browser öffnen das Mikrofon nur über HTTPS. Öffne Home Assistant über HTTPS oder sende eine auf diesem Gerät aufgenommene Audiodatei.",
+    err_insecure_app: " Die iOS-App kann das Mikrofon auch über HTTP nutzen, wenn die Gegensprechanlage in den Integrationsoptionen aktiviert ist.",
+    err_not_set_up: "HA-nnounce ist nicht eingerichtet.",
+    err_no_speakers: "Noch keine Lautsprecher. Füge die Integration deiner Lautsprecher hinzu (Google Cast, Sonos, ESPHome...) oder wähle sie in den HA-nnounce-Optionen.",
+    err_generic: "Durchsage konnte nicht gesendet werden: {message}",
+    err_app: "Die App konnte das Mikrofon nicht verwenden: {message}",
+    editor_title: "Titel",
+    editor_icon: "Symbol",
+    editor_color: "Farbe",
+    editor_entities: "Lautsprecher",
+    helper_entities: "Leer zeigt alle Lautsprecher der Integration.",
+    editor_content: "Inhalt",
+    editor_show_volume: "Lautstärkeregler",
+    editor_show_settings: "Optionen-Schaltfläche",
+    editor_review: "Vor dem Senden anhören",
+    helper_review: "Jede Person kann dies weiterhin in den Optionen ändern.",
+  },
+  fr: {
+    title: "Annonce",
+    panel_title: "Annonces",
+    loading: "Chargement…",
+    no_selection: "Aucun haut-parleur choisi",
+    n_speakers: "{n} haut-parleurs",
+    all: "Tous",
+    speakers: "Haut-parleurs",
+    group: "Groupe de haut-parleurs",
+    unavailable: "Indisponible",
+    hint_idle: "Maintenez pour parler ou appuyez pour démarrer",
+    hint_choose: "Choisissez au moins un haut-parleur",
+    hint_preparing: "Ouverture du microphone…",
+    hint_hold: "{time} · Relâchez pour envoyer",
+    hint_toggle: "{time} · Appuyez pour envoyer",
+    hint_review: "{time} · Écoutez, puis envoyez ou supprimez",
+    hint_sending: "Envoi en cours…",
+    sent: "Envoyé à {targets}",
+    replayed: "Rediffusé sur {targets}",
+    sent_intercom: "Envoyé à l'interphone",
+    talk: "Parler",
+    stop_send: "Arrêter et envoyer",
+    play: "Écouter",
+    stop: "Arrêter",
+    send: "Envoyer",
+    discard: "Supprimer",
+    replay: "Répéter le dernier message",
+    settings: "Options du message",
+    close: "Fermer",
+    volume: "Volume du message",
+    volume_helper: "Le message est diffusé à ce volume, puis chaque haut-parleur revient au sien.",
+    volume_keep: "Volume de chaque haut-parleur",
+    chime: "Carillon avant le message",
+    chime_preview: "Écouter le carillon",
+    chime_none: "Aucun",
+    chime_ding_dong: "Ding dong",
+    chime_soft: "Doux",
+    chime_three_tone: "3 notes",
+    keep_volume: "Conserver le volume de chaque haut-parleur",
+    keep_volume_helper: "Désactivé : le message utilise le volume choisi, puis chaque haut-parleur revient au sien.",
+    review: "Écouter avant d'envoyer",
+    upload: "Envoyer un fichier audio",
+    intercom: "Interphone",
+    intercom_helper: "Ouvrez un interphone et appuyez sur Commencer à parler pour parler sur ce haut-parleur.",
+    intercom_labs: "Activez l'audio bidirectionnel dans Paramètres > Système > Labs pour voir le bouton Commencer à parler.",
+    open_intercom: "Ouvrir pour parler",
+    menu: "Menu",
+    err_no_voice: "Aucune voix détectée. Réessayez plus près du microphone.",
+    err_audio: "Impossible de lire cet audio. Essayez un autre fichier ou enregistrez à nouveau.",
+    err_too_large: "Le fichier audio est trop volumineux.",
+    err_unavailable: "Aucun des haut-parleurs choisis n'est disponible pour le moment.",
+    err_too_short: "Trop court. Maintenez le bouton pendant que vous parlez.",
+    err_mic_denied: "L'accès au microphone est bloqué. Autorisez-le dans les réglages du navigateur ou de l'application.",
+    err_mic_missing: "Aucun microphone trouvé sur cet appareil.",
+    err_insecure:
+      "Les navigateurs n'ouvrent le microphone qu'en HTTPS. Ouvrez Home Assistant en HTTPS ou envoyez un fichier audio enregistré sur cet appareil.",
+    err_insecure_app: " L'application iOS peut aussi utiliser le microphone en HTTP lorsque l'interphone est activé dans les options de l'intégration.",
+    err_not_set_up: "HA-nnounce n'est pas configuré.",
+    err_no_speakers: "Aucun haut-parleur pour le moment. Ajoutez l'intégration de vos haut-parleurs (Google Cast, Sonos, ESPHome...) ou choisissez-les dans les options de HA-nnounce.",
+    err_generic: "Impossible d'envoyer le message : {message}",
+    err_app: "L'application n'a pas pu utiliser le microphone : {message}",
+    editor_title: "Titre",
+    editor_icon: "Icône",
+    editor_color: "Couleur",
+    editor_entities: "Haut-parleurs",
+    helper_entities: "Vide affiche tous les haut-parleurs de l'intégration.",
+    editor_content: "Contenu",
+    editor_show_volume: "Curseur de volume",
+    editor_show_settings: "Bouton des options",
+    editor_review: "Écouter avant d'envoyer",
+    helper_review: "Chacun peut toujours modifier ce réglage dans les options.",
+  },
+  es: {
+    title: "Anuncio",
+    panel_title: "Anuncios",
+    loading: "Cargando…",
+    no_selection: "Ningún altavoz elegido",
+    n_speakers: "{n} altavoces",
+    all: "Todos",
+    speakers: "Altavoces",
+    group: "Grupo de altavoces",
+    unavailable: "No disponible",
+    hint_idle: "Mantén pulsado para hablar o toca para empezar",
+    hint_choose: "Elige al menos un altavoz",
+    hint_preparing: "Abriendo el micrófono…",
+    hint_hold: "{time} · Suelta para enviar",
+    hint_toggle: "{time} · Toca para enviar",
+    hint_review: "{time} · Escucha, luego envía o descarta",
+    hint_sending: "Enviando…",
+    sent: "Enviado a {targets}",
+    replayed: "Repetido en {targets}",
+    sent_intercom: "Enviado al intercomunicador",
+    talk: "Hablar",
+    stop_send: "Detener y enviar",
+    play: "Escuchar",
+    stop: "Detener",
+    send: "Enviar",
+    discard: "Descartar",
+    replay: "Repetir último mensaje",
+    settings: "Opciones del mensaje",
+    close: "Cerrar",
+    volume: "Volumen del mensaje",
+    volume_helper: "El mensaje se reproduce a este volumen y luego cada altavoz vuelve al suyo.",
+    volume_keep: "Volumen de cada altavoz",
+    chime: "Sonido antes del mensaje",
+    chime_preview: "Escuchar sonido",
+    chime_none: "Ninguno",
+    chime_ding_dong: "Ding dong",
+    chime_soft: "Suave",
+    chime_three_tone: "3 tonos",
+    keep_volume: "Mantener el volumen de cada altavoz",
+    keep_volume_helper: "Desactivado: el mensaje usa el volumen elegido y luego cada altavoz vuelve al suyo.",
+    review: "Escuchar antes de enviar",
+    upload: "Enviar un archivo de audio",
+    intercom: "Intercomunicador",
+    intercom_helper: "Abre un intercomunicador y pulsa Empezar a hablar para hablar en ese altavoz.",
+    intercom_labs: "Activa el audio bidireccional en Ajustes > Sistema > Labs para ver el botón Empezar a hablar.",
+    open_intercom: "Abrir para hablar",
+    menu: "Menú",
+    err_no_voice: "No se escuchó ninguna voz. Inténtalo más cerca del micrófono.",
+    err_audio: "No se puede leer este audio. Prueba con otro archivo o graba de nuevo.",
+    err_too_large: "El archivo de audio es demasiado grande.",
+    err_unavailable: "Ninguno de los altavoces elegidos está disponible ahora mismo.",
+    err_too_short: "Demasiado corto. Mantén pulsado el botón mientras hablas.",
+    err_mic_denied: "El acceso al micrófono está bloqueado. Permítelo en los ajustes del navegador o de la app.",
+    err_mic_missing: "No se encontró ningún micrófono en este dispositivo.",
+    err_insecure:
+      "Los navegadores solo abren el micrófono por HTTPS. Abre Home Assistant por HTTPS o envía un archivo de audio grabado en este dispositivo.",
+    err_insecure_app: " La app de iOS también puede usar el micrófono por HTTP si el intercomunicador está activado en las opciones de la integración.",
+    err_not_set_up: "HA-nnounce no está configurado.",
+    err_no_speakers: "Aún no hay altavoces. Añade la integración de tus altavoces (Google Cast, Sonos, ESPHome...) o elígelos en las opciones de HA-nnounce.",
+    err_generic: "No se pudo enviar el mensaje: {message}",
+    err_app: "La app no pudo usar el micrófono: {message}",
+    editor_title: "Título",
+    editor_icon: "Icono",
+    editor_color: "Color",
+    editor_entities: "Altavoces",
+    helper_entities: "Vacío muestra todos los altavoces de la integración.",
+    editor_content: "Contenido",
+    editor_show_volume: "Control de volumen",
+    editor_show_settings: "Botón de opciones",
+    editor_review: "Escuchar antes de enviar",
+    helper_review: "Cada persona puede cambiarlo igualmente en las opciones.",
+  },
+  nl: {
+    title: "Omroep",
+    panel_title: "Omroepen",
+    loading: "Laden…",
+    no_selection: "Geen luidspreker gekozen",
+    n_speakers: "{n} luidsprekers",
+    all: "Alle",
+    speakers: "Luidsprekers",
+    group: "Luidsprekergroep",
+    unavailable: "Niet beschikbaar",
+    hint_idle: "Houd ingedrukt om te spreken of tik om te starten",
+    hint_choose: "Kies minstens een luidspreker",
+    hint_preparing: "Microfoon openen…",
+    hint_hold: "{time} · Laat los om te verzenden",
+    hint_toggle: "{time} · Tik om te verzenden",
+    hint_review: "{time} · Luister, verzend of verwijder",
+    hint_sending: "Verzenden…",
+    sent: "Verzonden naar {targets}",
+    replayed: "Opnieuw afgespeeld op {targets}",
+    sent_intercom: "Verzonden naar de intercom",
+    talk: "Spreek",
+    stop_send: "Stoppen en verzenden",
+    play: "Luister",
+    stop: "Stop",
+    send: "Verzend",
+    discard: "Verwijder",
+    replay: "Laatste bericht herhalen",
+    settings: "Berichtopties",
+    close: "Sluiten",
+    volume: "Berichtvolume",
+    volume_helper: "Het bericht speelt op dit volume en daarna keert elke luidspreker terug naar zijn eigen volume.",
+    volume_keep: "Eigen volume per luidspreker",
+    chime: "Geluid voor het bericht",
+    chime_preview: "Geluid beluisteren",
+    chime_none: "Geen",
+    chime_ding_dong: "Ding dong",
+    chime_soft: "Zacht",
+    chime_three_tone: "3 tonen",
+    keep_volume: "Eigen volume per luidspreker behouden",
+    keep_volume_helper: "Uit: het bericht gebruikt het gekozen volume en elke luidspreker keert daarna terug naar het zijne.",
+    review: "Luisteren voor verzenden",
+    upload: "Audiobestand verzenden",
+    intercom: "Intercom",
+    intercom_helper: "Open een intercom en druk op Begin met spreken om via die luidspreker te spreken.",
+    intercom_labs: "Schakel tweerichtingsaudio in via Instellingen > Systeem > Labs om de spreekknop te zien.",
+    open_intercom: "Openen om te spreken",
+    menu: "Menu",
+    err_no_voice: "Geen stem gehoord. Probeer het dichter bij de microfoon.",
+    err_audio: "Deze audio kan niet worden gelezen. Probeer een ander bestand of neem opnieuw op.",
+    err_too_large: "Het audiobestand is te groot.",
+    err_unavailable: "Geen van de gekozen luidsprekers is momenteel beschikbaar.",
+    err_too_short: "Te kort. Houd de knop ingedrukt terwijl je spreekt.",
+    err_mic_denied: "Toegang tot de microfoon is geblokkeerd. Sta dit toe in de browser- of app-instellingen.",
+    err_mic_missing: "Geen microfoon gevonden op dit apparaat.",
+    err_insecure:
+      "Browsers openen de microfoon alleen via HTTPS. Open Home Assistant via HTTPS of verzend een audiobestand dat op dit apparaat is opgenomen.",
+    err_insecure_app: " De iOS-app kan de microfoon ook via HTTP gebruiken zodra de intercom is ingeschakeld in de integratie-opties.",
+    err_not_set_up: "HA-nnounce is niet ingesteld.",
+    err_no_speakers: "Nog geen luidsprekers. Voeg de integratie van je luidsprekers toe (Google Cast, Sonos, ESPHome...) of kies ze in de opties van HA-nnounce.",
+    err_generic: "Kon het bericht niet verzenden: {message}",
+    err_app: "De app kon de microfoon niet gebruiken: {message}",
+    editor_title: "Titel",
+    editor_icon: "Pictogram",
+    editor_color: "Kleur",
+    editor_entities: "Luidsprekers",
+    helper_entities: "Leeg toont alle luidsprekers van de integratie.",
+    editor_content: "Inhoud",
+    editor_show_volume: "Volumeregelaar",
+    editor_show_settings: "Optiesknop",
+    editor_review: "Luisteren voor verzenden",
+    helper_review: "Iedereen kan dit nog steeds wijzigen in de opties.",
   },
 };
 
@@ -459,7 +798,14 @@ const STYLES = `
 
   /* Options */
   .options { display: flex; flex-direction: column; gap: var(--ha-space-4, 16px); }
+  .field-head { display: flex; align-items: center; justify-content: space-between; gap: var(--ha-space-2, 8px); margin-bottom: var(--ha-space-2, 8px); }
+  .field-head .field-label { margin-bottom: 0; }
   .field-label { font-size: var(--ha-font-size-m, 14px); line-height: 20px; margin-bottom: var(--ha-space-2, 8px); }
+  .chime-preview { min-inline-size: 40px; min-block-size: 40px; margin-block: -10px; margin-inline-end: -8px; --mdc-icon-size: 20px; }
+  .chime-preview[aria-disabled="true"] { color: var(--disabled-text-color, #bdbdbd); cursor: not-allowed; }
+  .chime-preview[aria-disabled="true"]::before { opacity: 0; }
+  .chime-preview.playing { color: var(--tile-color); }
+  .chime-preview.playing::before { background: var(--tile-color); opacity: 0.16; }
   .segmented { position: relative; display: flex; gap: 4px; padding: 4px; height: 42px; box-sizing: border-box; border-radius: var(--gha-radius); }
   .segmented::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--disabled-color, #bdbdbd); opacity: 0.2; pointer-events: none; }
   .option { position: relative; flex: 1; min-width: 0; border-radius: calc(var(--gha-radius) - 4px); font-size: var(--ha-font-size-m, 14px); font-weight: var(--ha-font-weight-medium, 500); color: var(--primary-text-color); outline: none; }
@@ -515,6 +861,12 @@ const STYLES = `
   }
   @media (prefers-reduced-motion: reduce) {
     * { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+  }
+  @media (forced-colors: active) {
+    .icon-button:focus-visible, .badge:focus-visible, .button:focus-visible, .option:focus-visible, .switch:focus-visible {
+      outline: 2px solid ButtonText;
+      outline-offset: 2px;
+    }
   }
 `;
 
@@ -594,6 +946,7 @@ export class HannounceCard extends Base {
 
   disconnectedCallback() {
     this._cancel();
+    this._stopChimePreview();
     this._unsubscribe();
     this._el?.dialog.close();
   }
@@ -839,7 +1192,10 @@ export class HannounceCard extends Base {
     root.className = "options";
     root.innerHTML = `
       <div class="field">
-        <div class="field-label chime-label" id="chime-label"></div>
+        <div class="field-head">
+          <div class="field-label chime-label" id="chime-label"></div>
+          <button class="icon-button chime-preview" type="button"><ha-icon icon="mdi:play"></ha-icon></button>
+        </div>
         <div class="segmented" role="radiogroup" aria-labelledby="chime-label">
           ${CHIMES.map((c) => `<button class="option" type="button" role="radio" data-chime="${c}"><span></span></button>`).join("")}
         </div>
@@ -858,6 +1214,8 @@ export class HannounceCard extends Base {
       root,
       segmented: root.querySelector(".segmented"),
       chimeLabel: root.querySelector(".chime-label"),
+      chimePreview: root.querySelector(".chime-preview"),
+      chimePreviewIcon: root.querySelector(".chime-preview ha-icon"),
       chimes: [...root.querySelectorAll(".option")],
       keepLabel: root.querySelector(".keep-label"),
       keepHelper: root.querySelector(".keep-helper"),
@@ -887,6 +1245,7 @@ export class HannounceCard extends Base {
       el.dialog.showModal();
     });
     el.close.addEventListener("click", () => el.dialog.close());
+    el.dialog.addEventListener("close", () => this._stopChimePreview());
     el.dialog.addEventListener("click", (ev) => {
       if (ev.target === el.dialog) el.dialog.close(); // a click on the scrim
     });
@@ -947,11 +1306,16 @@ export class HannounceCard extends Base {
     el.range.addEventListener("change", () => writeStore({ volume: this._prefs.volume }));
 
     const setChime = (chime) => {
+      if (chime === "none" || this._chimePreview) this._stopChimePreview();
       this._prefs.chime = chime;
       writeStore({ chime });
       this._renderOptions();
     };
     opts.chimes.forEach((button) => button.addEventListener("click", () => setChime(button.dataset.chime)));
+    opts.chimePreview.addEventListener("click", () => {
+      if (opts.chimePreview.getAttribute("aria-disabled") === "true") return;
+      this._toggleChimePreview();
+    });
     opts.segmented.addEventListener("keydown", (ev) => {
       let step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[ev.key];
       if (!step) return;
@@ -1208,6 +1572,14 @@ export class HannounceCard extends Base {
     if (!opts || !hass) return;
     const current = CHIMES.includes(this._prefs.chime) ? this._prefs.chime : "ding_dong";
     opts.chimeLabel.textContent = t(hass, "chime");
+    const playingChime = Boolean(this._chimePreview);
+    const previewDisabled = current === "none";
+    const previewLabel = t(hass, playingChime ? "stop" : "chime_preview");
+    opts.chimePreview.setAttribute("aria-label", previewLabel);
+    opts.chimePreview.title = previewLabel;
+    opts.chimePreview.setAttribute("aria-disabled", String(previewDisabled));
+    opts.chimePreview.classList.toggle("playing", playingChime);
+    opts.chimePreviewIcon.setAttribute("icon", playingChime ? "mdi:stop" : "mdi:play");
     for (const button of opts.chimes) {
       const on = button.dataset.chime === current;
       button.querySelector("span").textContent = t(hass, `chime_${button.dataset.chime}`);
@@ -1573,6 +1945,52 @@ export class HannounceCard extends Base {
     this._el.play.querySelector("span").textContent = t(this._hass, playing ? "stop" : "play");
   }
 
+  _toggleChimePreview() {
+    if (this._chimePreview) {
+      this._stopChimePreview();
+      return;
+    }
+    const chime = CHIMES.includes(this._prefs.chime) ? this._prefs.chime : "ding_dong";
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx || chime === "none") return;
+    try {
+      const ctx = new AudioCtx();
+      const samples = renderChimeSamples(chime, ctx.sampleRate);
+      if (!samples) {
+        ctx.close?.().catch(() => undefined);
+        return;
+      }
+      const buffer = ctx.createBuffer(1, samples.length, ctx.sampleRate);
+      buffer.getChannelData(0).set(samples);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      const preview = { ctx, source };
+      this._chimePreview = preview;
+      source.addEventListener("ended", () => {
+        if (this._chimePreview === preview) this._stopChimePreview();
+      });
+      ctx.resume?.().catch(() => undefined);
+      source.start();
+      this._renderOptions();
+    } catch (_err) {
+      this._stopChimePreview();
+    }
+  }
+
+  _stopChimePreview() {
+    const preview = this._chimePreview;
+    this._chimePreview = undefined;
+    if (!preview) return;
+    try {
+      preview.source.stop();
+    } catch (_err) {
+      // already stopped
+    }
+    preview.ctx.close?.().catch(() => undefined);
+    if (this._built && this._hass) this._renderOptions();
+  }
+
   _discard() {
     this._audio?.pause();
     this._audio = undefined;
@@ -1630,9 +2048,10 @@ export class HannounceCard extends Base {
     // The integration's own action, so it shows in the logbook like any other
     const targets = this._targets();
     const volume = this._volumeValue();
-    const data = { ...(targets.length ? { entity_id: targets } : {}), ...(volume === "keep" ? {} : { volume: Number(volume) }) };
+    const data = volume === "keep" ? {} : { volume: Number(volume) };
+    const target = targets.length ? { entity_id: targets } : undefined;
     try {
-      const result = await this._hass.callService(DOMAIN, "replay", data, undefined, true, true);
+      const result = await this._hass.callService(DOMAIN, "replay", data, target, true, true);
       const used = result?.response?.targets || targets;
       this._success(t(this._hass, "replayed", { targets: this._names(used) }));
     } catch (err) {

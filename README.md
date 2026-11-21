@@ -12,6 +12,8 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/fabioscarparo/ha-nnounce/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/fabioscarparo/ha-nnounce?label=Release&color=5CC300"></a>
+  <a href="https://github.com/fabioscarparo/ha-nnounce/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/fabioscarparo/ha-nnounce/ci.yml?branch=main&label=CI"></a>
   <a href="https://hacs.xyz/docs/faq/custom_repositories"><img alt="HACS Custom" src="https://img.shields.io/badge/HACS-Custom-41BDF5?logo=homeassistantcommunitystore&logoColor=fff"></a>
   <a href="https://www.home-assistant.io/"><img alt="Home Assistant 2026.11+" src="https://img.shields.io/badge/Home_Assistant-2026.11%2B-18BCF2?logo=homeassistant&logoColor=fff"></a>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/License-MIT-333"></a>
@@ -28,11 +30,11 @@ HA-nnounce turns Home Assistant `media_player` entities into a local, whole-home
 
 ## Features
 
-- **UI:** Dedicated sidebar panel and `custom:hannounce-card` (no dashboard resource to add, visual editor, EN/IT, light/dark themes).
+- **UI:** Dedicated sidebar panel and `custom:hannounce-card` (no dashboard resource to add, visual editor, chime preview, EN/IT/DE/FR/ES/NL, light/dark themes).
 - **Audio pipeline:** Local `ffmpeg` processing with silence trimming, EBU R128 loudness normalization, synthesized chimes, and MP3 encoding.
-- **Playback control:** Dedicated announcement volume (where supported) or temporary volume override with automatic restoration.
+- **Playback control:** Dedicated announcement volume (where supported) or temporary volume/mute override with automatic restoration.
 - **Two-way audio intercom (Labs):** Exposes speakers as WebRTC intercom cameras via `aiortc` for Home Assistant's native *Start talking* UI.
-- **Automations & history:** `hannounce.announce` and `hannounce.replay` actions, `hannounce_announced` event, and 1-hour retention in the Media panel.
+- **Automations & history:** `hannounce.announce` and `hannounce.replay` actions with native Home Assistant targets (entities, areas, floors, devices, labels), `hannounce_announced` event, diagnostics download, and 1-hour retention in the Media panel.
 
 ## Architecture
 
@@ -81,7 +83,7 @@ Works with any Home Assistant `media_player` integration capable of playing audi
 **Install via HACS:**
 1. HACS > Menu > **Custom repositories** > Add this repo URL (category: **Integration**).
 2. Install **HA-nnounce** and restart Home Assistant.
-3. **Settings > Devices & services > Add integration > HA-nnounce**.
+3. **Settings > Devices & services > Add integration > HA-nnounce**, or open [this link](https://my.home-assistant.io/redirect/config_flow_start/?domain=hannounce).
 
 *(Manual install: copy `custom_components/hannounce` to `config/custom_components/` and restart.)*
 
@@ -137,13 +139,13 @@ Browser recording requires a secure context:
 
 ### `hannounce.announce`
 
-Send a local file (must be in `allowlist_external_dirs`) or URL:
+Send a local file (must be in `allowlist_external_dirs`) or URL. Supports native Home Assistant targets (`entity_id`, `area_id`, `floor_id`, `device_id`, `label_id`):
 
 ```yaml
 action: hannounce.announce
+target:
+  area_id: kitchen
 data:
-  entity_id:
-    - media_player.kitchen
   file: /media/messages/dinner.mp3
   volume: 50
   chime: soft
@@ -151,11 +153,11 @@ data:
 
 ### `hannounce.replay`
 
-Replay the last announcement (omit `entity_id` to reuse the original targets):
+Replay the last announcement (omit `target` to reuse the original speakers):
 
 ```yaml
 action: hannounce.replay
-data:
+target:
   entity_id: media_player.bedroom
 ```
 
@@ -172,7 +174,7 @@ Fired on every announcement with payload: `id`, `targets`, `duration` (seconds, 
 
 See [tools/README.md](tools/README.md).
 
-- **Backend tests:** `pip install -r requirements_test.txt && pytest` (33 tests, ~90% coverage via `pytest-homeassistant`).
+- **Backend tests:** `pip install -r requirements_test.txt && pytest` (38 tests via `pytest-homeassistant`).
 - **Frontend tests:** `node --test tools/tests`.
 
 Released under the [MIT License](LICENSE).

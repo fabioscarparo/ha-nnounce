@@ -28,6 +28,10 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 TEXT = {
     "en": {"title": "Announcement", "panel": "Announcements", "all": "All speakers"},
     "it": {"title": "Annuncio", "panel": "Annunci", "all": "Tutti gli altoparlanti"},
+    "de": {"title": "Durchsage", "panel": "Durchsagen", "all": "Alle Lautsprecher"},
+    "fr": {"title": "Annonce", "panel": "Annonces", "all": "Tous les haut-parleurs"},
+    "es": {"title": "Anuncio", "panel": "Anuncios", "all": "Todos los altavoces"},
+    "nl": {"title": "Omroep", "panel": "Omroepen", "all": "Alle luidsprekers"},
 }
 
 type HannounceConfigEntry = ConfigEntry[HannounceData]

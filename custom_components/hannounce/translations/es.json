@@ -1,0 +1,147 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "HA-nnounce ya está configurado."
+    },
+    "step": {
+      "user": {
+        "title": "HA-nnounce",
+        "description": "Graba tu voz desde el teléfono o el navegador y reprodúcela en tus altavoces: Google Home y Nest, Sonos, ESPHome y cualquier reproductor multimedia que reproduzca audio de Home Assistant. Puedes cambiar estos ajustes más adelante.",
+        "data": {
+          "speakers": "Altavoces",
+          "set_volume": "Establecer volumen para los mensajes",
+          "volume": "Volumen del mensaje",
+          "announce_volume": "Usar el volumen de anuncios del altavoz",
+          "chime": "Sonido antes del mensaje",
+          "normalize": "Igualar el nivel de volumen",
+          "max_duration": "Duración máxima del mensaje",
+          "show_panel": "Mostrar Anuncios en la barra lateral",
+          "intercom": "Cámaras de intercomunicador (audio bidireccional de Labs)"
+        },
+        "data_description": {
+          "speakers": "Déjalo vacío para mostrar todos los altavoces de las integraciones compatibles (Google Cast, Sonos, ESPHome, DLNA, Music Assistant y más), sin televisores. Elige aquí para añadir otros reproductores, como integraciones personalizadas.",
+          "set_volume": "El altavoz vuelve a su volumen original al terminar el mensaje.",
+          "announce_volume": "En Sonos, Music Assistant, Squeezebox y Bang & Olufsen el mensaje suena a su propio volumen sobre la música, sin tocar el volumen de la música. Desactivado: se cambia y restaura el volumen, como en los demás.",
+          "normalize": "Hace que las grabaciones bajas y altas suenen al mismo nivel.",
+          "intercom": "Añade una cámara por altavoz con botón para hablar, usando el audio bidireccional de Home Assistant (Ajustes > Sistema > Labs). Instala aiortc la primera vez."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA-nnounce",
+        "data": {
+          "speakers": "Altavoces",
+          "set_volume": "Establecer volumen para los mensajes",
+          "volume": "Volumen del mensaje",
+          "announce_volume": "Usar el volumen de anuncios del altavoz",
+          "chime": "Sonido antes del mensaje",
+          "normalize": "Igualar el nivel de volumen",
+          "max_duration": "Duración máxima del mensaje",
+          "show_panel": "Mostrar Anuncios en la barra lateral",
+          "intercom": "Cámaras de intercomunicador (audio bidireccional de Labs)"
+        },
+        "data_description": {
+          "speakers": "Déjalo vacío para mostrar todos los altavoces de las integraciones compatibles (Google Cast, Sonos, ESPHome, DLNA, Music Assistant y más), sin televisores. Elige aquí para añadir otros reproductores, como integraciones personalizadas.",
+          "set_volume": "El altavoz vuelve a su volumen original al terminar el mensaje.",
+          "announce_volume": "En Sonos, Music Assistant, Squeezebox y Bang & Olufsen el mensaje suena a su propio volumen sobre la música, sin tocar el volumen de la música. Desactivado: se cambia y restaura el volumen, como en los demás.",
+          "normalize": "Hace que las grabaciones bajas y altas suenen al mismo nivel.",
+          "intercom": "Añade una cámara por altavoz con botón para hablar, usando el audio bidireccional de Home Assistant (Ajustes > Sistema > Labs). Instala aiortc la primera vez."
+        }
+      }
+    }
+  },
+  "selector": {
+    "chime": {
+      "options": {
+        "none": "Ninguno",
+        "ding_dong": "Ding dong",
+        "soft": "Suave",
+        "three_tone": "Tres tonos"
+      }
+    }
+  },
+  "entity": {
+    "camera": {
+      "intercom": {
+        "name": "{speaker}"
+      },
+      "intercom_all": {
+        "name": "Todos los altavoces"
+      }
+    }
+  },
+  "device": {
+    "intercom": {
+      "name": "Intercomunicador"
+    }
+  },
+  "issues": {
+    "intercom_requirements": {
+      "title": "No se pudo instalar el intercomunicador",
+      "description": "Las cámaras de intercomunicador necesitan {requirement}, que no se pudo instalar en este sistema. La grabación desde la tarjeta y el panel sigue funcionando. Revisa los registros o desactiva el intercomunicador en las opciones."
+    }
+  },
+  "exceptions": {
+    "not_set_up": {
+      "message": "HA-nnounce no está configurado."
+    },
+    "path_not_allowed": {
+      "message": "{path} no está en una carpeta que Home Assistant pueda leer (allowlist_external_dirs)."
+    },
+    "file_not_found": {
+      "message": "{path} no existe."
+    },
+    "no_voice": {
+      "message": "El audio está vacío o en silencio."
+    },
+    "audio_error": {
+      "message": "No se pudo procesar el audio: {error}"
+    },
+    "too_large": {
+      "message": "El archivo de audio es demasiado grande."
+    },
+    "download_failed": {
+      "message": "No se pudo descargar el audio: {error}"
+    },
+    "no_message": {
+      "message": "No hay ningún mensaje reciente para repetir."
+    }
+  },
+  "services": {
+    "announce": {
+      "name": "Anunciar",
+      "description": "Reproduce un archivo de audio o una URL en los altavoces, con el sonido y el volumen de los anuncios.",
+      "fields": {
+        "file": {
+          "name": "Archivo",
+          "description": "Ruta de un archivo de audio en una carpeta que Home Assistant pueda leer."
+        },
+        "url": {
+          "name": "URL",
+          "description": "Dirección de un archivo de audio para descargar."
+        },
+        "volume": {
+          "name": "Volumen",
+          "description": "Volumen durante la reproducción. Vacío usa el ajuste de la integración."
+        },
+        "chime": {
+          "name": "Sonido",
+          "description": "Sonido antes del audio. Vacío usa el ajuste de la integración."
+        }
+      }
+    },
+    "replay": {
+      "name": "Repetir último mensaje",
+      "description": "Vuelve a reproducir el último mensaje (los mensajes se guardan durante una hora).",
+      "fields": {
+        "volume": {
+          "name": "Volumen",
+          "description": "Volumen durante la reproducción. Vacío usa el ajuste de la integración."
+        }
+      }
+    }
+  }
+}

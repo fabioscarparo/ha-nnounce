@@ -115,10 +115,6 @@
       "name": "Annuncia",
       "description": "Riproduce un file audio o un URL sugli altoparlanti, con il suono e il volume degli annunci.",
       "fields": {
-        "entity_id": {
-          "name": "Altoparlanti",
-          "description": "Dove riprodurlo. Se vuoto, su tutti gli altoparlanti proposti dall'integrazione."
-        },
         "file": {
           "name": "File",
           "description": "Percorso di un file audio in una cartella che Home Assistant può leggere."
@@ -141,10 +137,6 @@
       "name": "Ripeti l'ultimo messaggio",
       "description": "Riproduce di nuovo l'ultimo messaggio (i messaggi restano disponibili per un'ora).",
       "fields": {
-        "entity_id": {
-          "name": "Altoparlanti",
-          "description": "Dove riprodurlo. Se vuoto, gli stessi altoparlanti dell'ultimo messaggio."
-        },
         "volume": {
           "name": "Volume",
           "description": "Volume durante la riproduzione. Se vuoto, usa l'impostazione dell'integrazione."

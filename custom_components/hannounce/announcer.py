@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import secrets
 import shutil
@@ -21,6 +22,7 @@ from homeassistant.components.media_player import (
     ATTR_MEDIA_CONTENT_TYPE,
     ATTR_MEDIA_EXTRA,
     ATTR_MEDIA_VOLUME_LEVEL,
+    ATTR_MEDIA_VOLUME_MUTED,
     SERVICE_PLAY_MEDIA,
     MediaPlayerEntityFeature,
 )
@@ -30,6 +32,7 @@ from homeassistant.components.media_player import (
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     ATTR_SUPPORTED_FEATURES,
+    SERVICE_VOLUME_MUTE,
     SERVICE_VOLUME_SET,
     STATE_BUFFERING,
     STATE_PLAYING,
@@ -346,7 +349,7 @@ class Announcer:
         announcement: Announcement,
         options: PlayOptions,
     ) -> None:
-        """Play on one speaker, one message at a time, then restore its volume."""
+        """Play on one speaker, one message at a time, then restore volume and mute."""
         lock = self._locks.setdefault(entity_id, asyncio.Lock())
         async with lock:
             state = self.hass.states.get(entity_id)
@@ -355,7 +358,9 @@ class Announcer:
                 return
             features = state.attributes.get(ATTR_SUPPORTED_FEATURES, 0)
             previous_volume = state.attributes.get(ATTR_MEDIA_VOLUME_LEVEL)
+            previous_muted = state.attributes.get(ATTR_MEDIA_VOLUME_MUTED)
             changed_volume = False
+            unmuted = False
             extra = self._announce_volume_extra(entity_id, options)
             try:
                 if (
@@ -377,6 +382,21 @@ class Announcer:
                         blocking=True,
                     )
                     changed_volume = previous_volume is not None
+                if (
+                    extra is None
+                    and previous_muted is True
+                    and features & MediaPlayerEntityFeature.VOLUME_MUTE
+                ):
+                    await self.hass.services.async_call(
+                        MEDIA_PLAYER_DOMAIN,
+                        SERVICE_VOLUME_MUTE,
+                        {
+                            ATTR_ENTITY_ID: entity_id,
+                            ATTR_MEDIA_VOLUME_MUTED: False,
+                        },
+                        blocking=True,
+                    )
+                    unmuted = True
                 await self.hass.services.async_call(
                     MEDIA_PLAYER_DOMAIN,
                     SERVICE_PLAY_MEDIA,
@@ -387,17 +407,20 @@ class Announcer:
             except HomeAssistantError as err:
                 _LOGGER.error("Could not play the message on %s: %s", entity_id, err)
             finally:
+                volume_overridden = False
                 if changed_volume:
-                    await self._async_restore_volume(
+                    volume_overridden = not await self._async_restore_volume(
                         entity_id, previous_volume, options.volume
                     )
+                if unmuted and not volume_overridden:
+                    await self._async_restore_mute(entity_id)
 
     async def _async_restore_volume(
         self, entity_id: str, volume: float, ours: float | None
-    ) -> None:
+    ) -> bool:
         """Put the volume back as it was before the message.
 
-        If someone changed the volume during the message, theirs wins.
+        If someone changed the volume during the message, theirs wins and False is returned.
         """
         state = self.hass.states.get(entity_id)
         current = state.attributes.get(ATTR_MEDIA_VOLUME_LEVEL) if state else None
@@ -405,7 +428,7 @@ class Announcer:
             _LOGGER.debug(
                 "Volume of %s changed during the message, not restored", entity_id
             )
-            return
+            return False
         try:
             await self.hass.services.async_call(
                 MEDIA_PLAYER_DOMAIN,
@@ -415,6 +438,22 @@ class Announcer:
             )
         except HomeAssistantError as err:
             _LOGGER.warning("Could not restore the volume of %s: %s", entity_id, err)
+        return True
+
+    async def _async_restore_mute(self, entity_id: str) -> None:
+        """Re-mute a speaker that was muted before the message."""
+        state = self.hass.states.get(entity_id)
+        if state and state.attributes.get(ATTR_MEDIA_VOLUME_MUTED) is True:
+            return
+        try:
+            await self.hass.services.async_call(
+                MEDIA_PLAYER_DOMAIN,
+                SERVICE_VOLUME_MUTE,
+                {ATTR_ENTITY_ID: entity_id, ATTR_MEDIA_VOLUME_MUTED: True},
+                blocking=True,
+            )
+        except HomeAssistantError as err:
+            _LOGGER.warning("Could not restore mute state of %s: %s", entity_id, err)
 
     async def _async_wait_playback(
         self, entity_id: str, announcement: Announcement
@@ -468,9 +507,7 @@ class Announcer:
                     if now >= deadline:
                         return
                 changed.clear()
-                try:
+                with contextlib.suppress(TimeoutError):
                     await asyncio.wait_for(changed.wait(), deadline - now)
-                except TimeoutError:
-                    pass
         finally:
             unsub()

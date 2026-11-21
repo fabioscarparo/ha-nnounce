@@ -166,3 +166,63 @@ async def test_announce_volume_scales(hass: HomeAssistant, players, setup_integr
     assert announcer._announce_volume_extra("media_player.music_assistant", options) == {"announce_volume": 65}
     assert announcer._announce_volume_extra("media_player.kitchen", options) is None
     assert announcer._announce_volume_extra("media_player.squeezebox", PlayOptions(volume=None)) is None
+
+
+@needs_ffmpeg
+async def test_muted_speaker_is_unmuted_and_restored(
+    hass: HomeAssistant, players, setup_integration, hass_client, make_wav
+) -> None:
+    await setup_integration()
+    players.set_muted("media_player.kitchen", True)
+    players.set_muted("media_player.living_room", True)
+
+    status, _ = await upload(
+        await hass_client(),
+        make_wav(),
+        targets=json.dumps(["media_player.kitchen", "media_player.living_room"]),
+    )
+    assert status == 200
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+    # Cast: volume set, unmuted, played, volume restored, then re-muted last
+    kitchen_seq = [
+        (name, data)
+        for name, data in players.calls
+        if data["entity_id"] == "media_player.kitchen"
+    ]
+    assert [name for name, _ in kitchen_seq] == [
+        "volume_set",
+        "volume_mute",
+        "play_media",
+        "volume_set",
+        "volume_mute",
+    ]
+    assert [c["is_volume_muted"] for c in players.calls_for("media_player.kitchen", "volume_mute")] == [
+        False,
+        True,
+    ]
+    assert hass.states.get("media_player.kitchen").attributes["is_volume_muted"] is True
+
+    # Sonos with native announcement volume: mute state is left untouched
+    assert players.calls_for("media_player.living_room", "volume_mute") == []
+
+
+@needs_ffmpeg
+async def test_muted_speaker_with_keep_volume_is_still_unmuted(
+    hass: HomeAssistant, players, setup_integration, hass_client, make_wav
+) -> None:
+    await setup_integration()
+    players.set_muted("media_player.desk", True)
+
+    status, _ = await upload(
+        await hass_client(), make_wav(), targets="media_player.desk", volume="keep"
+    )
+    assert status == 200
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+    assert players.calls_for("media_player.desk", "volume_set") == []
+    assert [c["is_volume_muted"] for c in players.calls_for("media_player.desk", "volume_mute")] == [
+        False,
+        True,
+    ]
+    assert hass.states.get("media_player.desk").attributes["is_volume_muted"] is True

@@ -115,10 +115,6 @@
       "name": "Announce",
       "description": "Plays an audio file or URL on speakers, with the chime and volume of the announcements.",
       "fields": {
-        "entity_id": {
-          "name": "Speakers",
-          "description": "Where to play it. Empty plays on every speaker offered by the integration."
-        },
         "file": {
           "name": "File",
           "description": "Path of an audio file in a folder Home Assistant may read."
@@ -141,10 +137,6 @@
       "name": "Replay last message",
       "description": "Plays the last message again (messages are kept for one hour).",
       "fields": {
-        "entity_id": {
-          "name": "Speakers",
-          "description": "Where to play it. Empty uses the speakers of the last message."
-        },
         "volume": {
           "name": "Volume",
           "description": "Volume while playing. Empty uses the integration setting."

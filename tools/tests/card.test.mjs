@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   CARD_DEFAULTS,
+  CHIME_SPECS,
   STRINGS,
   cleanConfig,
   colorVar,
@@ -14,6 +15,7 @@ import {
   languageOf,
   numberLocale,
   pickMimeType,
+  renderChimeSamples,
   t,
 } from "../../custom_components/hannounce/frontend/hannounce.js";
 
@@ -33,11 +35,19 @@ test("every string exists in every language", () => {
 
 test("language follows the user, English otherwise", () => {
   assert.equal(languageOf(hass("it")), "it");
+  assert.equal(languageOf(hass("de-DE")), "de");
+  assert.equal(languageOf(hass("fr-FR")), "fr");
+  assert.equal(languageOf(hass("es")), "es");
+  assert.equal(languageOf(hass("nl")), "nl");
   assert.equal(languageOf({ language: "it", locale: { language: "en" } }), "en");
   assert.equal(languageOf(hass("pt-BR")), "en");
   assert.equal(languageOf(undefined), "en");
   assert.equal(t(hass("it"), "sent", { targets: "Cucina" }), "Inviato a Cucina");
-  assert.equal(t(hass("de"), "send"), "Send");
+  assert.equal(t(hass("de"), "send"), "Senden");
+  assert.equal(t(hass("fr"), "send"), "Envoyer");
+  assert.equal(t(hass("es"), "send"), "Enviar");
+  assert.equal(t(hass("nl"), "send"), "Verzend");
+  assert.equal(t(hass("pt"), "send"), "Send");
   assert.equal(t(hass("it"), "missing_key"), "missing_key");
 });
 
@@ -85,4 +95,20 @@ test("helpers for recording and markup", () => {
   assert.equal(fileExtension("audio/webm;codecs=opus"), "webm");
   assert.equal(fileExtension("audio/mp4"), "m4a");
   assert.equal(fileExtension("audio/x-unknown"), "audio");
+});
+
+test("chime preview synthesizes non-silent bounded samples", () => {
+  assert.equal(renderChimeSamples("none", 8000), null);
+  assert.equal(renderChimeSamples("unknown", 8000), null);
+  for (const [name, spec] of Object.entries(CHIME_SPECS)) {
+    const samples = renderChimeSamples(name, 8000);
+    assert.ok(samples instanceof Float32Array, name);
+    assert.equal(samples.length, Math.ceil(spec.duration * 8000), name);
+    let peak = 0;
+    for (const v of samples) {
+      assert.ok(v >= -1 && v <= 1, `${name} sample out of bounds`);
+      peak = Math.max(peak, Math.abs(v));
+    }
+    assert.ok(peak > 0.2, `${name} should be audible`);
+  }
 });
