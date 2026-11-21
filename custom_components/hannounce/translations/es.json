@@ -3,6 +3,11 @@
     "abort": {
       "single_instance_allowed": "HA-nnounce ya está configurado."
     },
+    "error": {
+      "path_not_allowed": "La ruta no está en una carpeta que Home Assistant pueda leer (allowlist_external_dirs).",
+      "file_not_found": "El archivo no existe.",
+      "custom_chime_missing": "Configura primero la ruta de un archivo de audio personalizado antes de elegir Personalizado."
+    },
     "step": {
       "user": {
         "title": "HA-nnounce",
@@ -13,8 +18,18 @@
           "volume": "Volumen del mensaje",
           "announce_volume": "Usar el volumen de anuncios del altavoz",
           "chime": "Sonido antes del mensaje",
+          "custom_chime": "Ruta de archivo de sonido personalizado",
           "normalize": "Igualar el nivel de volumen",
+          "voice_enhancement": "Mejora de voz",
           "max_duration": "Duración máxima del mensaje",
+          "tts_entity": "Motor de texto a voz (TTS)",
+          "quiet_hours": "Activar horario de silencio",
+          "quiet_start": "Inicio del horario de silencio",
+          "quiet_end": "Fin del horario de silencio",
+          "quiet_mode": "Comportamiento en horario de silencio",
+          "quiet_volume": "Volumen máximo en horario de silencio",
+          "quiet_speakers": "Altavoces en horario de silencio",
+          "quiet_entity": "Interruptor o sensor de horario de silencio",
           "show_panel": "Mostrar Anuncios en la barra lateral",
           "intercom": "Cámaras de intercomunicador (audio bidireccional de Labs)"
         },
@@ -22,13 +37,25 @@
           "speakers": "Déjalo vacío para mostrar todos los altavoces de las integraciones compatibles (Google Cast, Sonos, ESPHome, DLNA, Music Assistant y más), sin televisores. Elige aquí para añadir otros reproductores, como integraciones personalizadas.",
           "set_volume": "El altavoz vuelve a su volumen original al terminar el mensaje.",
           "announce_volume": "En Sonos, Music Assistant, Squeezebox y Bang & Olufsen el mensaje suena a su propio volumen sobre la música, sin tocar el volumen de la música. Desactivado: se cambia y restaura el volumen, como en los demás.",
+          "custom_chime": "Archivo de audio local opcional (MP3, WAV, OGG...) en una carpeta permitida (allowlist_external_dirs). Habilita la opción Personalizado en el selector de sonido.",
           "normalize": "Hace que las grabaciones bajas y altas suenen al mismo nivel.",
+          "voice_enhancement": "Aplica supresión de ruido, cancelación de eco, ganancia automática del micrófono, filtro paso alto y recorte de silencios. Desactívalo para audio sin procesar.",
+          "tts_entity": "Entidad TTS opcional para anuncios de texto. Déjalo vacío para usar el motor TTS predeterminado de Home Assistant.",
+          "quiet_hours": "Limita el volumen u omite altavoces durante el horario configurado o mientras la entidad de silencio esté activada.",
+          "quiet_mode": "Elige si limitar el volumen de los anuncios u omitir los altavoces afectados durante el horario de silencio.",
+          "quiet_speakers": "Déjalo vacío para aplicar el horario de silencio a todos los altavoces.",
+          "quiet_entity": "input_boolean o binary_sensor opcional que activa el horario de silencio cuando está encendido.",
           "intercom": "Añade una cámara por altavoz con botón para hablar, usando el audio bidireccional de Home Assistant (Ajustes > Sistema > Labs). Instala aiortc la primera vez."
         }
       }
     }
   },
   "options": {
+    "error": {
+      "path_not_allowed": "La ruta no está en una carpeta que Home Assistant pueda leer (allowlist_external_dirs).",
+      "file_not_found": "El archivo no existe.",
+      "custom_chime_missing": "Configura primero la ruta de un archivo de audio personalizado antes de elegir Personalizado."
+    },
     "step": {
       "init": {
         "title": "HA-nnounce",
@@ -38,8 +65,18 @@
           "volume": "Volumen del mensaje",
           "announce_volume": "Usar el volumen de anuncios del altavoz",
           "chime": "Sonido antes del mensaje",
+          "custom_chime": "Ruta de archivo de sonido personalizado",
           "normalize": "Igualar el nivel de volumen",
+          "voice_enhancement": "Mejora de voz",
           "max_duration": "Duración máxima del mensaje",
+          "tts_entity": "Motor de texto a voz (TTS)",
+          "quiet_hours": "Activar horario de silencio",
+          "quiet_start": "Inicio del horario de silencio",
+          "quiet_end": "Fin del horario de silencio",
+          "quiet_mode": "Comportamiento en horario de silencio",
+          "quiet_volume": "Volumen máximo en horario de silencio",
+          "quiet_speakers": "Altavoces en horario de silencio",
+          "quiet_entity": "Interruptor o sensor de horario de silencio",
           "show_panel": "Mostrar Anuncios en la barra lateral",
           "intercom": "Cámaras de intercomunicador (audio bidireccional de Labs)"
         },
@@ -47,7 +84,14 @@
           "speakers": "Déjalo vacío para mostrar todos los altavoces de las integraciones compatibles (Google Cast, Sonos, ESPHome, DLNA, Music Assistant y más), sin televisores. Elige aquí para añadir otros reproductores, como integraciones personalizadas.",
           "set_volume": "El altavoz vuelve a su volumen original al terminar el mensaje.",
           "announce_volume": "En Sonos, Music Assistant, Squeezebox y Bang & Olufsen el mensaje suena a su propio volumen sobre la música, sin tocar el volumen de la música. Desactivado: se cambia y restaura el volumen, como en los demás.",
+          "custom_chime": "Archivo de audio local opcional (MP3, WAV, OGG...) en una carpeta permitida (allowlist_external_dirs). Habilita la opción Personalizado en el selector de sonido.",
           "normalize": "Hace que las grabaciones bajas y altas suenen al mismo nivel.",
+          "voice_enhancement": "Aplica supresión de ruido, cancelación de eco, ganancia automática del micrófono, filtro paso alto y recorte de silencios. Desactívalo para audio sin procesar.",
+          "tts_entity": "Entidad TTS opcional para anuncios de texto. Déjalo vacío para usar el motor TTS predeterminado de Home Assistant.",
+          "quiet_hours": "Limita el volumen u omite altavoces durante el horario configurado o mientras la entidad de silencio esté activada.",
+          "quiet_mode": "Elige si limitar el volumen de los anuncios u omitir los altavoces afectados durante el horario de silencio.",
+          "quiet_speakers": "Déjalo vacío para aplicar el horario de silencio a todos los altavoces.",
+          "quiet_entity": "input_boolean o binary_sensor opcional que activa el horario de silencio cuando está encendido.",
           "intercom": "Añade una cámara por altavoz con botón para hablar, usando el audio bidireccional de Home Assistant (Ajustes > Sistema > Labs). Instala aiortc la primera vez."
         }
       }
@@ -59,7 +103,14 @@
         "none": "Ninguno",
         "ding_dong": "Ding dong",
         "soft": "Suave",
-        "three_tone": "Tres tonos"
+        "three_tone": "Tres tonos",
+        "custom": "Personalizado"
+      }
+    },
+    "quiet_mode": {
+      "options": {
+        "cap_volume": "Limitar volumen",
+        "skip": "Omitir altavoces"
       }
     }
   },
@@ -94,6 +145,21 @@
     "file_not_found": {
       "message": "{path} no existe."
     },
+    "custom_chime_missing": {
+      "message": "No hay ningún archivo de sonido personalizado configurado en las opciones de HA-nnounce."
+    },
+    "quiet_hours": {
+      "message": "El horario de silencio está activo y ha omitido todos los altavoces seleccionados."
+    },
+    "empty_message": {
+      "message": "El mensaje de texto no puede estar vacío."
+    },
+    "tts_unavailable": {
+      "message": "No hay ningún motor de texto a voz configurado en Home Assistant."
+    },
+    "tts_failed": {
+      "message": "No se pudo generar el audio de texto a voz: {error}"
+    },
     "no_voice": {
       "message": "El audio está vacío o en silencio."
     },
@@ -113,8 +179,12 @@
   "services": {
     "announce": {
       "name": "Anunciar",
-      "description": "Reproduce un archivo de audio o una URL en los altavoces, con el sonido y el volumen de los anuncios.",
+      "description": "Reproduce un mensaje de texto, un archivo de audio o una URL en los altavoces, con el sonido y el volumen de los anuncios.",
       "fields": {
+        "message": {
+          "name": "Mensaje",
+          "description": "Texto para leer mediante el motor de texto a voz de Home Assistant."
+        },
         "file": {
           "name": "Archivo",
           "description": "Ruta de un archivo de audio en una carpeta que Home Assistant pueda leer."
@@ -123,6 +193,14 @@
           "name": "URL",
           "description": "Dirección de un archivo de audio para descargar."
         },
+        "tts_entity": {
+          "name": "Motor TTS",
+          "description": "Entidad de texto a voz opcional para el mensaje. Vacío usa el ajuste predeterminado."
+        },
+        "language": {
+          "name": "Idioma",
+          "description": "Código de idioma opcional pasado al motor de texto a voz."
+        },
         "volume": {
           "name": "Volumen",
           "description": "Volumen durante la reproducción. Vacío usa el ajuste de la integración."
@@ -130,6 +208,10 @@
         "chime": {
           "name": "Sonido",
           "description": "Sonido antes del audio. Vacío usa el ajuste de la integración."
+        },
+        "force": {
+          "name": "Ignorar horario de silencio",
+          "description": "Reproduce al volumen solicitado en todos los altavoces incluso durante el horario de silencio."
         }
       }
     },
@@ -140,6 +222,10 @@
         "volume": {
           "name": "Volumen",
           "description": "Volumen durante la reproducción. Vacío usa el ajuste de la integración."
+        },
+        "force": {
+          "name": "Ignorar horario de silencio",
+          "description": "Reproduce al volumen solicitado en todos los altavoces incluso durante el horario de silencio."
         }
       }
     }

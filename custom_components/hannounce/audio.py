@@ -7,7 +7,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
-from .const import CHIME_NONE
+from .const import CHIME_CUSTOM, CHIME_NONE, MAX_CUSTOM_CHIME_SECONDS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -79,28 +79,42 @@ def build_ffmpeg_args(
     normalize: bool,
     max_duration: float,
     trim_silence: bool = True,
+    highpass: bool = True,
     raw_pcm_rate: int | None = None,
+    custom_chime: Path | None = None,
 ) -> list[str]:
     """Build the ffmpeg command line for one announcement."""
     args = [ffmpeg_binary, "-hide_banner", "-nostdin", "-loglevel", "error", "-y"]
 
-    chime_spec = CHIME_EXPRESSIONS.get(chime) if chime != CHIME_NONE else None
-    if chime_spec is not None:
-        expression, length = chime_spec
-        args += [
-            "-f",
-            "lavfi",
-            "-i",
-            f"aevalsrc=exprs='{expression}':s={SAMPLE_RATE}:d={length}",
-        ]
-    voice_index = 1 if chime_spec is not None else 0
+    has_chime = False
+    use_custom = chime == CHIME_CUSTOM
+    if use_custom:
+        if custom_chime is None:
+            raise AudioError("Custom chime is not configured")
+        args += ["-t", f"{MAX_CUSTOM_CHIME_SECONDS:g}", "-i", str(custom_chime)]
+        has_chime = True
+    else:
+        chime_spec = CHIME_EXPRESSIONS.get(chime) if chime != CHIME_NONE else None
+        if chime_spec is not None:
+            expression, length = chime_spec
+            args += [
+                "-f",
+                "lavfi",
+                "-i",
+                f"aevalsrc=exprs='{expression}':s={SAMPLE_RATE}:d={length}",
+            ]
+            has_chime = True
+
+    voice_index = 1 if has_chime else 0
 
     if raw_pcm_rate is not None:
         args += ["-f", "s16le", "-ar", str(raw_pcm_rate), "-ac", "1"]
     args += ["-t", f"{max_duration:g}", "-i", str(source)]
 
     fmt = f"aformat=sample_fmts=fltp:sample_rates={SAMPLE_RATE}:channel_layouts=mono"
-    voice = [f"aresample={SAMPLE_RATE}", fmt, "highpass=f=70"]
+    voice = [f"aresample={SAMPLE_RATE}", fmt]
+    if highpass:
+        voice.append("highpass=f=70")
     if trim_silence:
         cut = (
             "silenceremove=start_periods=1:start_duration=0.05:"
@@ -111,8 +125,9 @@ def build_ffmpeg_args(
         voice += ["loudnorm=I=-16:TP=-1.5:LRA=11", f"aresample={SAMPLE_RATE}", fmt]
 
     graph = [f"[{voice_index}:a]{','.join(voice)}[voice]"]
-    if chime_spec is not None:
-        graph.append(f"[0:a]{fmt}[chime]")
+    if has_chime:
+        chime_chain = f"aresample={SAMPLE_RATE},{fmt}" if use_custom else fmt
+        graph.append(f"[0:a]{chime_chain}[chime]")
         graph.append("[chime][voice]concat=n=2:v=0:a=1[joined]")
         joined = "[joined]"
     else:
@@ -146,9 +161,22 @@ def build_ffmpeg_args(
 
 
 def chime_length(chime: str) -> float:
-    """Return the length in seconds of a chime."""
+    """Return the length in seconds of a synthesized chime."""
     if spec := CHIME_EXPRESSIONS.get(chime):
         return spec[1]
+    return 0.0
+
+
+def audio_duration(path: Path) -> float:
+    """Return the duration in seconds of an audio file, or 0.0 if unreadable."""
+    try:
+        import mutagen  # noqa: PLC0415
+
+        parsed = mutagen.File(str(path))
+        if parsed is not None and parsed.info is not None:
+            return float(parsed.info.length)
+    except Exception:  # noqa: BLE001
+        pass
     return 0.0
 
 
@@ -195,7 +223,10 @@ async def async_render(
     chime: str,
     normalize: bool,
     max_duration: float,
+    voice_enhancement: bool = True,
     raw_pcm_rate: int | None = None,
+    custom_chime: Path | None = None,
+    min_voice_seconds: float = MIN_VOICE_SECONDS,
 ) -> RenderedAudio:
     """Encode a recording into an announcement MP3.
 
@@ -209,13 +240,21 @@ async def async_render(
             chime=chime,
             normalize=normalize,
             max_duration=max_duration,
+            trim_silence=voice_enhancement,
+            highpass=voice_enhancement,
             raw_pcm_rate=raw_pcm_rate,
+            custom_chime=custom_chime,
         )
     )
     duration = await hass_executor(mp3_duration, target)
-    # Leading and trailing silence is cut: what is left must hold some voice
-    if duration - LEAD_IN_MS / 1000 - TAIL_SECONDS - chime_length(chime) < (
-        MIN_VOICE_SECONDS
-    ):
+    if chime == CHIME_CUSTOM and custom_chime is not None:
+        chime_seconds = min(
+            MAX_CUSTOM_CHIME_SECONDS, await hass_executor(audio_duration, custom_chime)
+        )
+    else:
+        chime_seconds = chime_length(chime)
+    # Leading and trailing silence is cut when enhancement is on: verify audio remains
+    required = min_voice_seconds if voice_enhancement else 0.05
+    if duration - LEAD_IN_MS / 1000 - TAIL_SECONDS - chime_seconds < required:
         raise NoVoiceError("The recording is empty or silent")
     return RenderedAudio(target, duration)

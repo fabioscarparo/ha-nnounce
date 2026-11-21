@@ -226,3 +226,141 @@ async def test_muted_speaker_with_keep_volume_is_still_unmuted(
         True,
     ]
     assert hass.states.get("media_player.desk").attributes["is_volume_muted"] is True
+
+
+@needs_ffmpeg
+async def test_custom_chime_upload_and_preview(
+    hass: HomeAssistant, players, setup_integration, hass_client, hass_client_no_auth, make_wav, tmp_path
+) -> None:
+    hass.config.allowlist_external_dirs = {str(tmp_path)}
+    chime_file = make_wav("doorbell.wav", seconds=0.6)
+    await setup_integration(custom_chime=str(chime_file))
+
+    client = await hass_client()
+    anonymous = await hass_client_no_auth()
+
+    assert (await anonymous.get("/api/hannounce/chime")).status == 401
+    preview = await client.get("/api/hannounce/chime")
+    assert preview.status == 200
+    assert await preview.read() == chime_file.read_bytes()
+
+    status, body = await upload(client, make_wav("msg.wav"), targets="media_player.kitchen", chime="custom")
+    assert status == 200, body
+    assert body["targets"] == ["media_player.kitchen"]
+
+
+@needs_ffmpeg
+async def test_custom_chime_unconfigured_returns_404_and_400(
+    hass: HomeAssistant, players, setup_integration, hass_client, make_wav
+) -> None:
+    await setup_integration()
+    client = await hass_client()
+    assert (await client.get("/api/hannounce/chime")).status == 404
+    status, body = await upload(client, make_wav(), targets="media_player.kitchen", chime="custom")
+    assert (status, body["code"]) == (400, "bad_request")
+
+
+@needs_ffmpeg
+async def test_quiet_hours_cap_volume(
+    hass: HomeAssistant, players, setup_integration, hass_client, make_wav
+) -> None:
+    hass.states.async_set("input_boolean.sleep_mode", "on")
+    await setup_integration(
+        quiet_hours=True,
+        quiet_start="00:00:00",
+        quiet_end="00:00:00",
+        quiet_mode="cap_volume",
+        quiet_volume=25,
+        quiet_speakers=["media_player.kitchen"],
+        quiet_entity="input_boolean.sleep_mode",
+    )
+    players.set_volume("media_player.kitchen", 0.5)
+    players.set_volume("media_player.desk", 0.3)
+
+    status, _ = await upload(
+        await hass_client(),
+        make_wav(),
+        targets=json.dumps(["media_player.kitchen", "media_player.desk"]),
+        volume="70",
+    )
+    assert status == 200
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+    # Kitchen is capped at 25% and restored to 50%; Desk plays at requested 70%
+    assert [c["volume_level"] for c in players.calls_for("media_player.kitchen", "volume_set")] == [0.25, 0.5]
+    assert [c["volume_level"] for c in players.calls_for("media_player.desk", "volume_set")] == [0.7, 0.3]
+
+    # Even with volume="keep", a speaker above the cap is lowered to 25% and restored
+    players.calls.clear()
+    status, _ = await upload(
+        await hass_client(),
+        make_wav(),
+        targets="media_player.kitchen",
+        volume="keep",
+    )
+    assert status == 200
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert [c["volume_level"] for c in players.calls_for("media_player.kitchen", "volume_set")] == [0.25, 0.5]
+
+
+@needs_ffmpeg
+async def test_quiet_hours_skip_and_force(
+    hass: HomeAssistant, players, setup_integration, hass_client, make_wav, tmp_path
+) -> None:
+    hass.config.allowlist_external_dirs = {str(tmp_path)}
+    hass.states.async_set("input_boolean.sleep_mode", "on")
+    await setup_integration(
+        quiet_hours=True,
+        quiet_start="00:00:00",
+        quiet_end="00:00:00",
+        quiet_mode="skip",
+        quiet_speakers=["media_player.kitchen"],
+        quiet_entity="input_boolean.sleep_mode",
+    )
+    client = await hass_client()
+
+    # Partial skip: Kitchen is skipped, Desk plays
+    status, body = await upload(
+        client,
+        make_wav(),
+        targets=json.dumps(["media_player.kitchen", "media_player.desk"]),
+    )
+    assert status == 200
+    assert body["targets"] == ["media_player.desk"]
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert players.calls_for("media_player.kitchen", "play_media") == []
+
+    # Full skip: returns 422 quiet_hours
+    status, body = await upload(client, make_wav(), targets="media_player.kitchen")
+    assert (status, body["code"]) == (422, "quiet_hours")
+
+    # Service call with force=True bypasses quiet hours
+    response = await hass.services.async_call(
+        "hannounce",
+        "announce",
+        {"entity_id": "media_player.kitchen", "file": str(make_wav()), "chime": "none", "force": True},
+        blocking=True,
+        return_response=True,
+    )
+    assert response["targets"] == ["media_player.kitchen"]
+
+
+def test_quiet_time_window_logic() -> None:
+    from datetime import time
+
+    from custom_components.hannounce.settings import is_in_time_window
+
+    # Overnight 22:00 -> 07:00
+    assert is_in_time_window(time(22, 0), time(22, 0), time(7, 0)) is True
+    assert is_in_time_window(time(23, 30), time(22, 0), time(7, 0)) is True
+    assert is_in_time_window(time(6, 59), time(22, 0), time(7, 0)) is True
+    assert is_in_time_window(time(7, 0), time(22, 0), time(7, 0)) is False
+    assert is_in_time_window(time(15, 0), time(22, 0), time(7, 0)) is False
+
+    # Same-day 13:00 -> 15:00
+    assert is_in_time_window(time(14, 0), time(13, 0), time(15, 0)) is True
+    assert is_in_time_window(time(12, 59), time(13, 0), time(15, 0)) is False
+    assert is_in_time_window(time(15, 0), time(13, 0), time(15, 0)) is False
+
+    # Equal bounds disable schedule
+    assert is_in_time_window(time(0, 0), time(0, 0), time(0, 0)) is False

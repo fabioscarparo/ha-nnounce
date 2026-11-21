@@ -3,6 +3,11 @@
     "abort": {
       "single_instance_allowed": "HA-nnounce is already set up."
     },
+    "error": {
+      "path_not_allowed": "Path is not in a folder Home Assistant may read (allowlist_external_dirs).",
+      "file_not_found": "File does not exist.",
+      "custom_chime_missing": "Set a custom chime audio file path before choosing Custom."
+    },
     "step": {
       "user": {
         "title": "HA-nnounce",
@@ -13,8 +18,18 @@
           "volume": "Message volume",
           "announce_volume": "Use the announcement volume of the speaker",
           "chime": "Chime before the message",
+          "custom_chime": "Custom chime file path",
           "normalize": "Even out the loudness",
+          "voice_enhancement": "Voice enhancement",
           "max_duration": "Longest message",
+          "tts_entity": "Text-to-speech engine",
+          "quiet_hours": "Enable quiet hours",
+          "quiet_start": "Quiet hours start",
+          "quiet_end": "Quiet hours end",
+          "quiet_mode": "Quiet hours behavior",
+          "quiet_volume": "Maximum volume during quiet hours",
+          "quiet_speakers": "Quiet hours speakers",
+          "quiet_entity": "Quiet hours switch or sensor",
           "show_panel": "Show Announcements in the sidebar",
           "intercom": "Intercom cameras (Labs two-way audio)"
         },
@@ -22,13 +37,25 @@
           "speakers": "Leave empty to offer every speaker of a supported integration (Google Cast, Sonos, ESPHome, DLNA, Music Assistant and more), televisions excluded. Choose here to add other media players, such as those of custom integrations.",
           "set_volume": "The speaker goes back to its own volume when the message ends.",
           "announce_volume": "On Sonos, Music Assistant, Squeezebox and Bang & Olufsen the message plays at its own volume over the music, and the volume of the music is not touched. Off: the speaker volume is changed and then restored, like on the others.",
+          "custom_chime": "Optional local audio file (MP3, WAV, OGG...) inside an allowed folder (allowlist_external_dirs). Enables the Custom option in the chime selector.",
           "normalize": "Makes quiet and loud recordings sound the same.",
+          "voice_enhancement": "Applies microphone noise suppression, echo cancellation, auto gain, high-pass filter, and silence trimming. Turn off for raw, unprocessed audio.",
+          "tts_entity": "Optional TTS entity for text announcements. Leave empty to use Home Assistant's default TTS engine.",
+          "quiet_hours": "Limit volume or skip speakers during the configured schedule or while the quiet hours entity is on.",
+          "quiet_mode": "Choose whether to cap announcement volume or skip affected speakers during quiet hours.",
+          "quiet_speakers": "Leave empty to apply quiet hours to every speaker.",
+          "quiet_entity": "Optional input_boolean or binary_sensor that activates quiet hours whenever it is on.",
           "intercom": "Adds one camera per speaker with a talk button, using Home Assistant's two-way audio (Settings > System > Labs). Installs aiortc the first time."
         }
       }
     }
   },
   "options": {
+    "error": {
+      "path_not_allowed": "Path is not in a folder Home Assistant may read (allowlist_external_dirs).",
+      "file_not_found": "File does not exist.",
+      "custom_chime_missing": "Set a custom chime audio file path before choosing Custom."
+    },
     "step": {
       "init": {
         "title": "HA-nnounce",
@@ -38,8 +65,18 @@
           "volume": "Message volume",
           "announce_volume": "Use the announcement volume of the speaker",
           "chime": "Chime before the message",
+          "custom_chime": "Custom chime file path",
           "normalize": "Even out the loudness",
+          "voice_enhancement": "Voice enhancement",
           "max_duration": "Longest message",
+          "tts_entity": "Text-to-speech engine",
+          "quiet_hours": "Enable quiet hours",
+          "quiet_start": "Quiet hours start",
+          "quiet_end": "Quiet hours end",
+          "quiet_mode": "Quiet hours behavior",
+          "quiet_volume": "Maximum volume during quiet hours",
+          "quiet_speakers": "Quiet hours speakers",
+          "quiet_entity": "Quiet hours switch or sensor",
           "show_panel": "Show Announcements in the sidebar",
           "intercom": "Intercom cameras (Labs two-way audio)"
         },
@@ -47,7 +84,14 @@
           "speakers": "Leave empty to offer every speaker of a supported integration (Google Cast, Sonos, ESPHome, DLNA, Music Assistant and more), televisions excluded. Choose here to add other media players, such as those of custom integrations.",
           "set_volume": "The speaker goes back to its own volume when the message ends.",
           "announce_volume": "On Sonos, Music Assistant, Squeezebox and Bang & Olufsen the message plays at its own volume over the music, and the volume of the music is not touched. Off: the speaker volume is changed and then restored, like on the others.",
+          "custom_chime": "Optional local audio file (MP3, WAV, OGG...) inside an allowed folder (allowlist_external_dirs). Enables the Custom option in the chime selector.",
           "normalize": "Makes quiet and loud recordings sound the same.",
+          "voice_enhancement": "Applies microphone noise suppression, echo cancellation, auto gain, high-pass filter, and silence trimming. Turn off for raw, unprocessed audio.",
+          "tts_entity": "Optional TTS entity for text announcements. Leave empty to use Home Assistant's default TTS engine.",
+          "quiet_hours": "Limit volume or skip speakers during the configured schedule or while the quiet hours entity is on.",
+          "quiet_mode": "Choose whether to cap announcement volume or skip affected speakers during quiet hours.",
+          "quiet_speakers": "Leave empty to apply quiet hours to every speaker.",
+          "quiet_entity": "Optional input_boolean or binary_sensor that activates quiet hours whenever it is on.",
           "intercom": "Adds one camera per speaker with a talk button, using Home Assistant's two-way audio (Settings > System > Labs). Installs aiortc the first time."
         }
       }
@@ -59,7 +103,14 @@
         "none": "None",
         "ding_dong": "Ding dong",
         "soft": "Soft",
-        "three_tone": "Three tones"
+        "three_tone": "Three tones",
+        "custom": "Custom"
+      }
+    },
+    "quiet_mode": {
+      "options": {
+        "cap_volume": "Cap volume",
+        "skip": "Skip speakers"
       }
     }
   },
@@ -94,6 +145,21 @@
     "file_not_found": {
       "message": "{path} does not exist."
     },
+    "custom_chime_missing": {
+      "message": "No custom chime audio file is configured in the HA-nnounce options."
+    },
+    "quiet_hours": {
+      "message": "Quiet hours are active and skipped all selected speakers."
+    },
+    "empty_message": {
+      "message": "The text message cannot be empty."
+    },
+    "tts_unavailable": {
+      "message": "No text-to-speech engine is configured in Home Assistant."
+    },
+    "tts_failed": {
+      "message": "Could not generate text-to-speech audio: {error}"
+    },
     "no_voice": {
       "message": "The audio is empty or silent."
     },
@@ -113,8 +179,12 @@
   "services": {
     "announce": {
       "name": "Announce",
-      "description": "Plays an audio file or URL on speakers, with the chime and volume of the announcements.",
+      "description": "Plays a text message, audio file, or URL on speakers, with the chime and volume of announcements.",
       "fields": {
+        "message": {
+          "name": "Message",
+          "description": "Text to speak using Home Assistant's text-to-speech engine."
+        },
         "file": {
           "name": "File",
           "description": "Path of an audio file in a folder Home Assistant may read."
@@ -123,6 +193,14 @@
           "name": "URL",
           "description": "Address of an audio file to download."
         },
+        "tts_entity": {
+          "name": "TTS engine",
+          "description": "Optional text-to-speech entity to use for message. Empty uses the integration or Home Assistant default."
+        },
+        "language": {
+          "name": "Language",
+          "description": "Optional language code passed to the text-to-speech engine."
+        },
         "volume": {
           "name": "Volume",
           "description": "Volume while playing. Empty uses the integration setting."
@@ -130,6 +208,10 @@
         "chime": {
           "name": "Chime",
           "description": "Chime before the audio. Empty uses the integration setting."
+        },
+        "force": {
+          "name": "Ignore quiet hours",
+          "description": "Play at full requested volume on all speakers even during quiet hours."
         }
       }
     },
@@ -140,6 +222,10 @@
         "volume": {
           "name": "Volume",
           "description": "Volume while playing. Empty uses the integration setting."
+        },
+        "force": {
+          "name": "Ignore quiet hours",
+          "description": "Play at full requested volume on all speakers even during quiet hours."
         }
       }
     }

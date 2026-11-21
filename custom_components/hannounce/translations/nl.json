@@ -3,6 +3,11 @@
     "abort": {
       "single_instance_allowed": "HA-nnounce is al ingesteld."
     },
+    "error": {
+      "path_not_allowed": "Het pad staat niet in een map die Home Assistant mag lezen (allowlist_external_dirs).",
+      "file_not_found": "Het bestand bestaat niet.",
+      "custom_chime_missing": "Stel eerst het pad van een eigen geluidsbestand in voordat je Aangepast kiest."
+    },
     "step": {
       "user": {
         "title": "HA-nnounce",
@@ -13,8 +18,18 @@
           "volume": "Berichtvolume",
           "announce_volume": "Omroepvolume van de luidspreker gebruiken",
           "chime": "Geluid voor het bericht",
+          "custom_chime": "Pad naar eigen geluidsbestand",
           "normalize": "Luidheid gelijktrekken",
+          "voice_enhancement": "Stemverbetering",
           "max_duration": "Maximale berichtduur",
+          "tts_entity": "Tekst-naar-spraak-engine (TTS)",
+          "quiet_hours": "Stille uren inschakelen",
+          "quiet_start": "Begin stille uren",
+          "quiet_end": "Einde stille uren",
+          "quiet_mode": "Gedrag tijdens stille uren",
+          "quiet_volume": "Maximaal volume tijdens stille uren",
+          "quiet_speakers": "Luidsprekers voor stille uren",
+          "quiet_entity": "Schakelaar of sensor voor stille uren",
           "show_panel": "Omroepen tonen in de zijbalk",
           "intercom": "Intercomcamera's (Labs tweerichtingsaudio)"
         },
@@ -22,13 +37,25 @@
           "speakers": "Laat leeg om alle luidsprekers van ondersteunde integraties aan te bieden (Google Cast, Sonos, ESPHome, DLNA, Music Assistant en meer), exclusief televisies. Kies hier om andere mediaspelers toe te voegen, zoals aangepaste integraties.",
           "set_volume": "De luidspreker keert na het bericht terug naar het vorige volume.",
           "announce_volume": "Op Sonos, Music Assistant, Squeezebox en Bang & Olufsen speelt het bericht op eigen volume over de muziek heen, zonder het muziekvolume te wijzigen. Uit: het volume wordt tijdelijk gewijzigd en daarna hersteld, zoals bij de andere.",
+          "custom_chime": "Optioneel lokaal audiobestand (MP3, WAV, OGG...) in een toegestane map (allowlist_external_dirs). Schakelt de optie Aangepast in bij de geluidskeuze.",
           "normalize": "Laat zachte en luide opnames even luid klinken.",
+          "voice_enhancement": "Past ruisonderdrukking, echo-onderdrukking, automatische versterking van de microfoon, hoogdoorlaatfilter en stilte-inkorting toe. Schakel uit voor onbewerkte audio.",
+          "tts_entity": "Optionele TTS-entiteit voor tekstomroepen. Laat leeg om de standaard TTS-engine van Home Assistant te gebruiken.",
+          "quiet_hours": "Beperkt het volume of slaat luidsprekers over tijdens het ingestelde tijdschema of zolang de entiteit aan staat.",
+          "quiet_mode": "Kies of het volume tijdens stille uren wordt begrensd of dat gekozen luidsprekers worden overgeslagen.",
+          "quiet_speakers": "Laat leeg om stille uren op alle luidsprekers toe te passen.",
+          "quiet_entity": "Optionele input_boolean of binary_sensor die stille uren activeert zodra deze aan staat.",
           "intercom": "Voegt per luidspreker een camera met spreekknop toe via tweerichtingsaudio van Home Assistant (Instellingen > Systeem > Labs). Installeert de eerste keer aiortc."
         }
       }
     }
   },
   "options": {
+    "error": {
+      "path_not_allowed": "Het pad staat niet in een map die Home Assistant mag lezen (allowlist_external_dirs).",
+      "file_not_found": "Het bestand bestaat niet.",
+      "custom_chime_missing": "Stel eerst het pad van een eigen geluidsbestand in voordat je Aangepast kiest."
+    },
     "step": {
       "init": {
         "title": "HA-nnounce",
@@ -38,8 +65,18 @@
           "volume": "Berichtvolume",
           "announce_volume": "Omroepvolume van de luidspreker gebruiken",
           "chime": "Geluid voor het bericht",
+          "custom_chime": "Pad naar eigen geluidsbestand",
           "normalize": "Luidheid gelijktrekken",
+          "voice_enhancement": "Stemverbetering",
           "max_duration": "Maximale berichtduur",
+          "tts_entity": "Tekst-naar-spraak-engine (TTS)",
+          "quiet_hours": "Stille uren inschakelen",
+          "quiet_start": "Begin stille uren",
+          "quiet_end": "Einde stille uren",
+          "quiet_mode": "Gedrag tijdens stille uren",
+          "quiet_volume": "Maximaal volume tijdens stille uren",
+          "quiet_speakers": "Luidsprekers voor stille uren",
+          "quiet_entity": "Schakelaar of sensor voor stille uren",
           "show_panel": "Omroepen tonen in de zijbalk",
           "intercom": "Intercomcamera's (Labs tweerichtingsaudio)"
         },
@@ -47,7 +84,14 @@
           "speakers": "Laat leeg om alle luidsprekers van ondersteunde integraties aan te bieden (Google Cast, Sonos, ESPHome, DLNA, Music Assistant en meer), exclusief televisies. Kies hier om andere mediaspelers toe te voegen, zoals aangepaste integraties.",
           "set_volume": "De luidspreker keert na het bericht terug naar het vorige volume.",
           "announce_volume": "Op Sonos, Music Assistant, Squeezebox en Bang & Olufsen speelt het bericht op eigen volume over de muziek heen, zonder het muziekvolume te wijzigen. Uit: het volume wordt tijdelijk gewijzigd en daarna hersteld, zoals bij de andere.",
+          "custom_chime": "Optioneel lokaal audiobestand (MP3, WAV, OGG...) in een toegestane map (allowlist_external_dirs). Schakelt de optie Aangepast in bij de geluidskeuze.",
           "normalize": "Laat zachte en luide opnames even luid klinken.",
+          "voice_enhancement": "Past ruisonderdrukking, echo-onderdrukking, automatische versterking van de microfoon, hoogdoorlaatfilter en stilte-inkorting toe. Schakel uit voor onbewerkte audio.",
+          "tts_entity": "Optionele TTS-entiteit voor tekstomroepen. Laat leeg om de standaard TTS-engine van Home Assistant te gebruiken.",
+          "quiet_hours": "Beperkt het volume of slaat luidsprekers over tijdens het ingestelde tijdschema of zolang de entiteit aan staat.",
+          "quiet_mode": "Kies of het volume tijdens stille uren wordt begrensd of dat gekozen luidsprekers worden overgeslagen.",
+          "quiet_speakers": "Laat leeg om stille uren op alle luidsprekers toe te passen.",
+          "quiet_entity": "Optionele input_boolean of binary_sensor die stille uren activeert zodra deze aan staat.",
           "intercom": "Voegt per luidspreker een camera met spreekknop toe via tweerichtingsaudio van Home Assistant (Instellingen > Systeem > Labs). Installeert de eerste keer aiortc."
         }
       }
@@ -59,7 +103,14 @@
         "none": "Geen",
         "ding_dong": "Ding dong",
         "soft": "Zacht",
-        "three_tone": "Drie tonen"
+        "three_tone": "Drie tonen",
+        "custom": "Aangepast"
+      }
+    },
+    "quiet_mode": {
+      "options": {
+        "cap_volume": "Volume begrenzen",
+        "skip": "Luidsprekers overslaan"
       }
     }
   },
@@ -94,6 +145,21 @@
     "file_not_found": {
       "message": "{path} bestaat niet."
     },
+    "custom_chime_missing": {
+      "message": "Er is geen eigen geluidsbestand geconfigureerd in de opties van HA-nnounce."
+    },
+    "quiet_hours": {
+      "message": "Stille uren zijn actief en hebben alle gekozen luidsprekers overgeslagen."
+    },
+    "empty_message": {
+      "message": "Het tekstbericht mag niet leeg zijn."
+    },
+    "tts_unavailable": {
+      "message": "Er is geen tekst-naar-spraak-engine geconfigureerd in Home Assistant."
+    },
+    "tts_failed": {
+      "message": "Kon tekst-naar-spraak-audio niet genereren: {error}"
+    },
     "no_voice": {
       "message": "De audio is leeg of stil."
     },
@@ -113,8 +179,12 @@
   "services": {
     "announce": {
       "name": "Omroepen",
-      "description": "Speelt een audiobestand of URL af op luidsprekers, met het geluid en volume van de omroepen.",
+      "description": "Speelt een tekstbericht, audiobestand of URL af op luidsprekers, met het geluid en volume van de omroepen.",
       "fields": {
+        "message": {
+          "name": "Bericht",
+          "description": "Tekst om voor te lezen met de tekst-naar-spraak-engine van Home Assistant."
+        },
         "file": {
           "name": "Bestand",
           "description": "Pad naar een audiobestand in een map die Home Assistant mag lezen."
@@ -123,6 +193,14 @@
           "name": "URL",
           "description": "Adres van een audiobestand om te downloaden."
         },
+        "tts_entity": {
+          "name": "TTS-engine",
+          "description": "Optionele tekst-naar-spraak-entiteit voor het bericht. Leeg gebruikt de standaardinstelling."
+        },
+        "language": {
+          "name": "Taal",
+          "description": "Optionele taalcode voor de tekst-naar-spraak-engine."
+        },
         "volume": {
           "name": "Volume",
           "description": "Volume tijdens het afspelen. Leeg gebruikt de instelling van de integratie."
@@ -130,6 +208,10 @@
         "chime": {
           "name": "Geluid",
           "description": "Geluid voor de audio. Leeg gebruikt de instelling van de integratie."
+        },
+        "force": {
+          "name": "Stille uren negeren",
+          "description": "Speel ook tijdens stille uren af op het gevraagde volume en alle luidsprekers."
         }
       }
     },
@@ -140,6 +222,10 @@
         "volume": {
           "name": "Volume",
           "description": "Volume tijdens het afspelen. Leeg gebruikt de instelling van de integratie."
+        },
+        "force": {
+          "name": "Stille uren negeren",
+          "description": "Speel ook tijdens stille uren af op het gevraagde volume en alle luidsprekers."
         }
       }
     }

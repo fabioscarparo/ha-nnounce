@@ -49,6 +49,8 @@ from .const import (
     ANNOUNCE_VOLUME_EXTRA,
     ANNOUNCEMENT_TTL,
     API_AUDIO,
+    CHIME_CUSTOM,
+    DOMAIN,
     EVENT_ANNOUNCED,
     MAX_ANNOUNCEMENTS,
     MEDIA_SOURCE_PLATFORMS,
@@ -61,6 +63,14 @@ from .settings import AnnounceSettings
 _LOGGER = logging.getLogger(__name__)
 
 PLAYING_STATES = {STATE_PLAYING, STATE_BUFFERING}
+
+
+class QuietHoursError(HomeAssistantError):
+    """Raised when quiet hours skip every selected speaker."""
+
+    def __init__(self) -> None:
+        """Initialize with translation key."""
+        super().__init__(translation_domain=DOMAIN, translation_key="quiet_hours")
 
 
 @dataclass
@@ -158,8 +168,19 @@ class Announcer:
         user_id: str | None = None,
         raw_pcm_rate: int | None = None,
         chime: str | None = None,
+        min_voice_seconds: float = audio.MIN_VOICE_SECONDS,
     ) -> Announcement:
         """Encode a recording into an announcement and keep it for a while."""
+        chosen_chime = chime if chime is not None else settings.chime
+        custom_chime_path: Path | None = None
+        if chosen_chime == CHIME_CUSTOM:
+            if not settings.custom_chime:
+                raise audio.AudioError("Custom chime is not configured")
+            if not self.hass.config.is_allowed_path(settings.custom_chime):
+                raise audio.AudioError("Custom chime path is not allowed")
+            custom_chime_path = Path(settings.custom_chime)
+            if not await self.hass.async_add_executor_job(custom_chime_path.is_file):
+                raise audio.AudioError("Custom chime file not found")
         announcement_id = self.new_id()
         target = self.folder / f"{announcement_id}.mp3"
         rendered = await audio.async_render(
@@ -167,10 +188,13 @@ class Announcer:
             self.ffmpeg_binary,
             source,
             target,
-            chime=chime if chime is not None else settings.chime,
+            chime=chosen_chime,
             normalize=settings.normalize,
             max_duration=settings.max_duration,
+            voice_enhancement=settings.voice_enhancement,
             raw_pcm_rate=raw_pcm_rate,
+            custom_chime=custom_chime_path,
+            min_voice_seconds=min_voice_seconds,
         )
         announcement = Announcement(
             id=announcement_id,
@@ -262,6 +286,8 @@ class Announcer:
         announcement: Announcement,
         targets: list[str],
         options: PlayOptions,
+        *,
+        speaker_volumes: dict[str, float | None] | None = None,
     ) -> list[str]:
         """Start playing on every target, return the targets used."""
         targets = self.check_targets(targets)
@@ -269,8 +295,15 @@ class Announcer:
         self.last = announcement
         self.check_url()
         for entity_id in targets:
+            play_options = options
+            if speaker_volumes is not None and entity_id in speaker_volumes:
+                play_options = PlayOptions(
+                    volume=speaker_volumes[entity_id],
+                    title=options.title,
+                    announce_volume=options.announce_volume,
+                )
             task = self.hass.async_create_background_task(
-                self._async_play_on(entity_id, announcement, options),
+                self._async_play_on(entity_id, announcement, play_options),
                 f"hannounce play {entity_id}",
             )
             self._tasks.add(task)

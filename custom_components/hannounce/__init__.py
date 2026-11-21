@@ -5,20 +5,29 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass, field
+from typing import Any
 
 from homeassistant.components.ffmpeg import get_ffmpeg_manager
+from homeassistant.components.media_player import ATTR_MEDIA_VOLUME_LEVEL
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.requirements import RequirementsNotFound, async_process_requirements
 
 from . import frontend, services, websocket
-from .announcer import Announcement, Announcer, PlayOptions
-from .const import DOMAIN, INTERCOM_BROADCAST, INTERCOM_REQUIREMENT, ROUTE_TTL
-from .http import AnnounceAudioView, AnnounceUploadView
+from .announcer import Announcement, Announcer, PlayOptions, QuietHoursError
+from .const import (
+    DOMAIN,
+    INTERCOM_BROADCAST,
+    INTERCOM_REQUIREMENT,
+    QUIET_MODE_SKIP,
+    ROUTE_TTL,
+)
+from .http import AnnounceAudioView, AnnounceChimeView, AnnounceUploadView
 from .settings import AnnounceSettings, speaker_ids
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,22 +82,157 @@ class HannounceData:
             return state.name
         return entity_id.split(".", 1)[-1].replace("_", " ").title()
 
+    def quiet_info(self) -> dict[str, Any]:
+        """Return the quiet hours configuration and current active state."""
+        settings = self.settings
+        return {
+            "enabled": settings.quiet_hours,
+            "active": settings.is_quiet_active(self.hass),
+            "mode": settings.quiet_mode,
+            "volume": settings.quiet_volume,
+            "speakers": list(settings.quiet_speakers),
+            "start": settings.quiet_start[:5],
+            "end": settings.quiet_end[:5],
+            "entity_id": settings.quiet_entity,
+        }
+
+    def tts_engine(self, override: str | None = None) -> str | None:
+        """Return the resolved Home Assistant TTS engine, or None if unavailable."""
+        from homeassistant.components import tts  # noqa: PLC0415
+
+        if tts.DOMAIN not in self.hass.config.components:
+            return None
+        try:
+            return tts.async_resolve_engine(
+                self.hass, override or self.settings.tts_entity or None
+            )
+        except KeyError:
+            return None
+
+    def tts_info(self) -> dict[str, Any]:
+        """Return whether a Home Assistant TTS engine is available."""
+        engine = self.tts_engine()
+        return {"available": engine is not None, "engine": engine}
+
+    def plan_playback(
+        self,
+        targets: list[str],
+        volume: float | None,
+        *,
+        force: bool = False,
+    ) -> tuple[list[str], dict[str, float | None]]:
+        """Validate targets and apply quiet hours rules, returning targets and volumes."""
+        valid = self.announcer.check_targets(targets)
+        if not force and self.settings.is_quiet_active(self.hass):
+            if self.settings.quiet_mode == QUIET_MODE_SKIP:
+                valid = [
+                    entity_id
+                    for entity_id in valid
+                    if not self.settings.affects_speaker(entity_id)
+                ]
+                if not valid:
+                    raise QuietHoursError
+                return valid, {entity_id: volume for entity_id in valid}
+
+            cap = self.settings.quiet_volume_level
+            volumes: dict[str, float | None] = {}
+            for entity_id in valid:
+                if self.settings.affects_speaker(entity_id):
+                    if volume is not None:
+                        volumes[entity_id] = min(volume, cap)
+                    else:
+                        state = self.hass.states.get(entity_id)
+                        current = (
+                            state.attributes.get(ATTR_MEDIA_VOLUME_LEVEL)
+                            if state
+                            else None
+                        )
+                        volumes[entity_id] = (
+                            cap if current is not None and current > cap else None
+                        )
+                else:
+                    volumes[entity_id] = volume
+            return valid, volumes
+
+        return valid, {entity_id: volume for entity_id in valid}
+
+    async def async_create_tts(
+        self,
+        message: str,
+        *,
+        source_kind: str,
+        user_id: str | None = None,
+        chime: str | None = None,
+        tts_entity: str | None = None,
+        language: str | None = None,
+    ) -> Announcement:
+        """Generate TTS audio via Home Assistant and encode it through the pipeline."""
+        from homeassistant.components import tts  # noqa: PLC0415
+
+        cleaned = message.strip()
+        if not cleaned:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="empty_message"
+            )
+        engine = self.tts_engine(tts_entity)
+        if engine is None:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="tts_unavailable"
+            )
+        try:
+            media_id = tts.generate_media_source_id(
+                self.hass, cleaned, engine=engine, language=language or None
+            )
+            extension, data = await tts.async_get_media_source_audio(
+                self.hass, media_id
+            )
+        except (HomeAssistantError, ValueError, KeyError) as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="tts_failed",
+                translation_placeholders={"error": str(err)},
+            ) from err
+        if not data:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="tts_failed",
+                translation_placeholders={"error": "empty audio"},
+            )
+        suffix = f".{extension.lstrip('.')}" if extension else ".mp3"
+        source = self.announcer.folder / f"tts_{self.announcer.new_id()}{suffix}"
+        await self.hass.async_add_executor_job(source.write_bytes, data)
+        try:
+            return await self.announcer.async_create(
+                source,
+                self.settings,
+                source_kind=source_kind,
+                user_id=user_id,
+                chime=chime,
+                min_voice_seconds=0.05,
+            )
+        finally:
+            await self.hass.async_add_executor_job(source.unlink, True)
+
     @callback
     def play(
         self,
         announcement: Announcement,
         targets: list[str],
         volume: float | None,
+        *,
+        force: bool = False,
     ) -> list[str]:
         """Play an announcement, return the speakers used."""
+        valid, speaker_volumes = self.plan_playback(targets, volume, force=force)
         return self.announcer.async_play(
             announcement,
-            targets,
+            valid,
             PlayOptions(
                 volume=volume,
                 title=self.text("title"),
                 announce_volume=self.settings.announce_volume,
             ),
+            speaker_volumes=speaker_volumes,
         )
 
     @callback
@@ -123,7 +267,8 @@ class HannounceData:
         """Encode raw 48 kHz mono PCM from the intercom and play it."""
         route = self._route(key) if speaker is None else None
         targets = self.intercom_targets(key, speaker)
-        self.announcer.check_targets(targets)
+        volume = route.volume if route else self.settings.volume_level
+        self.plan_playback(targets, volume)
         source = self.announcer.folder / f"in_{self.announcer.new_id()}.pcm"
         await self.hass.async_add_executor_job(source.write_bytes, pcm)
         try:
@@ -136,7 +281,6 @@ class HannounceData:
             )
         finally:
             await self.hass.async_add_executor_job(source.unlink, True)
-        volume = route.volume if route else self.settings.volume_level
         return self.play(announcement, targets, volume)
 
 
@@ -144,6 +288,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Register what lives as long as Home Assistant runs."""
     hass.http.register_view(AnnounceUploadView())
     hass.http.register_view(AnnounceAudioView())
+    hass.http.register_view(AnnounceChimeView())
     websocket.async_setup(hass)
     services.async_setup(hass)
     await frontend.async_register_module(hass)

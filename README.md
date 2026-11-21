@@ -25,26 +25,30 @@ HA-nnounce turns Home Assistant `media_player` entities into a local, whole-home
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/wall-dark.svg">
-  <img alt="HA-nnounce announcement cards on a Home Assistant dashboard, showing ready, recording and sent states, with individual room cards and colors" src="docs/images/wall-light.svg">
+  <img alt="HA-nnounce announcement cards on a Home Assistant dashboard, showing voice recording, text-to-speech mode, compact 11-speaker area selector, custom chime options with preview, quiet hours cap and skip modes, listen before sending, minimal layout, and colored room cards" src="docs/images/wall-light.svg">
 </picture>
 
 ## Features
 
-- **UI:** Dedicated sidebar panel and `custom:hannounce-card` (no dashboard resource to add, visual editor, chime preview, EN/IT/DE/FR/ES/NL, light/dark themes).
-- **Audio pipeline:** Local `ffmpeg` processing with silence trimming, EBU R128 loudness normalization, synthesized chimes, and MP3 encoding.
-- **Playback control:** Dedicated announcement volume (where supported) or temporary volume/mute override with automatic restoration.
+- **UI:** Dedicated sidebar panel and `custom:hannounce-card` (no dashboard resource to add, visual editor, separated area shortcuts & compact speaker dialog for large homes, voice or text-to-speech mode, quiet hours indicators, chime preview, EN/IT/DE/FR/ES/NL, light/dark themes).
+- **Audio pipeline:** Local `ffmpeg` processing with optional voice enhancement (microphone DSP, high-pass filter, silence trimming) and EBU R128 loudness normalization, synthesized or custom audio chimes, and MP3 encoding.
+- **Playback control:** Dedicated announcement volume (where supported) or temporary volume/mute override with automatic restoration, plus configurable quiet hours (volume cap or speaker skip).
+- **Text-to-speech mode:** Uses Home Assistant's configured TTS engine (Piper, PicoTTS, HA Cloud, Google Translate...) and routes the generated audio through HA-nnounce's chime, volume, and quiet hours pipeline.
 - **Two-way audio intercom (Labs):** Exposes speakers as WebRTC intercom cameras via `aiortc` for Home Assistant's native *Start talking* UI.
-- **Automations & history:** `hannounce.announce` and `hannounce.replay` actions with native Home Assistant targets (entities, areas, floors, devices, labels), `hannounce_announced` event, diagnostics download, and 1-hour retention in the Media panel.
+- **Automations & history:** `hannounce.announce` (voice file, URL, or TTS text) and `hannounce.replay` actions with native Home Assistant targets (entities, areas, floors, devices, labels) and quiet hours override (`force`), `hannounce_announced` event, diagnostics download, and 1-hour retention in the Media panel.
 
 ## Architecture
 
 ```text
 Browser / App (MediaRecorder) ──► POST /api/hannounce/announce
+Card / Action (TTS text)      ──► HA TTS engine ──► Same pipeline
                                            │
                                            ▼
-                                  ffmpeg (trim, EBU R128, chime, MP3)
+                                  ffmpeg (optional enhancement, EBU R128,
+                                          synthesized/custom chime, MP3)
                                            │
                                            ▼
+                                  Quiet hours check (cap volume or skip)
                                   media_player.volume_set / play_media
                                   (media-source://hannounce/<id>.mp3)
                                            │
@@ -52,7 +56,7 @@ Browser / App (MediaRecorder) ──► POST /api/hannounce/announce
                                   Speaker fetches signed local URL
                                            │
                                            ▼
-                                  Wait for finish ──► Restore volume
+                                  Wait for finish ──► Restore volume & mute
 
 iOS / Start talking (Labs) ──► WebRTC (aiortc camera) ──► Same pipeline on stop
 ```
@@ -94,9 +98,13 @@ Works with any Home Assistant `media_player` integration capable of playing audi
 | Speakers | All supported | Filter available speakers or manually add custom integrations (TVs excluded by default). |
 | Set volume / Message volume | On / 60% | Temporarily sets volume (and unmutes muted speakers) and restores them after playback (preserves manual changes made mid-playback). |
 | Use speaker announcement volume | On | Uses native announcement volume on Sonos, Music Assistant, Squeezebox, and B&O. |
-| Chime | Ding dong | Synthesized pre-message chime: `None`, `Ding dong`, `Soft`, `3 tones`. |
+| Chime | Ding dong | Pre-message chime: `None`, `Ding dong`, `Soft`, `3 tones`, or `Custom`. |
+| Custom chime file path | Empty | Optional local audio file (inside `allowlist_external_dirs`) to enable the `Custom` chime option and preview. |
 | Even out loudness | On | EBU R128 loudness normalization. |
+| Voice enhancement | On | Applies microphone noise suppression, echo cancellation, auto gain, high-pass filter, and silence trimming. Turn off for raw, unprocessed audio. |
 | Longest message | 60s | Auto-stop recording limit. |
+| Text-to-speech engine | Default HA TTS | Optional `tts.*` entity for text announcements (leave empty to use Home Assistant's default engine). |
+| Quiet hours | Off (`22:00`-`07:00`) | Limit announcement volume (default `25%`) or skip selected speakers during the schedule or while an optional `input_boolean`/`binary_sensor` is `on`. |
 | Sidebar panel | On | Adds the Announcements panel to the sidebar. |
 | Intercom cameras (Labs) | Off | Creates WebRTC intercom cameras (installs `aiortc` on first use). |
 
@@ -104,7 +112,7 @@ Works with any Home Assistant `media_player` integration capable of playing audi
 
 ### Card & Panel
 
-Hold the mic button to talk and release to send (or tap to start/stop, `Esc` to cancel). Per-device preferences (selected speakers, chime, keep each speaker's volume, listen before sending) are stored locally. The options dialog lets you preview chimes and send an audio file.
+Hold the mic button to talk and release to send (or tap to start/stop, `Esc` to cancel). When a TTS engine is configured in Home Assistant, tap the keyboard icon in the header to switch to **Text mode** with an auto-growing text box (also opens automatically over HTTP when no browser microphone is available). Area shortcuts appear in their own strip above the speakers; with 7+ speakers (or `speaker_style: compact`), individual speakers open in an area-grouped searchable dialog (bottom sheet on mobile). Per-device preferences (selected speakers, chime, voice/text mode, keep each speaker's volume, listen before sending) are stored locally. The options dialog lets you preview built-in or custom chimes and send an audio file.
 
 ```yaml
 type: custom:hannounce-card
@@ -113,6 +121,7 @@ icon: mdi:bullhorn-outline   # Optional
 color: deep-orange           # Optional (default: primary)
 entities:                    # Optional
   - media_player.kitchen
+speaker_style: auto          # auto (chips <= 6, dialog 7+) | chips | compact
 show_volume: true
 show_settings: true
 review: false                # Listen before sending
@@ -131,7 +140,7 @@ Browser recording requires a secure context:
 | Environment | Support |
 |---|---|
 | Browser over HTTPS (or `localhost`) | Full support (card, panel, intercom). |
-| Browser over HTTP | No direct recording (audio file upload still works). |
+| Browser over HTTP | No direct microphone recording (Text mode / TTS opens automatically when configured; audio file upload still works). |
 | iOS app 2026.10.3+ over HTTP | Supported with intercom enabled (untested on physical iPhone). |
 | Android app over HTTP | Not yet supported; HTTPS required. |
 
@@ -139,21 +148,22 @@ Browser recording requires a secure context:
 
 ### `hannounce.announce`
 
-Send a local file (must be in `allowlist_external_dirs`) or URL. Supports native Home Assistant targets (`entity_id`, `area_id`, `floor_id`, `device_id`, `label_id`):
+Send a text message (via HA's TTS engine), a local file (must be in `allowlist_external_dirs`), or a URL. Supports native Home Assistant targets (`entity_id`, `area_id`, `floor_id`, `device_id`, `label_id`) and `force: true` to bypass quiet hours:
 
 ```yaml
 action: hannounce.announce
 target:
   area_id: kitchen
 data:
-  file: /media/messages/dinner.mp3
+  message: Dinner is ready!
   volume: 50
-  chime: soft
+  chime: custom
+  force: false
 ```
 
 ### `hannounce.replay`
 
-Replay the last announcement (omit `target` to reuse the original speakers):
+Replay the last announcement (omit `target` to reuse the original speakers; set `force: true` to ignore quiet hours):
 
 ```yaml
 action: hannounce.replay
@@ -163,7 +173,7 @@ target:
 
 ### Event: `hannounce_announced`
 
-Fired on every announcement with payload: `id`, `targets`, `duration` (seconds, incl. chime), `source` (`upload` | `intercom` | `service`), and `user_id` (empty for intercom).
+Fired on every announcement with payload: `id`, `targets`, `duration` (seconds, incl. chime), `source` (`upload` | `tts` | `intercom` | `service`), and `user_id` (empty for intercom).
 
 ## Technical Notes & Limitations
 
@@ -175,7 +185,7 @@ Fired on every announcement with payload: `id`, `targets`, `duration` (seconds, 
 
 See [tools/README.md](tools/README.md).
 
-- **Backend tests:** `pip install -r requirements_test.txt && pytest` (38 tests via `pytest-homeassistant`).
+- **Backend tests:** `pip install -r requirements_test.txt && pytest` (50 tests via `pytest-homeassistant`).
 - **Frontend tests:** `node --test tools/tests/*.test.mjs`.
 
 Released under the [MIT License](LICENSE).

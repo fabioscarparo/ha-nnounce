@@ -11,10 +11,14 @@ import {
   fileExtension,
   formatClock,
   formatPercent,
+  formatSpeakerSummary,
   formatTargets,
+  groupSpeakersByArea,
+  isQuietActive,
   languageOf,
   numberLocale,
   pickMimeType,
+  quickAreas,
   renderChimeSamples,
   t,
 } from "../../custom_components/hannounce/frontend/hannounce.js";
@@ -111,4 +115,51 @@ test("chime preview synthesizes non-silent bounded samples", () => {
     }
     assert.ok(peak > 0.2, `${name} should be audible`);
   }
+});
+
+test("quiet hours evaluation handles schedules, overnight wrap, and entities", () => {
+  const mkHass = (entityState = "off") => ({
+    config: { time_zone: "UTC" },
+    states: { "input_boolean.sleep": { state: entityState } },
+  });
+  const night = { enabled: true, start: "22:00", end: "07:00", entity_id: "input_boolean.sleep" };
+
+  assert.equal(isQuietActive(mkHass("off"), { ...night, enabled: false }, new Date("2026-01-01T23:00:00Z")), false);
+  assert.equal(isQuietActive(mkHass("off"), night, new Date("2026-01-01T22:00:00Z")), true);
+  assert.equal(isQuietActive(mkHass("off"), night, new Date("2026-01-01T06:59:00Z")), true);
+  assert.equal(isQuietActive(mkHass("off"), night, new Date("2026-01-01T07:00:00Z")), false);
+  assert.equal(isQuietActive(mkHass("off"), night, new Date("2026-01-01T14:00:00Z")), false);
+  assert.equal(isQuietActive(mkHass("on"), night, new Date("2026-01-01T14:00:00Z")), true);
+
+  const nap = { enabled: true, start: "13:00", end: "15:00" };
+  assert.equal(isQuietActive(mkHass(), nap, new Date("2026-01-01T13:30:00Z")), true);
+  assert.equal(isQuietActive(mkHass(), nap, new Date("2026-01-01T15:00:00Z")), false);
+});
+
+test("area grouping and quick area chips skip single-speaker and all-speaker areas", () => {
+  const speakers = [
+    { entity_id: "media_player.a", name: "Kitchen", area: "Living", area_id: "living", area_icon: "mdi:sofa" },
+    { entity_id: "media_player.b", name: "Lounge", area: "Living", area_id: "living", area_icon: "mdi:sofa" },
+    { entity_id: "media_player.c", name: "Bedroom", area: "Bedroom", area_id: "bed", area_icon: null },
+    { entity_id: "media_player.d", name: "All House", area: null, area_id: null, area_icon: null },
+  ];
+  const { areas, ungrouped } = groupSpeakersByArea(speakers);
+  assert.equal(areas.length, 2);
+  assert.equal(areas[0].name, "Living");
+  assert.equal(areas[0].icon, "mdi:sofa");
+  assert.equal(areas[1].icon, "mdi:floor-plan");
+  assert.equal(ungrouped.length, 1);
+
+  const quick = quickAreas(speakers);
+  assert.deepEqual(
+    quick.map((a) => a.key),
+    ["living"]
+  );
+
+  // If every speaker is in the same area, don't duplicate the All chip
+  assert.deepEqual(quickAreas(speakers.slice(0, 2)), []);
+
+  assert.equal(formatSpeakerSummary(hass("it"), []), "Scegli altoparlanti");
+  assert.equal(formatSpeakerSummary(hass("en"), ["Kitchen", "Living"]), "Kitchen, Living");
+  assert.equal(formatSpeakerSummary(hass("it"), ["Cucina", "Soggiorno", "Studio", "Camera"]), "Cucina, Soggiorno (+2)");
 });

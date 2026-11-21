@@ -3,6 +3,10 @@ announce:
     entity:
       domain: media_player
   fields:
+    message:
+      example: Dinner is ready!
+      selector:
+        text:
     file:
       example: /media/messages/dinner.mp3
       selector:
@@ -12,6 +16,14 @@ announce:
       selector:
         text:
           type: url
+    tts_entity:
+      selector:
+        entity:
+          domain: tts
+    language:
+      example: en
+      selector:
+        text:
     volume:
       selector:
         number:
@@ -28,6 +40,11 @@ announce:
             - ding_dong
             - soft
             - three_tone
+            - custom
+    force:
+      default: false
+      selector:
+        boolean:
 replay:
   target:
     entity:
@@ -40,3 +57,7 @@ replay:
           max: 100
           step: 5
           unit_of_measurement: "%"
+    force:
+      default: false
+      selector:
+        boolean:

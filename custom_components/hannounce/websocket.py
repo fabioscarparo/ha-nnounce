@@ -11,7 +11,17 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 
-from .const import CHIMES, DOMAIN, EVENT_ANNOUNCED, INTERCOM_BROADCAST
+from .announcer import QuietHoursError
+from .audio import AudioError
+from .const import (
+    ALL_CHIMES,
+    CHIME_CUSTOM,
+    CHIMES,
+    DOMAIN,
+    EVENT_ANNOUNCED,
+    INTERCOM_BROADCAST,
+    MAX_MESSAGE_LENGTH,
+)
 from .settings import describe_speakers
 
 VOLUME = vol.Any("keep", vol.All(vol.Coerce(float), vol.Range(min=0, max=100)))
@@ -31,6 +41,7 @@ def async_setup(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_info)
     websocket_api.async_register_command(hass, ws_replay)
     websocket_api.async_register_command(hass, ws_route)
+    websocket_api.async_register_command(hass, ws_say)
     websocket_api.async_register_command(hass, ws_subscribe)
 
 
@@ -71,7 +82,7 @@ def _broadcast_camera(hass: HomeAssistant, runtime) -> str | None:
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/info"})
 @callback
 def ws_info(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
-    """Return the speakers, the defaults and the intercom state."""
+    """Return the speakers, the defaults and the runtime capabilities."""
     if (runtime := _runtime(hass, connection, msg["id"])) is None:
         return
     settings = runtime.settings
@@ -84,6 +95,7 @@ def ws_info(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg
         labs = async_is_preview_feature_enabled(hass, "camera", "two_way_audio")
     except ImportError:
         pass
+    chimes = [*CHIMES, CHIME_CUSTOM] if settings.custom_chime else list(CHIMES)
     connection.send_result(
         msg["id"],
         {
@@ -93,8 +105,11 @@ def ws_info(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg
                 "volume": settings.volume,
                 "chime": settings.chime,
                 "max_duration": settings.max_duration,
+                "voice_enhancement": settings.voice_enhancement,
             },
-            "chimes": list(CHIMES),
+            "chimes": chimes,
+            "quiet": runtime.quiet_info(),
+            "tts": runtime.tts_info(),
             "intercom": {
                 "enabled": settings.intercom,
                 "ready": runtime.intercom_ready,
@@ -112,9 +127,74 @@ def ws_info(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg
 
 @websocket_api.websocket_command(
     {
+        vol.Required("type"): f"{DOMAIN}/say",
+        vol.Required("message"): vol.All(
+            cv.string, vol.Length(min=1, max=MAX_MESSAGE_LENGTH)
+        ),
+        vol.Required("targets"): vol.All([cv.entity_id], vol.Length(min=1)),
+        vol.Optional("volume"): VOLUME,
+        vol.Optional("chime"): vol.In(ALL_CHIMES),
+        vol.Optional("tts_entity"): cv.string,
+        vol.Optional("language"): cv.string,
+        vol.Optional("force", default=False): cv.boolean,
+    }
+)
+@websocket_api.async_response
+async def ws_say(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict
+) -> None:
+    """Convert text to speech via Home Assistant and announce it."""
+    if (runtime := _runtime(hass, connection, msg["id"])) is None:
+        return
+    chime = msg.get("chime")
+    if chime == CHIME_CUSTOM and not runtime.settings.custom_chime:
+        connection.send_error(msg["id"], "bad_request", "Custom chime is not configured")
+        return
+    volume = _volume(msg.get("volume"), runtime.settings.volume_level)
+    force = bool(msg.get("force", False))
+    try:
+        runtime.plan_playback(msg["targets"], volume, force=force)
+    except QuietHoursError as err:
+        connection.send_error(msg["id"], "quiet_hours", str(err))
+        return
+    except HomeAssistantError as err:
+        connection.send_error(msg["id"], "no_targets", str(err))
+        return
+
+    try:
+        announcement = await runtime.async_create_tts(
+            msg["message"],
+            source_kind="tts",
+            user_id=connection.user.id if connection.user else None,
+            chime=chime,
+            tts_entity=msg.get("tts_entity"),
+            language=msg.get("language"),
+        )
+    except AudioError as err:
+        connection.send_error(msg["id"], "audio_error", str(err))
+        return
+    except HomeAssistantError as err:
+        code = getattr(err, "translation_key", None) or "tts_failed"
+        connection.send_error(msg["id"], code, str(err))
+        return
+
+    try:
+        used = runtime.play(announcement, msg["targets"], volume, force=force)
+    except QuietHoursError as err:
+        connection.send_error(msg["id"], "quiet_hours", str(err))
+        return
+    except HomeAssistantError as err:
+        connection.send_error(msg["id"], "play_failed", str(err))
+        return
+    connection.send_result(msg["id"], {**announcement.as_dict(), "targets": used})
+
+
+@websocket_api.websocket_command(
+    {
         vol.Required("type"): f"{DOMAIN}/replay",
         vol.Optional("targets"): [cv.entity_id],
         vol.Optional("volume"): VOLUME,
+        vol.Optional("force", default=False): cv.boolean,
     }
 )
 @callback
@@ -131,7 +211,11 @@ def ws_replay(hass: HomeAssistant, connection: websocket_api.ActiveConnection, m
             last,
             msg.get("targets") or last.targets,
             _volume(msg.get("volume"), runtime.settings.volume_level),
+            force=bool(msg.get("force", False)),
         )
+    except QuietHoursError as err:
+        connection.send_error(msg["id"], "quiet_hours", str(err))
+        return
     except HomeAssistantError as err:
         connection.send_error(msg["id"], "play_failed", str(err))
         return
@@ -143,7 +227,7 @@ def ws_replay(hass: HomeAssistant, connection: websocket_api.ActiveConnection, m
         vol.Required("type"): f"{DOMAIN}/route",
         vol.Required("targets"): vol.All([cv.entity_id], vol.Length(min=1)),
         vol.Optional("volume"): VOLUME,
-        vol.Optional("chime"): vol.In(CHIMES),
+        vol.Optional("chime"): vol.In(ALL_CHIMES),
     }
 )
 @callback
@@ -154,6 +238,10 @@ def ws_route(hass: HomeAssistant, connection: websocket_api.ActiveConnection, ms
     if not runtime.intercom_ready:
         connection.send_error(msg["id"], "intercom_off", "The intercom is not on")
         return
+    chime = msg.get("chime")
+    if chime == CHIME_CUSTOM and not runtime.settings.custom_chime:
+        connection.send_error(msg["id"], "bad_request", "Custom chime is not configured")
+        return
     try:
         targets = runtime.announcer.check_targets(msg["targets"])
     except HomeAssistantError as err:
@@ -162,7 +250,7 @@ def ws_route(hass: HomeAssistant, connection: websocket_api.ActiveConnection, ms
     runtime.set_route(
         targets,
         _volume(msg.get("volume"), runtime.settings.volume_level),
-        msg.get("chime"),
+        chime,
     )
     connection.send_result(
         msg["id"], {"entity_id": _broadcast_camera(hass, runtime), "targets": targets}

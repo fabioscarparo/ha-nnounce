@@ -1,18 +1,29 @@
-"""HTTP endpoints: upload a recording, serve the encoded audio to the speakers."""
+"""HTTP endpoints: upload a recording, serve the encoded audio and custom chime."""
 
 from __future__ import annotations
 
 import json
 import logging
+import mimetypes
 from http import HTTPStatus
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from aiohttp import BodyPartReader, web
 from homeassistant.components.http import KEY_HASS, HomeAssistantView
 from homeassistant.exceptions import HomeAssistantError
 
+from .announcer import QuietHoursError
 from .audio import AudioError, NoVoiceError
-from .const import API_ANNOUNCE, API_AUDIO, CHIMES, DOMAIN, MAX_UPLOAD_BYTES
+from .const import (
+    ALL_CHIMES,
+    API_ANNOUNCE,
+    API_AUDIO,
+    API_CHIME,
+    CHIME_CUSTOM,
+    DOMAIN,
+    MAX_UPLOAD_BYTES,
+)
 
 if TYPE_CHECKING:
     from . import HannounceData
@@ -131,12 +142,16 @@ class AnnounceUploadView(HomeAssistantView):
         except BadRequest as err:
             return _error(str(err), HTTPStatus.BAD_REQUEST, "bad_request")
         chime = fields.get("chime") or None
-        if chime is not None and chime not in CHIMES:
+        if chime is not None and chime not in ALL_CHIMES:
             return _error("Unknown chime", HTTPStatus.BAD_REQUEST, "bad_request")
+        if chime == CHIME_CUSTOM and not settings.custom_chime:
+            return _error("Custom chime is not configured", HTTPStatus.BAD_REQUEST, "bad_request")
         if not targets:
             return _error("Choose at least one speaker", HTTPStatus.BAD_REQUEST, "no_targets")
         try:
-            announcer.check_targets(targets)
+            runtime.plan_playback(targets, volume)
+        except QuietHoursError as err:
+            return _error(str(err), HTTPStatus.UNPROCESSABLE_ENTITY, "quiet_hours")
         except HomeAssistantError as err:
             return _error(str(err), HTTPStatus.BAD_REQUEST, "no_targets")
 
@@ -165,6 +180,8 @@ class AnnounceUploadView(HomeAssistantView):
 
         try:
             used = runtime.play(announcement, targets, volume)
+        except QuietHoursError as err:
+            return _error(str(err), HTTPStatus.UNPROCESSABLE_ENTITY, "quiet_hours")
         except HomeAssistantError as err:
             return _error(str(err), HTTPStatus.BAD_REQUEST, "play_failed")
         return web.json_response({**announcement.as_dict(), "targets": used})
@@ -193,5 +210,35 @@ class AnnounceAudioView(HomeAssistantView):
             headers={
                 "Content-Type": "audio/mpeg",
                 "Cache-Control": "private, max-age=3600",
+            },
+        )
+
+
+class AnnounceChimeView(HomeAssistantView):
+    """Serve the configured custom chime for previewing in the card."""
+
+    url = API_CHIME
+    name = "api:hannounce:chime"
+    requires_auth = True
+
+    async def get(self, request: web.Request) -> web.StreamResponse:
+        """Return the configured custom chime file."""
+        if (runtime := _runtime(request)) is None:
+            raise web.HTTPNotFound
+        custom_chime = runtime.settings.custom_chime
+        if not custom_chime:
+            raise web.HTTPNotFound
+        hass = request.app[KEY_HASS]
+        if not hass.config.is_allowed_path(custom_chime):
+            raise web.HTTPNotFound
+        path = Path(custom_chime)
+        if not await hass.async_add_executor_job(path.is_file):
+            raise web.HTTPNotFound
+        content_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+        return web.FileResponse(
+            path,
+            headers={
+                "Content-Type": content_type,
+                "Cache-Control": "no-store",
             },
         )

@@ -16,17 +16,23 @@ async def test_diagnostics_reports_runtime_without_leaking_url(
     hass: HomeAssistant, players, setup_integration
 ) -> None:
     players.set_muted("media_player.kitchen", True)
-    entry = await setup_integration()
+    entry = await setup_integration(custom_chime="/media/secret_dir/chime.mp3")
 
     data = await async_get_config_entry_diagnostics(hass, entry)
 
     assert data["integration_version"]
     assert data["home_assistant_version"]
     assert data["entry"]["options"]["volume"] == 70
+    assert data["entry"]["options"]["custom_chime"] == "**REDACTED**"
     assert data["url"] == {"available": True, "scheme": "http"}
-    assert "homeassistant.local" not in json.dumps(data)
+    dumped = json.dumps(data)
+    assert "homeassistant.local" not in dumped
+    assert "secret_dir" not in dumped
 
     runtime = data["runtime"]
+    assert runtime["custom_chime_configured"] is True
+    assert runtime["tts"] == {"available": False, "engine": None}
+    assert runtime["quiet"]["enabled"] is False
     assert runtime["intercom"]["enabled"] is False
     assert runtime["intercom"]["ready"] is False
     assert runtime["recent_announcements"] == 0

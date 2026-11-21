@@ -4,7 +4,8 @@
   "after_dependencies": [
     "camera",
     "cast",
-    "labs"
+    "labs",
+    "tts"
   ],
   "codeowners": [
     "@fabioscarparo"
@@ -25,5 +26,5 @@
   "issue_tracker": "https://github.com/fabioscarparo/ha-nnounce/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

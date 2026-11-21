@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.3.0
+
+### New features
+
+- **Quiet hours (Do Not Disturb):** Configure a quiet schedule (including overnight ranges like `22:00` to `07:00`) and/or an optional `input_boolean` or `binary_sensor` trigger in the integration options. Choose whether to **cap announcement volume** (default `25%`, also clamping speakers whose current volume exceeds the cap when "Keep each speaker's volume" is on) or **skip affected speakers** completely. Scope quiet hours to all speakers or specific ones (such as bedrooms).
+- **Text mode (TTS):** Type an announcement directly from the card or panel using Home Assistant's already-configured text-to-speech engine (Piper, PicoTTS, Home Assistant Cloud, Google Translate, and more; optional `tts_entity` override in the integration options). Generated speech flows through HA-nnounce's full pipeline (chime, loudness normalization, volume/mute restore, quiet hours, replay, and Media history). On plain HTTP browsers without microphone access, Text mode opens automatically when a TTS engine is available.
+- **Custom chime:** Set a local audio file path (MP3, WAV, OGG, FLAC... inside `allowlist_external_dirs`, validated on save) in the integration options to unlock a 5th `Custom` chime option in the card, panel, and `hannounce.announce` action, complete with audio preview via the authenticated `/api/hannounce/chime` endpoint.
+- **Voice enhancement toggle:** New `Voice enhancement` option (enabled by default) in the integration settings. Turn it off to disable browser microphone DSP (`echoCancellation`, `noiseSuppression`, `autoGainControl`), the `70 Hz` high-pass filter, and automatic silence trimming for raw, unprocessed audio.
+
+### Card & UI
+
+- **Separated Area shortcuts & compact speaker dialog:** Area shortcuts (`All` + Home Assistant areas with live `selected/available` counts) now sit in their own horizontal strip above the speakers so areas and individual speakers are never mixed. Homes with 7+ speakers automatically switch to a compact `42px` selector row that opens a searchable, area-grouped dialog (bottom sheet on mobile); override anytime via `speaker_style: auto | chips | compact` in the visual editor.
+- **Auto-growing text box:** In Text mode, the full-width text area grows vertically as you type (with `Enter` to send and `Shift+Enter` for a new line) above a full-width Send button.
+- **Quiet hours visual indicators:** Displays an indigo moon pill (`Max 25%` or `Quiet: <speaker>`) in the volume header, a volume cap marker on the slider in cap mode, and dashed moon badges on silenced speakers in skip mode.
+- **5-chime segmented control:** Dynamically displays the `Custom` option only when configured, with automatic compact sizing so all 5 labels fit cleanly without truncation.
+- **Translations:** Updated all 6 languages (`en`, `it`, `de`, `fr`, `es`, `nl`) across both backend config/services and the frontend card/editor.
+
+### Automations, Events & Diagnostics
+
+- **`hannounce.announce`:** Added `message` (mutually exclusive with `file` and `url`), optional `tts_entity` and `language`, `chime: custom`, and `force: true` to bypass quiet hours for urgent announcements.
+- **`hannounce.replay`:** Added `force: true` to bypass quiet hours.
+- **WebSocket & Event:** Added `hannounce/say` command for TTS announcements; `hannounce_announced` now reports `source: "tts"` for text messages sent from the card or panel.
+- **Diagnostics:** Redacts `custom_chime` file paths (`**REDACTED**`) and includes `custom_chime_configured`, `tts`, and `quiet` runtime status.
+
 ## 0.2.0
 
 - Automatic unmute and mute restoration during announcements (when not using native speaker announcement volume), preserving manual mid-playback volume changes.

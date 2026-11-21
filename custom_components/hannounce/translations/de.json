@@ -3,6 +3,11 @@
     "abort": {
       "single_instance_allowed": "HA-nnounce ist bereits eingerichtet."
     },
+    "error": {
+      "path_not_allowed": "Der Pfad liegt nicht in einem Ordner, den Home Assistant lesen darf (allowlist_external_dirs).",
+      "file_not_found": "Die Datei existiert nicht.",
+      "custom_chime_missing": "Gib zuerst den Pfad zu einer eigenen Signalton-Audiodatei an."
+    },
     "step": {
       "user": {
         "title": "HA-nnounce",
@@ -13,8 +18,18 @@
           "volume": "Lautstärke der Durchsage",
           "announce_volume": "Durchsagelautstärke des Lautsprechers verwenden",
           "chime": "Signalton vor der Durchsage",
+          "custom_chime": "Pfad zur eigenen Signalton-Datei",
           "normalize": "Lautstärke angleichen",
+          "voice_enhancement": "Sprachverbesserung",
           "max_duration": "Maximale Länge",
+          "tts_entity": "Text-zu-Sprache-Dienst (TTS)",
+          "quiet_hours": "Ruhezeiten aktivieren",
+          "quiet_start": "Beginn der Ruhezeit",
+          "quiet_end": "Ende der Ruhezeit",
+          "quiet_mode": "Verhalten während der Ruhezeit",
+          "quiet_volume": "Maximale Lautstärke während der Ruhezeit",
+          "quiet_speakers": "Lautsprecher für Ruhezeiten",
+          "quiet_entity": "Schalter oder Sensor für Ruhezeiten",
           "show_panel": "Durchsagen in der Seitenleiste anzeigen",
           "intercom": "Gegensprech-Kameras (Labs Zwei-Wege-Audio)"
         },
@@ -22,13 +37,25 @@
           "speakers": "Leer lassen, um alle Lautsprecher unterstützter Integrationen (Google Cast, Sonos, ESPHome, DLNA, Music Assistant und weitere) ohne Fernseher anzubieten. Hier auswählen, um weitere Mediaplayer wie benutzerdefinierte Integrationen hinzuzufügen.",
           "set_volume": "Nach der Durchsage kehrt der Lautsprecher zu seiner ursprünglichen Lautstärke zurück.",
           "announce_volume": "Auf Sonos, Music Assistant, Squeezebox und Bang & Olufsen wird die Durchsage mit eigener Lautstärke über die Musik gespielt, ohne die Musiklautstärke zu ändern. Aus: Die Lautstärke wird geändert und danach wiederhergestellt, wie bei den anderen.",
+          "custom_chime": "Optionale lokale Audiodatei (MP3, WAV, OGG...) in einem erlaubten Ordner (allowlist_external_dirs). Aktiviert die Auswahl Eigener im Signalton-Menü.",
           "normalize": "Lässt leise und laute Aufnahmen gleich laut klingen.",
+          "voice_enhancement": "Aktiviert Mikrofon-Rauschunterdrückung, Echokompensation, automatische Verstärkung, Hochpassfilter und Stille-Schnitt. Ausschalten für unbearbeitetes Audio.",
+          "tts_entity": "Optionale TTS-Entität für Textdurchsagen. Leer verwendet den Standard-TTS-Dienst von Home Assistant.",
+          "quiet_hours": "Begrenzt die Lautstärke oder überspringt Lautsprecher während des Zeitplans oder solange die Ruhezeit-Entität aktiv ist.",
+          "quiet_mode": "Wähle, ob die Lautstärke während der Ruhezeit begrenzt oder betroffene Lautsprecher übersprungen werden.",
+          "quiet_speakers": "Leer lassen, um die Ruhezeit auf alle Lautsprecher anzuwenden.",
+          "quiet_entity": "Optionaler input_boolean oder binary_sensor, der die Ruhezeit aktiviert, solange er eingeschaltet ist.",
           "intercom": "Fügt pro Lautsprecher eine Kamera mit Sprechtaste hinzu, über das Zwei-Wege-Audio von Home Assistant (Einstellungen > System > Labs). Installiert beim ersten Mal aiortc."
         }
       }
     }
   },
   "options": {
+    "error": {
+      "path_not_allowed": "Der Pfad liegt nicht in einem Ordner, den Home Assistant lesen darf (allowlist_external_dirs).",
+      "file_not_found": "Die Datei existiert nicht.",
+      "custom_chime_missing": "Gib zuerst den Pfad zu einer eigenen Signalton-Audiodatei an."
+    },
     "step": {
       "init": {
         "title": "HA-nnounce",
@@ -38,8 +65,18 @@
           "volume": "Lautstärke der Durchsage",
           "announce_volume": "Durchsagelautstärke des Lautsprechers verwenden",
           "chime": "Signalton vor der Durchsage",
+          "custom_chime": "Pfad zur eigenen Signalton-Datei",
           "normalize": "Lautstärke angleichen",
+          "voice_enhancement": "Sprachverbesserung",
           "max_duration": "Maximale Länge",
+          "tts_entity": "Text-zu-Sprache-Dienst (TTS)",
+          "quiet_hours": "Ruhezeiten aktivieren",
+          "quiet_start": "Beginn der Ruhezeit",
+          "quiet_end": "Ende der Ruhezeit",
+          "quiet_mode": "Verhalten während der Ruhezeit",
+          "quiet_volume": "Maximale Lautstärke während der Ruhezeit",
+          "quiet_speakers": "Lautsprecher für Ruhezeiten",
+          "quiet_entity": "Schalter oder Sensor für Ruhezeiten",
           "show_panel": "Durchsagen in der Seitenleiste anzeigen",
           "intercom": "Gegensprech-Kameras (Labs Zwei-Wege-Audio)"
         },
@@ -47,7 +84,14 @@
           "speakers": "Leer lassen, um alle Lautsprecher unterstützter Integrationen (Google Cast, Sonos, ESPHome, DLNA, Music Assistant und weitere) ohne Fernseher anzubieten. Hier auswählen, um weitere Mediaplayer wie benutzerdefinierte Integrationen hinzuzufügen.",
           "set_volume": "Nach der Durchsage kehrt der Lautsprecher zu seiner ursprünglichen Lautstärke zurück.",
           "announce_volume": "Auf Sonos, Music Assistant, Squeezebox und Bang & Olufsen wird die Durchsage mit eigener Lautstärke über die Musik gespielt, ohne die Musiklautstärke zu ändern. Aus: Die Lautstärke wird geändert und danach wiederhergestellt, wie bei den anderen.",
+          "custom_chime": "Optionale lokale Audiodatei (MP3, WAV, OGG...) in einem erlaubten Ordner (allowlist_external_dirs). Aktiviert die Auswahl Eigener im Signalton-Menü.",
           "normalize": "Lässt leise und laute Aufnahmen gleich laut klingen.",
+          "voice_enhancement": "Aktiviert Mikrofon-Rauschunterdrückung, Echokompensation, automatische Verstärkung, Hochpassfilter und Stille-Schnitt. Ausschalten für unbearbeitetes Audio.",
+          "tts_entity": "Optionale TTS-Entität für Textdurchsagen. Leer verwendet den Standard-TTS-Dienst von Home Assistant.",
+          "quiet_hours": "Begrenzt die Lautstärke oder überspringt Lautsprecher während des Zeitplans oder solange die Ruhezeit-Entität aktiv ist.",
+          "quiet_mode": "Wähle, ob die Lautstärke während der Ruhezeit begrenzt oder betroffene Lautsprecher übersprungen werden.",
+          "quiet_speakers": "Leer lassen, um die Ruhezeit auf alle Lautsprecher anzuwenden.",
+          "quiet_entity": "Optionaler input_boolean oder binary_sensor, der die Ruhezeit aktiviert, solange er eingeschaltet ist.",
           "intercom": "Fügt pro Lautsprecher eine Kamera mit Sprechtaste hinzu, über das Zwei-Wege-Audio von Home Assistant (Einstellungen > System > Labs). Installiert beim ersten Mal aiortc."
         }
       }
@@ -59,7 +103,14 @@
         "none": "Keiner",
         "ding_dong": "Ding-Dong",
         "soft": "Sanft",
-        "three_tone": "Drei Töne"
+        "three_tone": "Drei Töne",
+        "custom": "Eigener"
+      }
+    },
+    "quiet_mode": {
+      "options": {
+        "cap_volume": "Lautstärke begrenzen",
+        "skip": "Lautsprecher überspringen"
       }
     }
   },
@@ -94,6 +145,21 @@
     "file_not_found": {
       "message": "{path} existiert nicht."
     },
+    "custom_chime_missing": {
+      "message": "In den HA-nnounce-Optionen ist keine eigene Signalton-Datei konfiguriert."
+    },
+    "quiet_hours": {
+      "message": "Die Ruhezeit ist aktiv und hat alle gewählten Lautsprecher übersprungen."
+    },
+    "empty_message": {
+      "message": "Die Textnachricht darf nicht leer sein."
+    },
+    "tts_unavailable": {
+      "message": "In Home Assistant ist kein Text-zu-Sprache-Dienst konfiguriert."
+    },
+    "tts_failed": {
+      "message": "Text-zu-Sprache-Audio konnte nicht erzeugt werden: {error}"
+    },
     "no_voice": {
       "message": "Das Audio ist leer oder stumm."
     },
@@ -113,8 +179,12 @@
   "services": {
     "announce": {
       "name": "Durchsage abspielen",
-      "description": "Spielt eine Audiodatei oder URL auf Lautsprechern mit dem Signalton und der Lautstärke für Durchsagen ab.",
+      "description": "Spielt eine Textnachricht, Audiodatei oder URL auf Lautsprechern mit dem Signalton und der Lautstärke für Durchsagen ab.",
       "fields": {
+        "message": {
+          "name": "Nachricht",
+          "description": "Text, der über den Text-zu-Sprache-Dienst von Home Assistant vorgelesen wird."
+        },
         "file": {
           "name": "Datei",
           "description": "Pfad zu einer Audiodatei in einem Ordner, den Home Assistant lesen darf."
@@ -123,6 +193,14 @@
           "name": "URL",
           "description": "Adresse einer herunterzuladenden Audiodatei."
         },
+        "tts_entity": {
+          "name": "TTS-Dienst",
+          "description": "Optionale Text-zu-Sprache-Entität für die Nachricht. Leer verwendet die Standardeinstellung."
+        },
+        "language": {
+          "name": "Sprache",
+          "description": "Optionaler Sprachcode für den Text-zu-Sprache-Dienst."
+        },
         "volume": {
           "name": "Lautstärke",
           "description": "Lautstärke während der Wiedergabe. Leer verwendet die Einstellung der Integration."
@@ -130,6 +208,10 @@
         "chime": {
           "name": "Signalton",
           "description": "Signalton vor dem Audio. Leer verwendet die Einstellung der Integration."
+        },
+        "force": {
+          "name": "Ruhezeiten ignorieren",
+          "description": "Auch während der Ruhezeit mit voller gewählter Lautstärke auf allen Lautsprechern abspielen."
         }
       }
     },
@@ -140,6 +222,10 @@
         "volume": {
           "name": "Lautstärke",
           "description": "Lautstärke während der Wiedergabe. Leer verwendet die Einstellung der Integration."
+        },
+        "force": {
+          "name": "Ruhezeiten ignorieren",
+          "description": "Auch während der Ruhezeit mit voller gewählter Lautstärke auf allen Lautsprechern abspielen."
         }
       }
     }

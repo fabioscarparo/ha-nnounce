@@ -1,4 +1,4 @@
-"""Service actions: announce a file or a URL, replay the last message."""
+"""Service actions: announce a file, URL or text message, and replay the last message."""
 
 from __future__ import annotations
 
@@ -34,12 +34,18 @@ from homeassistant.helpers.target import (
 
 from .audio import AudioError, NoVoiceError
 from .const import (
+    ALL_CHIMES,
     ATTR_FILE,
+    ATTR_FORCE,
+    ATTR_LANGUAGE,
+    ATTR_MESSAGE,
+    ATTR_TTS_ENTITY,
     ATTR_URL,
-    CHIMES,
+    CHIME_CUSTOM,
     CONF_CHIME,
     CONF_VOLUME,
     DOMAIN,
+    MAX_MESSAGE_LENGTH,
     MAX_UPLOAD_BYTES,
     SERVICE_ANNOUNCE,
     SERVICE_REPLAY,
@@ -65,13 +71,19 @@ ANNOUNCE_SCHEMA = vol.All(
             **cv.ENTITY_SERVICE_FIELDS,
             vol.Exclusive(ATTR_FILE, "source"): cv.string,
             vol.Exclusive(ATTR_URL, "source"): cv.url,
+            vol.Exclusive(ATTR_MESSAGE, "source"): vol.All(
+                cv.string, vol.Length(min=1, max=MAX_MESSAGE_LENGTH)
+            ),
+            vol.Optional(ATTR_TTS_ENTITY): cv.string,
+            vol.Optional(ATTR_LANGUAGE): cv.string,
             vol.Optional(CONF_VOLUME): vol.All(
                 vol.Coerce(float), vol.Range(min=0, max=100)
             ),
-            vol.Optional(CONF_CHIME): vol.In(CHIMES),
+            vol.Optional(CONF_CHIME): vol.In(ALL_CHIMES),
+            vol.Optional(ATTR_FORCE, default=False): cv.boolean,
         }
     ),
-    cv.has_at_least_one_key(ATTR_FILE, ATTR_URL),
+    cv.has_at_least_one_key(ATTR_FILE, ATTR_URL, ATTR_MESSAGE),
 )
 
 REPLAY_SCHEMA = vol.Schema(
@@ -80,6 +92,7 @@ REPLAY_SCHEMA = vol.Schema(
         vol.Optional(CONF_VOLUME): vol.All(
             vol.Coerce(float), vol.Range(min=0, max=100)
         ),
+        vol.Optional(ATTR_FORCE, default=False): cv.boolean,
     }
 )
 
@@ -140,6 +153,37 @@ def async_setup(hass: HomeAssistant) -> None:
             if CONF_VOLUME in call.data
             else runtime.settings.volume_level
         )
+        chime = call.data.get(CONF_CHIME)
+        if chime == CHIME_CUSTOM and not runtime.settings.custom_chime:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="custom_chime_missing"
+            )
+        force = bool(call.data.get(ATTR_FORCE, False))
+
+        if message := call.data.get(ATTR_MESSAGE):
+            runtime.plan_playback(targets, volume, force=force)
+            try:
+                announcement = await runtime.async_create_tts(
+                    message,
+                    source_kind="service",
+                    user_id=call.context.user_id,
+                    chime=chime,
+                    tts_entity=call.data.get(ATTR_TTS_ENTITY),
+                    language=call.data.get(ATTR_LANGUAGE),
+                )
+            except NoVoiceError as err:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key="no_voice"
+                ) from err
+            except AudioError as err:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN,
+                    translation_key="audio_error",
+                    translation_placeholders={"error": str(err)},
+                ) from err
+            used = runtime.play(announcement, targets, volume, force=force)
+            return {**announcement.as_dict(), "targets": used}
+
         downloaded: Path | None = None
         if file := call.data.get(ATTR_FILE):
             source = Path(file)
@@ -155,7 +199,9 @@ def async_setup(hass: HomeAssistant) -> None:
                     translation_key="file_not_found",
                     translation_placeholders={"path": file},
                 )
+            runtime.plan_playback(targets, volume, force=force)
         else:
+            runtime.plan_playback(targets, volume, force=force)
             source = downloaded = await _async_download(
                 hass, announcer, call.data[ATTR_URL]
             )
@@ -165,7 +211,7 @@ def async_setup(hass: HomeAssistant) -> None:
                 runtime.settings,
                 source_kind="service",
                 user_id=call.context.user_id,
-                chime=call.data.get(CONF_CHIME),
+                chime=chime,
             )
         except NoVoiceError as err:
             raise HomeAssistantError(
@@ -180,7 +226,7 @@ def async_setup(hass: HomeAssistant) -> None:
         finally:
             if downloaded is not None:
                 await hass.async_add_executor_job(downloaded.unlink, True)
-        used = runtime.play(announcement, targets, volume)
+        used = runtime.play(announcement, targets, volume, force=force)
         return {**announcement.as_dict(), "targets": used}
 
     async def replay(call: ServiceCall) -> ServiceResponse:
@@ -196,7 +242,9 @@ def async_setup(hass: HomeAssistant) -> None:
             else runtime.settings.volume_level
         )
         targets = _resolve_targets(hass, runtime, call.data, last.targets)
-        used = runtime.play(last, targets, volume)
+        used = runtime.play(
+            last, targets, volume, force=bool(call.data.get(ATTR_FORCE, False))
+        )
         return {**last.as_dict(), "targets": used}
 
     hass.services.async_register(

@@ -4,12 +4,13 @@
  * Served by the integration itself: no dashboard resource to add, no build step.
  */
 
-export const VERSION = "0.2.0";
+export const VERSION = "0.3.0";
 const DOMAIN = "hannounce";
 const CARD_TYPE = "hannounce-card";
 const EDITOR_TYPE = "hannounce-card-editor";
 const PANEL_TYPE = "hannounce-panel";
 const UPLOAD_URL = "/api/hannounce/announce";
+const CHIME_URL = "/api/hannounce/chime";
 const DEFAULT_ICON = "mdi:bullhorn";
 const DEFAULT_COLOR = "primary";
 const HOLD_MS = 400;
@@ -17,7 +18,9 @@ const LONG_PRESS_MS = 550;
 const MIN_SECONDS = 0.6;
 const SUCCESS_MS = 5000;
 const STORAGE_KEY = "hannounce";
+const COMPACT_THRESHOLD = 6;
 const CHIMES = ["none", "ding_dong", "soft", "three_tone"];
+const ALL_CHIMES = [...CHIMES, "custom"];
 
 /* Matches CHIME_EXPRESSIONS in audio.py so previews sound identical to playback. */
 export const CHIME_SPECS = {
@@ -108,6 +111,20 @@ export const STRINGS = {
     chime_ding_dong: "Ding dong",
     chime_soft: "Soft",
     chime_three_tone: "3 tones",
+    chime_custom: "Custom",
+    mode_text: "Text mode",
+    mode_voice: "Voice mode",
+    tts_label: "Announcement message",
+    tts_placeholder: "Type a message to announce…",
+    quiet_hours: "Quiet hours",
+    quiet_cap: "Max {volume}",
+    quiet_skip_pill: "Quiet: {targets}",
+    quiet_skipped: "Silenced by quiet hours",
+    other_area: "Other",
+    choose_speakers: "Choose speakers",
+    filter_speakers: "Filter by name or area…",
+    no_matches: "No matching speakers",
+    deselect_all: "Clear",
     keep_volume: "Keep each speaker's volume",
     keep_volume_helper: "Off: the message plays at the chosen volume, then each speaker goes back to its own.",
     review: "Listen before sending",
@@ -128,6 +145,9 @@ export const STRINGS = {
       "Browsers only open the microphone over HTTPS. Open Home Assistant over HTTPS, or send an audio file recorded on this device.",
     err_insecure_app: " The iOS app can also use the microphone over HTTP once the intercom is turned on in the integration options.",
     err_not_set_up: "HA-nnounce is not set up.",
+    err_quiet_hours: "Quiet hours are active and skipped all selected speakers.",
+    err_tts_unavailable: "No text-to-speech engine is configured in Home Assistant.",
+    err_tts_failed: "Could not generate speech: {message}",
     err_no_speakers: "No speakers yet. Add the integration of your speakers (Google Cast, Sonos, ESPHome...), or choose them in the HA-nnounce options.",
     err_generic: "Could not send the message: {message}",
     err_app: "The app could not use the microphone: {message}",
@@ -137,6 +157,11 @@ export const STRINGS = {
     editor_entities: "Speakers",
     helper_entities: "Empty shows every speaker of the integration.",
     editor_content: "Content",
+    editor_speaker_style: "Speaker selector",
+    helper_speaker_style: "Auto switches to a compact dialog when there are more than 6 speakers.",
+    style_auto: "Automatic",
+    style_chips: "Chips",
+    style_compact: "Compact (dialog)",
     editor_show_volume: "Volume slider",
     editor_show_settings: "Options button",
     editor_review: "Listen before sending",
@@ -180,6 +205,20 @@ export const STRINGS = {
     chime_ding_dong: "Din don",
     chime_soft: "Leggero",
     chime_three_tone: "3 note",
+    chime_custom: "Pers.",
+    mode_text: "Modalità testo",
+    mode_voice: "Modalità voce",
+    tts_label: "Messaggio da annunciare",
+    tts_placeholder: "Scrivi un messaggio da annunciare…",
+    quiet_hours: "Orari di silenzio",
+    quiet_cap: "Max {volume}",
+    quiet_skip_pill: "Silenzio: {targets}",
+    quiet_skipped: "Escluso dagli orari di silenzio",
+    other_area: "Altri",
+    choose_speakers: "Scegli altoparlanti",
+    filter_speakers: "Filtra per nome o area…",
+    no_matches: "Nessun altoparlante trovato",
+    deselect_all: "Deseleziona",
     keep_volume: "Mantieni il volume di ogni altoparlante",
     keep_volume_helper: "Se disattivato, il messaggio usa il volume scelto e poi ogni altoparlante torna al suo.",
     review: "Ascolta prima di inviare",
@@ -200,6 +239,9 @@ export const STRINGS = {
       "I browser aprono il microfono solo in HTTPS. Apri Home Assistant in HTTPS, oppure invia un file audio registrato con il dispositivo.",
     err_insecure_app: " Nell'app iOS il microfono funziona anche in HTTP, attivando l'interfono nelle opzioni dell'integrazione.",
     err_not_set_up: "HA-nnounce non è configurato.",
+    err_quiet_hours: "Gli orari di silenzio sono attivi e hanno escluso gli altoparlanti scelti.",
+    err_tts_unavailable: "Nessun motore text-to-speech è configurato in Home Assistant.",
+    err_tts_failed: "Impossibile generare la voce: {message}",
     err_no_speakers:
       "Ancora nessun altoparlante. Aggiungi l'integrazione dei tuoi altoparlanti (Google Cast, Sonos, ESPHome...), oppure sceglili nelle opzioni di HA-nnounce.",
     err_generic: "Invio non riuscito: {message}",
@@ -210,6 +252,11 @@ export const STRINGS = {
     editor_entities: "Altoparlanti",
     helper_entities: "Se vuoto, mostra tutti gli altoparlanti dell'integrazione.",
     editor_content: "Contenuto",
+    editor_speaker_style: "Selettore altoparlanti",
+    helper_speaker_style: "Automatico passa al selettore compatto con più di 6 altoparlanti.",
+    style_auto: "Automatico",
+    style_chips: "Chip",
+    style_compact: "Compatto (dialog)",
     editor_show_volume: "Cursore del volume",
     editor_show_settings: "Pulsante delle opzioni",
     editor_review: "Ascolta prima di inviare",
@@ -253,6 +300,20 @@ export const STRINGS = {
     chime_ding_dong: "Ding-Dong",
     chime_soft: "Sanft",
     chime_three_tone: "3 Töne",
+    chime_custom: "Eigener",
+    mode_text: "Textmodus",
+    mode_voice: "Sprachmodus",
+    tts_label: "Durchsagetext",
+    tts_placeholder: "Nachricht zum Vorlesen eingeben…",
+    quiet_hours: "Ruhezeit",
+    quiet_cap: "Max. {volume}",
+    quiet_skip_pill: "Ruhe: {targets}",
+    quiet_skipped: "Durch Ruhezeit stummgeschaltet",
+    other_area: "Sonstige",
+    choose_speakers: "Lautsprecher wählen",
+    filter_speakers: "Nach Name oder Bereich filtern…",
+    no_matches: "Keine passenden Lautsprecher",
+    deselect_all: "Aufheben",
     keep_volume: "Lautstärke jedes Lautsprechers beibehalten",
     keep_volume_helper: "Aus: Die Durchsage nutzt die gewählte Lautstärke, danach kehrt jeder Lautsprecher zu seiner zurück.",
     review: "Vor dem Senden anhören",
@@ -273,6 +334,9 @@ export const STRINGS = {
       "Browser öffnen das Mikrofon nur über HTTPS. Öffne Home Assistant über HTTPS oder sende eine auf diesem Gerät aufgenommene Audiodatei.",
     err_insecure_app: " Die iOS-App kann das Mikrofon auch über HTTP nutzen, wenn die Gegensprechanlage in den Integrationsoptionen aktiviert ist.",
     err_not_set_up: "HA-nnounce ist nicht eingerichtet.",
+    err_quiet_hours: "Die Ruhezeit ist aktiv und hat alle gewählten Lautsprecher übersprungen.",
+    err_tts_unavailable: "In Home Assistant ist kein Text-zu-Sprache-Dienst konfiguriert.",
+    err_tts_failed: "Sprachausgabe fehlgeschlagen: {message}",
     err_no_speakers: "Noch keine Lautsprecher. Füge die Integration deiner Lautsprecher hinzu (Google Cast, Sonos, ESPHome...) oder wähle sie in den HA-nnounce-Optionen.",
     err_generic: "Durchsage konnte nicht gesendet werden: {message}",
     err_app: "Die App konnte das Mikrofon nicht verwenden: {message}",
@@ -282,6 +346,11 @@ export const STRINGS = {
     editor_entities: "Lautsprecher",
     helper_entities: "Leer zeigt alle Lautsprecher der Integration.",
     editor_content: "Inhalt",
+    editor_speaker_style: "Lautsprecherauswahl",
+    helper_speaker_style: "Automatisch wechselt bei mehr als 6 Lautsprechern in einen kompakten Dialog.",
+    style_auto: "Automatisch",
+    style_chips: "Chips",
+    style_compact: "Kompakt (Dialog)",
     editor_show_volume: "Lautstärkeregler",
     editor_show_settings: "Optionen-Schaltfläche",
     editor_review: "Vor dem Senden anhören",
@@ -325,6 +394,20 @@ export const STRINGS = {
     chime_ding_dong: "Ding dong",
     chime_soft: "Doux",
     chime_three_tone: "3 notes",
+    chime_custom: "Perso",
+    mode_text: "Mode texte",
+    mode_voice: "Mode voix",
+    tts_label: "Message d'annonce",
+    tts_placeholder: "Saisissez un message à annoncer…",
+    quiet_hours: "Heures silencieuses",
+    quiet_cap: "Max {volume}",
+    quiet_skip_pill: "Silence : {targets}",
+    quiet_skipped: "Exclu par les heures silencieuses",
+    other_area: "Autres",
+    choose_speakers: "Choisir les haut-parleurs",
+    filter_speakers: "Filtrer par nom ou pièce…",
+    no_matches: "Aucun haut-parleur trouvé",
+    deselect_all: "Effacer",
     keep_volume: "Conserver le volume de chaque haut-parleur",
     keep_volume_helper: "Désactivé : le message utilise le volume choisi, puis chaque haut-parleur revient au sien.",
     review: "Écouter avant d'envoyer",
@@ -345,6 +428,9 @@ export const STRINGS = {
       "Les navigateurs n'ouvrent le microphone qu'en HTTPS. Ouvrez Home Assistant en HTTPS ou envoyez un fichier audio enregistré sur cet appareil.",
     err_insecure_app: " L'application iOS peut aussi utiliser le microphone en HTTP lorsque l'interphone est activé dans les options de l'intégration.",
     err_not_set_up: "HA-nnounce n'est pas configuré.",
+    err_quiet_hours: "Les heures silencieuses sont actives et ont exclu les haut-parleurs choisis.",
+    err_tts_unavailable: "Aucun moteur de synthèse vocale n'est configuré dans Home Assistant.",
+    err_tts_failed: "Impossible de générer la voix : {message}",
     err_no_speakers: "Aucun haut-parleur pour le moment. Ajoutez l'intégration de vos haut-parleurs (Google Cast, Sonos, ESPHome...) ou choisissez-les dans les options de HA-nnounce.",
     err_generic: "Impossible d'envoyer le message : {message}",
     err_app: "L'application n'a pas pu utiliser le microphone : {message}",
@@ -354,6 +440,11 @@ export const STRINGS = {
     editor_entities: "Haut-parleurs",
     helper_entities: "Vide affiche tous les haut-parleurs de l'intégration.",
     editor_content: "Contenu",
+    editor_speaker_style: "Sélecteur de haut-parleurs",
+    helper_speaker_style: "Automatique passe au sélecteur compact au-delà de 6 haut-parleurs.",
+    style_auto: "Automatique",
+    style_chips: "Puces",
+    style_compact: "Compact (fenêtre)",
     editor_show_volume: "Curseur de volume",
     editor_show_settings: "Bouton des options",
     editor_review: "Écouter avant d'envoyer",
@@ -397,6 +488,20 @@ export const STRINGS = {
     chime_ding_dong: "Ding dong",
     chime_soft: "Suave",
     chime_three_tone: "3 tonos",
+    chime_custom: "Pers.",
+    mode_text: "Modo texto",
+    mode_voice: "Modo voz",
+    tts_label: "Mensaje del anuncio",
+    tts_placeholder: "Escribe un mensaje para anunciar…",
+    quiet_hours: "Horario de silencio",
+    quiet_cap: "Máx. {volume}",
+    quiet_skip_pill: "Silencio: {targets}",
+    quiet_skipped: "Omitido por horario de silencio",
+    other_area: "Otros",
+    choose_speakers: "Elegir altavoces",
+    filter_speakers: "Filtrar por nombre o área…",
+    no_matches: "No se encontraron altavoces",
+    deselect_all: "Quitar",
     keep_volume: "Mantener el volumen de cada altavoz",
     keep_volume_helper: "Desactivado: el mensaje usa el volumen elegido y luego cada altavoz vuelve al suyo.",
     review: "Escuchar antes de enviar",
@@ -417,6 +522,9 @@ export const STRINGS = {
       "Los navegadores solo abren el micrófono por HTTPS. Abre Home Assistant por HTTPS o envía un archivo de audio grabado en este dispositivo.",
     err_insecure_app: " La app de iOS también puede usar el micrófono por HTTP si el intercomunicador está activado en las opciones de la integración.",
     err_not_set_up: "HA-nnounce no está configurado.",
+    err_quiet_hours: "El horario de silencio está activo y ha omitido los altavoces elegidos.",
+    err_tts_unavailable: "No hay ningún motor de texto a voz configurado en Home Assistant.",
+    err_tts_failed: "No se pudo generar la voz: {message}",
     err_no_speakers: "Aún no hay altavoces. Añade la integración de tus altavoces (Google Cast, Sonos, ESPHome...) o elígelos en las opciones de HA-nnounce.",
     err_generic: "No se pudo enviar el mensaje: {message}",
     err_app: "La app no pudo usar el micrófono: {message}",
@@ -426,6 +534,11 @@ export const STRINGS = {
     editor_entities: "Altavoces",
     helper_entities: "Vacío muestra todos los altavoces de la integración.",
     editor_content: "Contenido",
+    editor_speaker_style: "Selector de altavoces",
+    helper_speaker_style: "Automático cambia al selector compacto con más de 6 altavoces.",
+    style_auto: "Automático",
+    style_chips: "Chips",
+    style_compact: "Compacto (diálogo)",
     editor_show_volume: "Control de volumen",
     editor_show_settings: "Botón de opciones",
     editor_review: "Escuchar antes de enviar",
@@ -469,6 +582,20 @@ export const STRINGS = {
     chime_ding_dong: "Ding dong",
     chime_soft: "Zacht",
     chime_three_tone: "3 tonen",
+    chime_custom: "Eigen",
+    mode_text: "Tekstmodus",
+    mode_voice: "Spraakmodus",
+    tts_label: "Omroepbericht",
+    tts_placeholder: "Typ een bericht om om te roepen…",
+    quiet_hours: "Stille uren",
+    quiet_cap: "Max. {volume}",
+    quiet_skip_pill: "Stil: {targets}",
+    quiet_skipped: "Overgeslagen door stille uren",
+    other_area: "Overige",
+    choose_speakers: "Kies luidsprekers",
+    filter_speakers: "Filter op naam of ruimte…",
+    no_matches: "Geen luidsprekers gevonden",
+    deselect_all: "Wissen",
     keep_volume: "Eigen volume per luidspreker behouden",
     keep_volume_helper: "Uit: het bericht gebruikt het gekozen volume en elke luidspreker keert daarna terug naar het zijne.",
     review: "Luisteren voor verzenden",
@@ -489,6 +616,9 @@ export const STRINGS = {
       "Browsers openen de microfoon alleen via HTTPS. Open Home Assistant via HTTPS of verzend een audiobestand dat op dit apparaat is opgenomen.",
     err_insecure_app: " De iOS-app kan de microfoon ook via HTTP gebruiken zodra de intercom is ingeschakeld in de integratie-opties.",
     err_not_set_up: "HA-nnounce is niet ingesteld.",
+    err_quiet_hours: "Stille uren zijn actief en hebben de gekozen luidsprekers overgeslagen.",
+    err_tts_unavailable: "Er is geen tekst-naar-spraak-engine geconfigureerd in Home Assistant.",
+    err_tts_failed: "Kon spraak niet genereren: {message}",
     err_no_speakers: "Nog geen luidsprekers. Voeg de integratie van je luidsprekers toe (Google Cast, Sonos, ESPHome...) of kies ze in de opties van HA-nnounce.",
     err_generic: "Kon het bericht niet verzenden: {message}",
     err_app: "De app kon de microfoon niet gebruiken: {message}",
@@ -498,6 +628,11 @@ export const STRINGS = {
     editor_entities: "Luidsprekers",
     helper_entities: "Leeg toont alle luidsprekers van de integratie.",
     editor_content: "Inhoud",
+    editor_speaker_style: "Luidsprekerkiezer",
+    helper_speaker_style: "Automatisch schakelt bij meer dan 6 luidsprekers naar een compact venster.",
+    style_auto: "Automatisch",
+    style_chips: "Chips",
+    style_compact: "Compact (venster)",
     editor_show_volume: "Volumeregelaar",
     editor_show_settings: "Optiesknop",
     editor_review: "Luisteren voor verzenden",
@@ -599,7 +734,76 @@ export const fileExtension = (type) => {
 };
 
 /* Keep the YAML short: drop defaults and empty values. */
-export const CARD_DEFAULTS = { icon: DEFAULT_ICON, color: DEFAULT_COLOR, show_volume: true, show_settings: true, review: false };
+export const CARD_DEFAULTS = {
+  icon: DEFAULT_ICON,
+  color: DEFAULT_COLOR,
+  speaker_style: "auto",
+  show_volume: true,
+  show_settings: true,
+  review: false,
+};
+
+export const formatSpeakerSummary = (hass, names) => {
+  if (!names?.length) return t(hass, "choose_speakers");
+  if (names.length <= 2) return names.join(", ");
+  return `${names[0]}, ${names[1]} (+${names.length - 2})`;
+};
+
+export const isQuietActive = (hass, quiet, now = new Date()) => {
+  if (!quiet?.enabled) return false;
+  if (quiet.entity_id && hass?.states?.[quiet.entity_id]?.state === "on") return true;
+  const start = quiet.start?.slice(0, 5);
+  const end = quiet.end?.slice(0, 5);
+  if (start && end && start !== end) {
+    let hhmm;
+    try {
+      const tz = hass?.config?.time_zone;
+      const parts = new Intl.DateTimeFormat("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+        ...(tz ? { timeZone: tz } : {}),
+      }).formatToParts(now);
+      const h = parts.find((p) => p.type === "hour")?.value;
+      const m = parts.find((p) => p.type === "minute")?.value;
+      if (h && m) hhmm = `${h}:${m}`;
+    } catch (_err) {
+      // Fall back to local wall clock
+    }
+    if (!hhmm) {
+      hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    }
+    return start < end ? hhmm >= start && hhmm < end : hhmm >= start || hhmm < end;
+  }
+  return Boolean(quiet.active);
+};
+
+export const groupSpeakersByArea = (speakers) => {
+  const byKey = new Map();
+  const ungrouped = [];
+  for (const speaker of speakers || []) {
+    const name = speaker.area;
+    const key = speaker.area_id || name;
+    if (!key || !name) {
+      ungrouped.push(speaker);
+      continue;
+    }
+    let entry = byKey.get(key);
+    if (!entry) {
+      entry = { key, name, icon: speaker.area_icon || "mdi:floor-plan", speakers: [] };
+      byKey.set(key, entry);
+    }
+    entry.speakers.push(speaker);
+  }
+  return { areas: [...byKey.values()], ungrouped };
+};
+
+export const quickAreas = (speakers) => {
+  const total = (speakers || []).length;
+  return groupSpeakersByArea(speakers).areas.filter(
+    (area) => area.speakers.length >= 2 && area.speakers.length < total
+  );
+};
 
 export const cleanConfig = (config) => {
   const clean = { ...config };
@@ -643,6 +847,10 @@ const STYLES = `
     --gha-radius: var(--ha-card-features-border-radius, var(--feature-border-radius, var(--ha-border-radius-lg, 12px)));
   }
   [hidden] { display: none !important; }
+  .visually-hidden {
+    position: absolute; clip-path: inset(50%); overflow: hidden;
+    width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; white-space: nowrap;
+  }
   ha-card { height: 100%; overflow: hidden; }
   button { font: inherit; color: inherit; background: none; border: none; margin: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   button:disabled { cursor: not-allowed; }
@@ -690,7 +898,39 @@ const STYLES = `
   .icon-button:disabled { color: var(--disabled-text-color, #bdbdbd); }
   .icon-button > * { position: relative; }
 
-  /* Speakers, like ha-badge */
+  /* Speakers: separated area strip, chips, compact selector row & dialog checklist */
+  .picker { display: flex; flex-direction: column; gap: var(--ha-space-2, 8px); }
+  .area-strip {
+    display: flex; gap: 6px; overflow-x: auto; padding: 2px 0;
+    scrollbar-width: none;
+  }
+  .area-strip::-webkit-scrollbar { display: none; }
+  .area-chip {
+    position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px;
+    height: 34px; padding: 0 11px 0 9px; box-sizing: border-box;
+    border-radius: var(--ha-border-radius-md, 10px);
+    border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color, rgba(0, 0, 0, 0.12)));
+    background: transparent;
+    font-size: var(--ha-font-size-s, 13px); font-weight: var(--ha-font-weight-medium, 500);
+    color: var(--primary-text-color); --mdc-icon-size: 16px; outline: none;
+    user-select: none; -webkit-user-select: none;
+  }
+  .area-chip::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--tile-color); opacity: 0; transition: opacity 150ms ease-in-out; pointer-events: none; }
+  .area-chip::after { content: ""; position: absolute; inset: -3px 0; }
+  .area-chip:hover:not(:disabled)::before { opacity: 0.08; }
+  .area-chip[aria-checked="true"] { border-color: transparent; }
+  .area-chip[aria-checked="true"]::before { opacity: 0.18; }
+  .area-chip[aria-checked="mixed"] { border-color: var(--tile-color); }
+  .area-chip[aria-checked="mixed"]::before { opacity: 0.08; }
+  .area-chip ha-icon { position: relative; flex: none; color: var(--secondary-text-color); }
+  .area-chip[aria-checked="true"] ha-icon, .area-chip[aria-checked="mixed"] ha-icon { color: var(--tile-color); }
+  .area-chip span { position: relative; white-space: nowrap; }
+  .area-chip .count { font-size: var(--ha-font-size-xs, 11px); color: var(--secondary-text-color); font-variant-numeric: tabular-nums; }
+  .area-chip[aria-checked="true"] .count { color: var(--tile-color); }
+  .area-chip:focus-visible { box-shadow: 0 0 0 2px var(--tile-color); }
+  .area-chip:disabled { color: var(--disabled-text-color, #bdbdbd); border-style: dashed; cursor: default; }
+  .area-chip:disabled ha-icon, .area-chip:disabled .count { color: var(--disabled-text-color, #bdbdbd); }
+
   .badges { display: flex; flex-wrap: wrap; gap: var(--ha-space-2, 8px); }
   .badge {
     position: relative; display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
@@ -711,11 +951,104 @@ const STYLES = `
   .badge[aria-checked="true"] ha-icon { color: var(--tile-color); }
   .badge span { position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .badge:focus-visible { box-shadow: 0 0 0 2px var(--tile-color); }
-  .badge:disabled { color: var(--disabled-text-color, #bdbdbd); border-style: dashed; cursor: default; }
-  .badge:disabled ha-icon { color: var(--disabled-text-color, #bdbdbd); }
+  .badge:disabled, .badge.quiet-skip { color: var(--disabled-text-color, #bdbdbd); border-style: dashed; cursor: default; }
+  .badge:disabled ha-icon, .badge.quiet-skip ha-icon { color: var(--disabled-text-color, #bdbdbd); }
 
-  /* Talk button */
+  .picker-row {
+    position: relative; width: 100%; height: 42px; padding: 0 12px; box-sizing: border-box;
+    display: flex; align-items: center; gap: 10px; border-radius: var(--gha-radius);
+    font-size: var(--ha-font-size-m, 14px); font-weight: var(--ha-font-weight-medium, 500);
+    color: var(--primary-text-color); --mdc-icon-size: 20px; text-align: start; overflow: hidden; outline: none;
+  }
+  .picker-row::before { content: ""; position: absolute; inset: 0; background: var(--disabled-color, #bdbdbd); opacity: 0.2; transition: opacity 180ms ease-in-out; pointer-events: none; }
+  .picker-row:hover:not(:disabled)::before { opacity: 0.3; }
+  .picker-row:focus-visible { box-shadow: 0 0 0 2px var(--tile-color); }
+  .picker-row ha-icon { position: relative; flex: none; color: var(--secondary-text-color); }
+  .picker-row .row-main { position: relative; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .picker-row .row-count { position: relative; flex: none; font-size: var(--ha-font-size-s, 12px); color: var(--secondary-text-color); font-variant-numeric: tabular-nums; }
+
+  .sheet-search { display: block; padding: 4px 24px 12px; }
+  .speakers-search {
+    display: block; width: 100%; height: 40px; padding: 0 12px; box-sizing: border-box;
+    border-radius: var(--ha-border-radius-md, 10px);
+    border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color, rgba(0, 0, 0, 0.12)));
+    background: var(--primary-background-color, #fafafa); color: var(--primary-text-color);
+    font: inherit; font-size: max(1rem, var(--ha-font-size-m, 14px)); outline: none;
+  }
+  .speakers-search::placeholder { color: var(--secondary-text-color); }
+  .speakers-search:focus-visible { border-color: var(--tile-color); box-shadow: 0 0 0 1px var(--tile-color); }
+  .speakers-list { padding: 0 0 12px; border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12)); }
+  .list-area-head {
+    width: 100%; display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 24px; box-sizing: border-box;
+    background: var(--primary-background-color, #fafafa);
+    border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    color: var(--secondary-text-color); font-size: var(--ha-font-size-s, 12px); font-weight: var(--ha-font-weight-medium, 500);
+    --mdc-icon-size: 16px; text-align: start; outline: none;
+  }
+  .list-area-head:focus-visible { box-shadow: inset 0 0 0 2px var(--tile-color); }
+  .list-area-head .a-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list-area-head .a-act { flex: none; font-size: var(--ha-font-size-xs, 11px); color: var(--tile-color); }
+  .list-item {
+    position: relative; width: 100%; display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 4px 24px; box-sizing: border-box;
+    border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    color: var(--primary-text-color); font-size: var(--ha-font-size-m, 14px); --mdc-icon-size: 20px; text-align: start; outline: none;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  .list-item::before { content: ""; position: absolute; inset: 0; background: var(--primary-text-color); opacity: 0; transition: opacity 120ms ease-in-out; pointer-events: none; }
+  .list-item:hover:not(:disabled)::before { opacity: 0.06; }
+  .list-item:focus-visible { box-shadow: inset 0 0 0 2px var(--tile-color); }
+  .list-item > * { position: relative; }
+  .list-item > ha-icon { flex: none; color: var(--secondary-text-color); }
+  .list-item[aria-checked="true"] > ha-icon { color: var(--tile-color); }
+  .list-item:disabled { color: var(--disabled-text-color, #bdbdbd); cursor: default; }
+  .list-item:disabled > ha-icon { color: var(--disabled-text-color, #bdbdbd); }
+  .list-item .sp-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .list-item .sp-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list-item .sp-sub { font-size: var(--ha-font-size-xs, 11px); line-height: 15px; color: var(--secondary-text-color); }
+  .list-item .chk {
+    flex: none; width: 18px; height: 18px; border-radius: 4px; box-sizing: border-box;
+    border: 2px solid var(--secondary-text-color);
+    display: inline-flex; align-items: center; justify-content: center; --mdc-icon-size: 14px;
+  }
+  .list-item[aria-checked="true"] .chk { background: var(--tile-color); border-color: var(--tile-color); color: var(--text-primary-color, #fff); }
+  .list-item:disabled .chk { border-color: var(--disabled-text-color, #bdbdbd); opacity: 0.45; }
+  .list-item:not([aria-checked="true"]) .chk ha-icon { display: none; }
+  .speakers-empty { padding: 20px 24px; font-size: var(--ha-font-size-m, 14px); color: var(--secondary-text-color); text-align: center; }
+
+  /* Talk & text input */
   .talk { display: flex; flex-direction: column; align-items: center; gap: var(--ha-space-3, 12px); padding-top: var(--ha-space-2, 8px); }
+  .talk.text-mode { align-items: stretch; padding-top: var(--ha-space-1, 4px); gap: var(--ha-space-2, 8px); }
+  .tts-form { display: flex; flex-direction: column; gap: var(--ha-space-2, 8px); width: 100%; }
+  .tts-grow { width: 100%; }
+  .tts-input {
+    display: block; width: 100%; height: auto; field-sizing: content;
+    min-block-size: 42px; max-height: 260px; max-block-size: 12lh;
+    padding: 9px 12px; box-sizing: border-box; resize: none;
+    border-radius: var(--gha-radius);
+    border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color, rgba(0, 0, 0, 0.12)));
+    background: var(--primary-background-color, #fafafa); color: var(--primary-text-color);
+    font: inherit; font-size: max(1rem, var(--ha-font-size-m, 14px)); line-height: 22px;
+    overflow-wrap: anywhere; outline: none;
+  }
+  .tts-input::placeholder { color: var(--secondary-text-color); }
+  .tts-input:focus-visible { border-color: var(--tile-color); box-shadow: 0 0 0 1px var(--tile-color); }
+  .tts-input:disabled { opacity: 0.6; }
+  @supports not (field-sizing: content) {
+    .tts-grow { display: grid; }
+    .tts-grow::after, .tts-grow > .tts-input {
+      grid-area: 1 / 1 / 2 / 2;
+      font: inherit; font-size: max(1rem, var(--ha-font-size-m, 14px)); line-height: 22px;
+      padding: 9px 12px; box-sizing: border-box;
+      min-block-size: 42px; max-height: 260px;
+      overflow-wrap: anywhere;
+    }
+    .tts-grow::after {
+      content: attr(data-replicated-value) " ";
+      border: var(--ha-card-border-width, 1px) solid transparent;
+      white-space: pre-wrap; visibility: hidden; pointer-events: none;
+    }
+    .tts-grow > .tts-input { overflow-y: auto; }
+  }
   .mic {
     position: relative; width: 88px; height: 88px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
@@ -751,7 +1084,7 @@ const STYLES = `
   .features { display: flex; flex-direction: column; gap: var(--ha-space-3, 12px); }
   .features:empty, .features:not(:has(> :not([hidden]))) { display: none; }
   .buttons { display: flex; gap: var(--ha-space-3, 12px); }
-  .features > .button, .options > .button { flex: none; }
+  .features > .button, .options > .button, .button.tts-send { flex: none; width: 100%; }
   .button {
     position: relative; overflow: hidden; z-index: 0; flex: 1 1 0; min-width: 0; height: 42px;
     display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px; box-sizing: border-box;
@@ -771,12 +1104,22 @@ const STYLES = `
   /* Volume, like ha-control-slider */
   .volume { display: flex; flex-direction: column; gap: var(--ha-space-2, 8px); }
   .volume-head { display: flex; align-items: center; gap: 6px; font-size: var(--ha-font-size-s, 12px); line-height: 16px; letter-spacing: 0.4px; color: var(--secondary-text-color); --mdc-icon-size: 18px; }
-  .volume-head ha-icon { flex: none; color: var(--tile-color); }
+  .volume-head > ha-icon { flex: none; color: var(--tile-color); }
   .volume-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .quiet-pill {
+    position: relative; display: inline-flex; align-items: center; gap: 4px; flex: none; max-width: 48%;
+    padding: 1px 8px; border-radius: var(--ha-border-radius-pill, 9999px); overflow: hidden;
+    font-size: var(--ha-font-size-xs, 11px); font-weight: var(--ha-font-weight-medium, 500);
+    line-height: 16px; color: var(--indigo-color, #3f51b5); --mdc-icon-size: 14px;
+  }
+  .quiet-pill::before { content: ""; position: absolute; inset: 0; background: var(--indigo-color, #3f51b5); opacity: 0.14; pointer-events: none; }
+  .quiet-pill ha-icon { position: relative; flex: none; color: var(--indigo-color, #3f51b5); }
+  .quiet-pill span { position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .slider { position: relative; flex: none; min-width: 0; height: 42px; border-radius: var(--gha-radius); overflow: hidden; }
   .slider::before { content: ""; position: absolute; inset: 0; background: var(--tile-color); opacity: 0.2; }
   .slider .fill { position: absolute; inset: 0 auto 0 0; width: var(--fill, 50%); background: var(--tile-color); }
   .slider .fill::after { content: ""; position: absolute; top: 50%; right: 8px; width: 4px; height: 16px; margin-top: -8px; border-radius: 2px; background: var(--text-primary-color, #fff); opacity: 0.8; }
+  .slider .cap-mark { position: absolute; top: 0; bottom: 0; left: var(--cap, 25%); width: 2px; background: var(--indigo-color, #3f51b5); opacity: 0.75; pointer-events: none; }
   .slider .label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: var(--ha-font-size-s, 12px); letter-spacing: 0.4px; color: var(--secondary-text-color); pointer-events: none; }
   .slider input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; -webkit-appearance: none; appearance: none; touch-action: pan-y; }
   .slider input::-webkit-slider-thumb { -webkit-appearance: none; width: 1px; height: 42px; }
@@ -809,6 +1152,7 @@ const STYLES = `
   .segmented { position: relative; display: flex; gap: 4px; padding: 4px; height: 42px; box-sizing: border-box; border-radius: var(--gha-radius); }
   .segmented::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--disabled-color, #bdbdbd); opacity: 0.2; pointer-events: none; }
   .option { position: relative; flex: 1; min-width: 0; border-radius: calc(var(--gha-radius) - 4px); font-size: var(--ha-font-size-m, 14px); font-weight: var(--ha-font-weight-medium, 500); color: var(--primary-text-color); outline: none; }
+  .segmented:has(:nth-child(5)) .option { flex: 1 1 auto; font-size: var(--ha-font-size-s, 13px); }
   .option::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--tile-color); opacity: 0; transition: opacity 80ms ease-in-out; }
   .option:hover::before { opacity: 0.2; }
   .option[aria-checked="true"] { color: var(--text-primary-color, #fff); }
@@ -863,7 +1207,7 @@ const STYLES = `
     * { animation-duration: 1ms !important; transition-duration: 1ms !important; }
   }
   @media (forced-colors: active) {
-    .icon-button:focus-visible, .badge:focus-visible, .button:focus-visible, .option:focus-visible, .switch:focus-visible {
+    .icon-button:focus-visible, .badge:focus-visible, .area-chip:focus-visible, .picker-row:focus-visible, .list-area-head:focus-visible, .list-item:focus-visible, .button:focus-visible, .option:focus-visible, .switch:focus-visible, .tts-input:focus-visible, .speakers-search:focus-visible {
       outline: 2px solid ButtonText;
       outline-offset: 2px;
     }
@@ -891,8 +1235,18 @@ export class HannounceCard extends Base {
     this._rec = "idle"; // idle, preparing, recording, review, sending
     this._recMode = "hold";
     this._badges = new Map();
+    this._areaControls = new Map();
+    this._dialogRows = new Map();
+    this._dialogAreas = new Map();
+    this._speakerQuery = "";
     const stored = readStore();
-    this._prefs = { volume: stored.volume, keepVolume: stored.keepVolume, chime: stored.chime, review: stored.review };
+    this._prefs = {
+      volume: stored.volume,
+      keepVolume: stored.keepVolume,
+      chime: stored.chime,
+      review: stored.review,
+      mode: stored.mode,
+    };
     this._onKey = (ev) => {
       if (ev.key === "Escape" && (this._rec === "recording" || this._rec === "preparing")) this._cancel();
     };
@@ -942,13 +1296,32 @@ export class HannounceCard extends Base {
   connectedCallback() {
     if (this._hass && this._info) this._load();
     this._subscribe();
+    this._startQuietTimer();
   }
 
   disconnectedCallback() {
     this._cancel();
     this._stopChimePreview();
     this._unsubscribe();
+    clearInterval(this._quietTimer);
+    this._quietTimer = undefined;
     this._el?.dialog.close();
+    this._el?.speakersDialog.close();
+  }
+
+  _startQuietTimer() {
+    clearInterval(this._quietTimer);
+    this._quietTimer = setInterval(() => {
+      if (!this._built || !this._hass || !this._info?.quiet?.enabled) return;
+      const active = this._isQuietActive();
+      if (active !== this._lastQuietActive) {
+        this._lastQuietActive = active;
+        this._renderBadges();
+        this._renderHeader();
+        this._renderRec();
+        this._renderVolume();
+      }
+    }, 30000);
   }
 
   getCardSize() {
@@ -965,6 +1338,8 @@ export class HannounceCard extends Base {
     if (old.language !== hass.language || old.locale !== hass.locale || old.themes !== hass.themes || old.entities !== hass.entities) {
       return true;
     }
+    const quietEntity = this._info?.quiet?.entity_id;
+    if (quietEntity && old.states[quietEntity] !== hass.states[quietEntity]) return true;
     return this._speakers().some((s) => old.states[s.entity_id] !== hass.states[s.entity_id]);
   }
 
@@ -982,8 +1357,11 @@ export class HannounceCard extends Base {
       const defaults = this._info.defaults;
       this._prefs.volume ??= defaults.volume;
       this._prefs.keepVolume ??= !defaults.set_volume;
-      if (!CHIMES.includes(this._prefs.chime)) this._prefs.chime = defaults.chime;
+      if (!this._availableChimes().includes(this._prefs.chime)) this._prefs.chime = defaults.chime;
       this._badgeKey = undefined;
+      this._dialogKey = undefined;
+      this._chimeKey = undefined;
+      this._lastQuietActive = this._isQuietActive();
       this._initSelection();
     }
     this._render();
@@ -1027,9 +1405,52 @@ export class HannounceCard extends Base {
     return all;
   }
 
+  _availableChimes() {
+    const list = this._info?.chimes;
+    if (Array.isArray(list) && list.length) return list.filter((c) => ALL_CHIMES.includes(c));
+    return CHIMES;
+  }
+
+  _currentChime() {
+    const chimes = this._availableChimes();
+    if (chimes.includes(this._prefs.chime)) return this._prefs.chime;
+    const fallback = this._info?.defaults?.chime;
+    return chimes.includes(fallback) ? fallback : "ding_dong";
+  }
+
+  _isQuietActive() {
+    return isQuietActive(this._hass, this._info?.quiet);
+  }
+
+  _quietAffects(speaker) {
+    const quiet = this._info?.quiet;
+    if (!quiet) return false;
+    return !quiet.speakers?.length || quiet.speakers.includes(speaker.entity_id);
+  }
+
+  _quietSkipped(speaker) {
+    const quiet = this._info?.quiet;
+    return Boolean(this._isQuietActive() && quiet?.mode === "skip" && this._quietAffects(speaker));
+  }
+
+  _ttsAvailable() {
+    return Boolean(this._info?.tts?.available);
+  }
+
+  _isTextMode() {
+    if (!this._ttsAvailable()) return false;
+    if (this._prefs.mode === "text") return true;
+    if (this._prefs.mode === "voice") return false;
+    return this._capturePath() === "none" && !this._preview;
+  }
+
   _available(speaker) {
     const state = this._hass?.states[speaker.entity_id];
     return Boolean(state && state.state !== "unavailable" && state.state !== "unknown");
+  }
+
+  _selectable(speaker) {
+    return this._available(speaker) && !this._quietSkipped(speaker);
   }
 
   _initSelection() {
@@ -1045,14 +1466,14 @@ export class HannounceCard extends Base {
       this._selected = new Set(stored);
     }
     if (this._preview && !this._selected.size) {
-      const first = speakers.find((s) => this._available(s));
+      const first = speakers.find((s) => this._selectable(s));
       if (first) this._selected = new Set([first.entity_id]);
     }
   }
 
   _targets() {
     const byId = new Map(this._speakers().map((s) => [s.entity_id, s]));
-    return [...(this._selected || [])].filter((id) => byId.has(id) && this._available(byId.get(id)));
+    return [...(this._selected || [])].filter((id) => byId.has(id) && this._selectable(byId.get(id)));
   }
 
   _names(ids) {
@@ -1098,14 +1519,31 @@ export class HannounceCard extends Base {
             <div class="tile-icon"><ha-icon></ha-icon></div>
             <div class="tile-info"><span class="primary"></span><span class="secondary"></span></div>
             <div class="actions">
+              <button class="icon-button mode-toggle" type="button" hidden><ha-icon icon="mdi:keyboard-outline"></ha-icon></button>
               <button class="icon-button replay" type="button"><ha-icon icon="mdi:replay"></ha-icon></button>
               <button class="icon-button settings" type="button" aria-haspopup="dialog"><ha-icon icon="mdi:tune-variant"></ha-icon></button>
             </div>
           </div>
           <div class="alert-slot"></div>
-          <div class="badges" role="group"></div>
+          <div class="picker" hidden>
+            <div class="area-strip" role="group" hidden></div>
+            <div class="badges" role="group" hidden></div>
+            <button class="picker-row" type="button" aria-haspopup="dialog" hidden>
+              <ha-icon icon="mdi:speaker"></ha-icon>
+              <span class="row-main"></span>
+              <span class="row-count"></span>
+              <ha-icon icon="mdi:chevron-down"></ha-icon>
+            </button>
+          </div>
           <div class="talk">
             <button class="mic" type="button"><span class="ring"></span><span class="disc"></span><ha-icon icon="mdi:microphone"></ha-icon></button>
+            <form class="tts-form" hidden>
+              <label class="visually-hidden tts-label" for="tts-input"></label>
+              <div class="tts-grow">
+                <textarea id="tts-input" name="message" class="tts-input" rows="1" maxlength="1000" enterkeyhint="send" autocomplete="off"></textarea>
+              </div>
+              <button class="button primary tts-send" type="submit"><ha-icon icon="mdi:send"></ha-icon><span></span></button>
+            </form>
             <div class="hint" aria-live="polite"><ha-icon icon="mdi:check-circle-outline" hidden></ha-icon><span></span></div>
           </div>
           <div class="features">
@@ -1115,8 +1553,13 @@ export class HannounceCard extends Base {
               <button class="button primary send" type="button"><ha-icon icon="mdi:send"></ha-icon><span></span></button>
             </div>
             <div class="volume">
-              <div class="volume-head"><ha-icon icon="mdi:volume-high"></ha-icon><span class="volume-label" id="volume-label"></span><span class="value"></span></div>
-              <div class="slider"><div class="fill"></div><div class="label"></div><input type="range" min="5" max="100" step="5" aria-labelledby="volume-label" /></div>
+              <div class="volume-head">
+                <ha-icon icon="mdi:volume-high"></ha-icon>
+                <span class="volume-label" id="volume-label"></span>
+                <span class="quiet-pill" hidden><ha-icon icon="mdi:weather-night"></ha-icon><span></span></span>
+                <span class="value"></span>
+              </div>
+              <div class="slider"><div class="fill"></div><div class="cap-mark" hidden></div><div class="label"></div><input type="range" min="5" max="100" step="5" aria-labelledby="volume-label" /></div>
             </div>
             <button class="button upload-feature" type="button" hidden><ha-icon icon="mdi:file-music-outline"></ha-icon><span></span></button>
           </div>
@@ -1128,12 +1571,23 @@ export class HannounceCard extends Base {
           </div>
         </div>
       </ha-card>
-      <dialog aria-labelledby="dialog-title">
+      <dialog class="options-dialog" aria-labelledby="dialog-title">
         <div class="dialog-header">
           <span class="dialog-title" id="dialog-title"></span>
           <button class="icon-button close" type="button"><ha-icon icon="mdi:close"></ha-icon></button>
         </div>
         <div class="dialog-content" tabindex="-1" autofocus></div>
+      </dialog>
+      <dialog class="speakers-dialog" aria-labelledby="speakers-dialog-title">
+        <div class="dialog-header">
+          <span class="dialog-title speakers-dialog-title" id="speakers-dialog-title"></span>
+          <button class="icon-button close-speakers" type="button"><ha-icon icon="mdi:close"></ha-icon></button>
+        </div>
+        <search class="sheet-search" hidden>
+          <label class="visually-hidden speakers-search-label" for="speakers-search"></label>
+          <input id="speakers-search" name="filter" class="speakers-search" type="search" autocomplete="off" />
+        </search>
+        <div class="dialog-content speakers-list" tabindex="-1"></div>
       </dialog>
       <input class="file" type="file" accept="audio/*" hidden />
     `;
@@ -1143,13 +1597,25 @@ export class HannounceCard extends Base {
       tileIcon: $(".tile-icon ha-icon"),
       primary: $(".primary"),
       secondary: $(".secondary"),
+      modeToggle: $(".mode-toggle"),
+      modeToggleIcon: $(".mode-toggle ha-icon"),
       replay: $(".replay"),
       settings: $(".settings"),
       alert: $(".alert-slot"),
+      picker: $(".picker"),
+      areaStrip: $(".area-strip"),
       badges: $(".badges"),
+      pickerRow: $(".picker-row"),
+      pickerMain: $(".picker-row .row-main"),
+      pickerCount: $(".picker-row .row-count"),
       talk: $(".talk"),
       mic: $(".mic"),
       micIcon: $(".mic ha-icon"),
+      ttsForm: $(".tts-form"),
+      ttsGrow: $(".tts-grow"),
+      ttsLabel: $(".tts-label"),
+      ttsInput: $(".tts-input"),
+      ttsSend: $(".tts-send"),
       hint: $(".hint"),
       hintIcon: $(".hint ha-icon"),
       hintText: $(".hint span"),
@@ -1158,9 +1624,12 @@ export class HannounceCard extends Base {
       discard: $(".discard"),
       send: $(".send"),
       volume: $(".volume"),
-      volumeIcon: $(".volume-head ha-icon"),
+      volumeIcon: $(".volume-head > ha-icon"),
       volumeLabel: $(".volume-label"),
+      quietPill: $(".quiet-pill"),
+      quietPillText: $(".quiet-pill span"),
       slider: $(".slider"),
+      capMark: $(".slider .cap-mark"),
       sliderLabel: $(".slider .label"),
       range: $(".slider input"),
       value: $(".volume .value"),
@@ -1171,10 +1640,17 @@ export class HannounceCard extends Base {
       intercomTitle: $(".intercom-title"),
       intercomNote: $(".intercom-note"),
       intercoms: $(".intercoms"),
-      dialog: $("dialog"),
-      dialogTitle: $(".dialog-title"),
-      dialogContent: $(".dialog-content"),
+      dialog: $(".options-dialog"),
+      dialogTitle: $(".options-dialog .dialog-title"),
+      dialogContent: $(".options-dialog .dialog-content"),
       close: $(".close"),
+      speakersDialog: $(".speakers-dialog"),
+      speakersDialogTitle: $(".speakers-dialog-title"),
+      closeSpeakers: $(".close-speakers"),
+      sheetSearch: $(".sheet-search"),
+      speakersSearchLabel: $(".speakers-search-label"),
+      speakersSearch: $(".speakers-search"),
+      speakersList: $(".speakers-list"),
       file: $(".file"),
     };
     this._options = this._buildOptions();
@@ -1196,9 +1672,7 @@ export class HannounceCard extends Base {
           <div class="field-label chime-label" id="chime-label"></div>
           <button class="icon-button chime-preview" type="button"><ha-icon icon="mdi:play"></ha-icon></button>
         </div>
-        <div class="segmented" role="radiogroup" aria-labelledby="chime-label">
-          ${CHIMES.map((c) => `<button class="option" type="button" role="radio" data-chime="${c}"><span></span></button>`).join("")}
-        </div>
+        <div class="segmented" role="radiogroup" aria-labelledby="chime-label"></div>
       </div>
       <div class="row">
         <div class="text"><div class="label keep-label" id="keep-label"></div><div class="helper keep-helper"></div></div>
@@ -1216,7 +1690,6 @@ export class HannounceCard extends Base {
       chimeLabel: root.querySelector(".chime-label"),
       chimePreview: root.querySelector(".chime-preview"),
       chimePreviewIcon: root.querySelector(".chime-preview ha-icon"),
-      chimes: [...root.querySelectorAll(".option")],
       keepLabel: root.querySelector(".keep-label"),
       keepHelper: root.querySelector(".keep-helper"),
       keep: root.querySelector(".keep"),
@@ -1239,6 +1712,20 @@ export class HannounceCard extends Base {
         this._openSpeakerInfo();
       }
     });
+    el.modeToggle.addEventListener("click", () => this._toggleMode());
+    el.ttsForm.addEventListener("submit", (ev) => this._sendText(ev));
+    el.ttsInput.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" && !ev.shiftKey) {
+        ev.preventDefault();
+        if (ev.isComposing || ev.keyCode === 229) return;
+        el.ttsForm.requestSubmit();
+      }
+    });
+    if (!globalThis.CSS?.supports?.("field-sizing", "content")) {
+      el.ttsInput.addEventListener("input", () => {
+        el.ttsGrow.dataset.replicatedValue = el.ttsInput.value;
+      });
+    }
     el.replay.addEventListener("click", () => this._replay());
     el.settings.addEventListener("click", () => {
       this._renderOptions();
@@ -1250,9 +1737,64 @@ export class HannounceCard extends Base {
       if (ev.target === el.dialog) el.dialog.close(); // a click on the scrim
     });
 
-    // Speakers: a tap selects, a long press or a right click opens the speaker
+    // Speakers and areas: a tap selects, a long press or a right click opens the speaker
+    el.areaStrip.addEventListener("click", (ev) => {
+      const chip = ev.target.closest(".area-chip");
+      if (!chip || chip.disabled) return;
+      if (chip.dataset.id === "*") this._toggleSpeaker("*");
+      else if (chip.dataset.area) this._toggleArea(chip.dataset.area);
+    });
+    el.pickerRow.addEventListener("click", () => {
+      if (this._preview) return;
+      this._speakerQuery = "";
+      el.speakersSearch.value = "";
+      this._renderSpeakersDialog();
+      el.speakersDialog.showModal();
+      if (!el.sheetSearch.hidden) el.speakersSearch.focus();
+    });
+    el.closeSpeakers.addEventListener("click", () => el.speakersDialog.close());
+    el.speakersDialog.addEventListener("click", (ev) => {
+      if (ev.target === el.speakersDialog) el.speakersDialog.close();
+    });
+    el.speakersSearch.addEventListener("input", () => {
+      this._speakerQuery = el.speakersSearch.value;
+      this._filterSpeakersDialog();
+    });
+    el.speakersList.addEventListener("click", (ev) => {
+      const areaHead = ev.target.closest(".list-area-head[data-area]");
+      if (areaHead) {
+        this._toggleArea(areaHead.dataset.area);
+        return;
+      }
+      const row = ev.target.closest(".list-item[data-id]");
+      if (!row || row.disabled) return;
+      if (this._longPressed) {
+        this._longPressed = false;
+        return;
+      }
+      this._toggleSpeaker(row.dataset.id);
+    });
+    el.speakersList.addEventListener("contextmenu", (ev) => {
+      const row = ev.target.closest(".list-item[data-id]");
+      if (!row) return;
+      ev.preventDefault();
+      this._moreInfo(row.dataset.id);
+    });
+    el.speakersList.addEventListener("pointerdown", (ev) => {
+      const row = ev.target.closest(".list-item[data-id]");
+      if (!row || ev.pointerType === "mouse") return;
+      clearTimeout(this._pressTimer);
+      this._pressTimer = setTimeout(() => {
+        this._longPressed = true;
+        this._moreInfo(row.dataset.id);
+      }, LONG_PRESS_MS);
+    });
+    for (const type of ["pointerup", "pointercancel", "pointerleave"]) {
+      el.speakersList.addEventListener(type, () => clearTimeout(this._pressTimer));
+    }
+
     el.badges.addEventListener("click", (ev) => {
-      const badge = ev.target.closest(".badge");
+      const badge = ev.target.closest(".badge[data-id]");
       if (!badge) return;
       if (this._longPressed) {
         this._longPressed = false;
@@ -1261,13 +1803,13 @@ export class HannounceCard extends Base {
       this._toggleSpeaker(badge.dataset.id);
     });
     el.badges.addEventListener("contextmenu", (ev) => {
-      const badge = ev.target.closest(".badge");
+      const badge = ev.target.closest(".badge[data-id]");
       if (!badge || badge.dataset.id === "*") return;
       ev.preventDefault();
       this._moreInfo(badge.dataset.id);
     });
     el.badges.addEventListener("pointerdown", (ev) => {
-      const badge = ev.target.closest(".badge");
+      const badge = ev.target.closest(".badge[data-id]");
       if (!badge || badge.dataset.id === "*" || ev.pointerType === "mouse") return;
       clearTimeout(this._pressTimer);
       this._pressTimer = setTimeout(() => {
@@ -1311,7 +1853,10 @@ export class HannounceCard extends Base {
       writeStore({ chime });
       this._renderOptions();
     };
-    opts.chimes.forEach((button) => button.addEventListener("click", () => setChime(button.dataset.chime)));
+    opts.segmented.addEventListener("click", (ev) => {
+      const button = ev.target.closest(".option[data-chime]");
+      if (button) setChime(button.dataset.chime);
+    });
     opts.chimePreview.addEventListener("click", () => {
       if (opts.chimePreview.getAttribute("aria-disabled") === "true") return;
       this._toggleChimePreview();
@@ -1321,9 +1866,10 @@ export class HannounceCard extends Base {
       if (!step) return;
       ev.preventDefault();
       if (getComputedStyle(this).direction === "rtl" && (ev.key === "ArrowRight" || ev.key === "ArrowLeft")) step = -step;
-      const index = (CHIMES.indexOf(this._prefs.chime) + step + CHIMES.length) % CHIMES.length;
-      setChime(CHIMES[index]);
-      opts.chimes[index].focus();
+      const chimes = this._availableChimes();
+      const index = (chimes.indexOf(this._currentChime()) + step + chimes.length) % chimes.length;
+      setChime(chimes[index]);
+      opts.segmented.querySelectorAll(".option")[index]?.focus();
     });
     opts.keep.addEventListener("click", () => {
       this._prefs.keepVolume = !this._prefs.keepVolume;
@@ -1366,17 +1912,23 @@ export class HannounceCard extends Base {
     const el = this._el;
     this._placeOptions();
     el.tileIcon.setAttribute("icon", this._config.icon || DEFAULT_ICON);
-    for (const [button, key] of [[el.replay, "replay"], [el.settings, "settings"], [el.close, "close"]]) {
+    for (const [button, key] of [[el.replay, "replay"], [el.settings, "settings"], [el.close, "close"], [el.closeSpeakers, "close"]]) {
       button.title = t(hass, key);
       button.setAttribute("aria-label", t(hass, key));
     }
     el.settings.hidden = this._page || this._config.show_settings === false || !this._info;
     el.dialogTitle.textContent = t(hass, "settings");
     el.optionsTitle.textContent = t(hass, "settings");
+    el.areaStrip.setAttribute("aria-label", t(hass, "speakers"));
     el.badges.setAttribute("aria-label", t(hass, "speakers"));
+    el.speakersSearchLabel.textContent = t(hass, "filter_speakers");
+    el.speakersSearch.placeholder = t(hass, "filter_speakers");
     el.play.querySelector("span").textContent = t(hass, this._audio ? "stop" : "play");
     el.discard.querySelector("span").textContent = t(hass, "discard");
     el.send.querySelector("span").textContent = t(hass, "send");
+    el.ttsLabel.textContent = t(hass, "tts_label");
+    el.ttsInput.placeholder = t(hass, "tts_placeholder");
+    el.ttsSend.querySelector("span").textContent = t(hass, "send");
     el.uploadFeature.querySelector("span").textContent = t(hass, "upload");
     el.volumeLabel.textContent = t(hass, "volume");
     el.volume.title = t(hass, "volume_helper");
@@ -1415,6 +1967,14 @@ export class HannounceCard extends Base {
       el.tile.removeAttribute("role");
       el.tile.removeAttribute("tabindex");
     }
+    const textMode = this._isTextMode();
+    const showModeToggle = Boolean(this._info && this._speakers().length && this._ttsAvailable() && !this._loadError);
+    el.modeToggle.hidden = !showModeToggle;
+    el.modeToggle.disabled = this._rec !== "idle";
+    const modeLabel = t(this._hass, textMode ? "mode_voice" : "mode_text");
+    el.modeToggle.title = modeLabel;
+    el.modeToggle.setAttribute("aria-label", modeLabel);
+    el.modeToggleIcon.setAttribute("icon", textMode ? "mdi:microphone" : "mdi:keyboard-outline");
     el.replay.hidden = !this._info?.last;
     el.replay.disabled = this._rec !== "idle";
   }
@@ -1429,7 +1989,7 @@ export class HannounceCard extends Base {
     } else if (this._info && !this._speakers().length) {
       kind = "warning";
       text = t(this._hass, "err_no_speakers");
-    } else if (this._info && this._capturePath() === "none" && !this._preview) {
+    } else if (this._info && this._capturePath() === "none" && !this._isTextMode() && !this._preview) {
       kind = "info";
       text = t(this._hass, "err_insecure");
       if (this._hass?.auth?.external && !this._info.intercom?.ready) text += t(this._hass, "err_insecure_app");
@@ -1447,46 +2007,257 @@ export class HannounceCard extends Base {
     }
   }
 
+  _isCompactPicker(speakers) {
+    if (speakers.length <= 1) return false;
+    const style = this._config.speaker_style || "auto";
+    if (style === "compact") return true;
+    if (style === "chips") return false;
+    return speakers.length > COMPACT_THRESHOLD;
+  }
+
+  _makeSpeakerBadge(speaker) {
+    const badge = document.createElement("button");
+    badge.type = "button";
+    badge.className = "badge";
+    badge.setAttribute("role", "checkbox");
+    badge.dataset.id = speaker.entity_id;
+    badge.innerHTML = "<ha-icon></ha-icon><span></span>";
+    badge.querySelector("span").textContent = speaker.name;
+    this._badges.set(speaker.entity_id, { badge, speaker });
+    return badge;
+  }
+
+  _makeAreaChip(id, name, icon, area) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "area-chip";
+    chip.setAttribute("role", "checkbox");
+    if (id === "*") chip.dataset.id = "*";
+    else chip.dataset.area = id;
+    chip.innerHTML = '<ha-icon></ha-icon><span class="name"></span><span class="count"></span>';
+    chip.querySelector("ha-icon").setAttribute("icon", icon);
+    chip.querySelector(".name").textContent = name;
+    this._areaControls.set(id, { button: chip, count: chip.querySelector(".count"), area });
+    return chip;
+  }
+
   _renderBadges() {
     const el = this._el;
     const hass = this._hass;
     const speakers = this._speakers();
-    // Rebuild only when the list changes, otherwise patch, so focus survives a toggle
-    const key = `${languageOf(hass)}|${speakers.map((s) => `${s.entity_id}:${s.name}:${s.group}`).join(",")}`;
+    const compact = this._isCompactPicker(speakers);
+    const { areas } = groupSpeakersByArea(speakers);
+    const stripAreas = compact
+      ? areas.filter((a) => a.speakers.length < speakers.length)
+      : quickAreas(speakers);
+    const showAreaStrip = speakers.length > 1 && (compact || stripAreas.length > 0);
+    // Rebuild only when the speaker list or layout changes, otherwise patch in-place so focus and scroll survive
+    const key = `${compact}|${showAreaStrip}|${languageOf(hass)}|${speakers
+      .map((s) => `${s.entity_id}:${s.name}:${s.group}:${s.area_id || s.area || ""}:${s.area_icon || ""}`)
+      .join(",")}`;
     if (key !== this._badgeKey) {
       this._badgeKey = key;
       this._badges.clear();
+      this._areaControls.clear();
+      el.areaStrip.textContent = "";
       el.badges.textContent = "";
-      const list = speakers.length > 1 ? [{ entity_id: "*", name: t(hass, "all"), all: true }, ...speakers] : speakers;
-      for (const speaker of list) {
-        const badge = document.createElement("button");
-        badge.type = "button";
-        badge.className = "badge";
-        badge.setAttribute("role", "checkbox");
-        badge.dataset.id = speaker.entity_id;
-        badge.innerHTML = "<ha-icon></ha-icon><span></span>";
-        badge.querySelector("span").textContent = speaker.name;
-        el.badges.appendChild(badge);
-        this._badges.set(speaker.entity_id, { badge, speaker });
+      if (showAreaStrip) {
+        el.areaStrip.appendChild(
+          this._makeAreaChip("*", t(hass, "all"), "mdi:checkbox-multiple-marked-outline", { speakers })
+        );
+        for (const area of stripAreas) {
+          el.areaStrip.appendChild(this._makeAreaChip(area.key, area.name, area.icon, area));
+        }
+      }
+      if (!compact) {
+        if (speakers.length > 1 && !showAreaStrip) {
+          el.badges.appendChild(this._makeSpeakerBadge({ entity_id: "*", name: t(hass, "all"), all: true }));
+        }
+        for (const speaker of speakers) el.badges.appendChild(this._makeSpeakerBadge(speaker));
       }
     }
-    el.badges.hidden = !speakers.length;
+
+    el.picker.hidden = !speakers.length;
+    el.areaStrip.hidden = !showAreaStrip;
+    el.badges.hidden = compact || !speakers.length;
+    el.pickerRow.hidden = !compact;
+
     const selected = this._selected || new Set();
-    const available = speakers.filter((s) => this._available(s));
+    const selectable = speakers.filter((s) => this._selectable(s));
+    const chosen = selectable.filter((s) => selected.has(s.entity_id));
+
+    for (const { button, count, area } of this._areaControls.values()) {
+      const areaSelectable = area.speakers.filter((s) => this._selectable(s));
+      const areaSelected = areaSelectable.filter((s) => selected.has(s.entity_id));
+      const state =
+        areaSelectable.length > 0 && areaSelected.length === areaSelectable.length
+          ? "true"
+          : areaSelected.length > 0
+            ? "mixed"
+            : "false";
+      button.setAttribute("aria-checked", state);
+      button.disabled = !areaSelectable.length;
+      count.textContent = `${areaSelected.length}/${areaSelectable.length}`;
+    }
+
+    if (compact) {
+      el.pickerMain.textContent = formatSpeakerSummary(
+        hass,
+        chosen.map((s) => s.name)
+      );
+      el.pickerCount.textContent = `${chosen.length}/${selectable.length}`;
+    }
+
     for (const { badge, speaker } of this._badges.values()) {
       if (speaker.all) {
-        const allOn = available.length > 0 && available.every((s) => selected.has(s.entity_id));
+        const allOn = selectable.length > 0 && selectable.every((s) => selected.has(s.entity_id));
         badge.setAttribute("aria-checked", String(allOn));
-        badge.disabled = !available.length;
+        badge.disabled = !selectable.length;
         badge.querySelector("ha-icon").setAttribute("icon", "mdi:checkbox-multiple-marked-outline");
         continue;
       }
-      const on = this._available(speaker);
+      const avail = this._available(speaker);
+      const quietSkip = avail && this._quietSkipped(speaker);
+      const on = avail && !quietSkip;
+      badge.classList.toggle("quiet-skip", quietSkip);
       badge.setAttribute("aria-checked", String(on && selected.has(speaker.entity_id)));
       badge.disabled = !on;
-      badge.querySelector("ha-icon").setAttribute("icon", !on ? "mdi:speaker-off" : speaker.group ? "mdi:speaker-multiple" : "mdi:speaker");
-      badge.title = [speaker.area, speaker.group ? t(hass, "group") : null, on ? null : t(hass, "unavailable")].filter(Boolean).join(" · ");
+      badge
+        .querySelector("ha-icon")
+        .setAttribute(
+          "icon",
+          !avail ? "mdi:speaker-off" : quietSkip ? "mdi:weather-night" : speaker.group ? "mdi:speaker-multiple" : "mdi:speaker"
+        );
+      badge.title = [
+        speaker.area,
+        speaker.group ? t(hass, "group") : null,
+        !avail ? t(hass, "unavailable") : quietSkip ? t(hass, "quiet_skipped") : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
     }
+
+    if (el.speakersDialog.open) this._renderSpeakersDialog();
+  }
+
+  _makeDialogRow(speaker) {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "list-item";
+    row.setAttribute("role", "checkbox");
+    row.dataset.id = speaker.entity_id;
+    row.innerHTML =
+      '<ha-icon></ha-icon><span class="sp-meta"><span class="sp-name"></span><span class="sp-sub" hidden></span></span>' +
+      '<span class="chk"><ha-icon icon="mdi:check"></ha-icon></span>';
+    row.querySelector(".sp-name").textContent = speaker.name;
+    this._dialogRows.set(speaker.entity_id, {
+      row,
+      icon: row.querySelector(":scope > ha-icon"),
+      sub: row.querySelector(".sp-sub"),
+      speaker,
+    });
+    return row;
+  }
+
+  _renderSpeakersDialog() {
+    const el = this._el;
+    const hass = this._hass;
+    const speakers = this._speakers();
+    const { areas, ungrouped } = groupSpeakersByArea(speakers);
+    const key = `${languageOf(hass)}|${speakers
+      .map((s) => `${s.entity_id}:${s.name}:${s.group}:${s.area_id || s.area || ""}:${s.area_icon || ""}`)
+      .join(",")}`;
+    if (key !== this._dialogKey) {
+      this._dialogKey = key;
+      this._dialogRows.clear();
+      this._dialogAreas.clear();
+      el.speakersList.textContent = "";
+      for (const area of areas) {
+        const section = document.createElement("div");
+        section.className = "dialog-area-section";
+        const head = document.createElement("button");
+        head.type = "button";
+        head.className = "list-area-head";
+        head.dataset.area = area.key;
+        head.innerHTML = '<ha-icon></ha-icon><span class="a-name"></span><span class="a-act"></span>';
+        head.querySelector("ha-icon").setAttribute("icon", area.icon);
+        head.querySelector(".a-name").textContent = area.name;
+        section.appendChild(head);
+        for (const speaker of area.speakers) section.appendChild(this._makeDialogRow(speaker));
+        this._dialogAreas.set(area.key, { section, head, act: head.querySelector(".a-act"), area });
+        el.speakersList.appendChild(section);
+      }
+      if (ungrouped.length) {
+        const section = document.createElement("div");
+        section.className = "dialog-area-section";
+        if (areas.length) {
+          const head = document.createElement("div");
+          head.className = "list-area-head";
+          head.innerHTML = '<ha-icon icon="mdi:speaker-multiple"></ha-icon><span class="a-name"></span>';
+          head.querySelector(".a-name").textContent = t(hass, "other_area");
+          section.appendChild(head);
+        }
+        for (const speaker of ungrouped) section.appendChild(this._makeDialogRow(speaker));
+        this._dialogAreas.set("__other__", { section, head: null, act: null, area: { name: "", speakers: ungrouped } });
+        el.speakersList.appendChild(section);
+      }
+      const empty = document.createElement("div");
+      empty.className = "speakers-empty";
+      empty.hidden = true;
+      empty.textContent = t(hass, "no_matches");
+      el.speakersList.appendChild(empty);
+      this._dialogEmpty = empty;
+    }
+
+    el.sheetSearch.hidden = speakers.length <= COMPACT_THRESHOLD;
+    const selected = this._selected || new Set();
+    const selectable = speakers.filter((s) => this._selectable(s));
+    const chosen = selectable.filter((s) => selected.has(s.entity_id));
+    el.speakersDialogTitle.textContent = `${t(hass, "speakers")} (${chosen.length}/${selectable.length})`;
+
+    for (const { act, head, area } of this._dialogAreas.values()) {
+      if (!head || !act) continue;
+      const av = area.speakers.filter((s) => this._selectable(s));
+      const allOn = av.length > 0 && av.every((s) => selected.has(s.entity_id));
+      head.disabled = !av.length;
+      act.textContent = !av.length ? "" : t(hass, allOn ? "deselect_all" : "all");
+    }
+
+    for (const { row, icon, sub, speaker } of this._dialogRows.values()) {
+      const avail = this._available(speaker);
+      const quietSkip = avail && this._quietSkipped(speaker);
+      const on = avail && !quietSkip;
+      row.setAttribute("aria-checked", String(on && selected.has(speaker.entity_id)));
+      row.disabled = !on;
+      icon.setAttribute(
+        "icon",
+        !avail ? "mdi:speaker-off" : quietSkip ? "mdi:weather-night" : speaker.group ? "mdi:speaker-multiple" : "mdi:speaker"
+      );
+      const note = !avail ? t(hass, "unavailable") : quietSkip ? t(hass, "quiet_skipped") : "";
+      sub.textContent = note;
+      sub.hidden = !note;
+    }
+
+    this._filterSpeakersDialog();
+  }
+
+  _filterSpeakersDialog() {
+    const query = (this._speakerQuery || "").trim().toLowerCase();
+    let visibleCount = 0;
+    for (const { section, area } of this._dialogAreas.values()) {
+      let areaVisible = 0;
+      const areaMatch = query && (area.name || "").toLowerCase().includes(query);
+      for (const speaker of area.speakers) {
+        const entry = this._dialogRows.get(speaker.entity_id);
+        if (!entry) continue;
+        const match = !query || areaMatch || speaker.name.toLowerCase().includes(query);
+        entry.row.hidden = !match;
+        if (match) areaVisible++;
+      }
+      section.hidden = areaVisible === 0;
+      visibleCount += areaVisible;
+    }
+    if (this._dialogEmpty) this._dialogEmpty.hidden = visibleCount > 0;
   }
 
   _renderRec() {
@@ -1494,8 +2265,14 @@ export class HannounceCard extends Base {
     const el = this._el;
     const rec = this._rec;
     const hass = this._hass;
+    const textMode = this._isTextMode();
     const noTargets = this._targets().length === 0;
     const blocked = !this._info || (this._capturePath() === "none" && !this._preview);
+    el.talk.classList.toggle("text-mode", textMode);
+    el.mic.hidden = textMode;
+    el.ttsForm.hidden = !textMode;
+    el.ttsInput.disabled = rec !== "idle" || noTargets;
+    el.ttsSend.disabled = rec !== "idle" || noTargets;
     el.mic.className = `mic ${rec}`;
     el.mic.disabled = rec === "sending" || rec === "review" || (rec === "idle" && (noTargets || blocked));
     el.mic.setAttribute("aria-pressed", String(rec === "recording"));
@@ -1506,15 +2283,16 @@ export class HannounceCard extends Base {
     if (!busy) el.mic.querySelector(".spinner")?.remove();
     el.micIcon.setAttribute("icon", rec === "recording" ? "mdi:stop" : "mdi:microphone");
     el.review.hidden = rec !== "review";
-    el.uploadFeature.hidden = !(this._info && this._capturePath() === "none" && this._speakers().length && !this._preview);
+    el.uploadFeature.hidden = !(this._info && !textMode && this._capturePath() === "none" && this._speakers().length && !this._preview);
     el.uploadFeature.disabled = rec !== "idle" || noTargets;
     if (this._options) this._options.upload.disabled = rec !== "idle" || noTargets;
     el.replay.disabled = rec !== "idle";
-    // Nothing to talk to, or no microphone here: the alert explains why
+    el.modeToggle.disabled = rec !== "idle";
+    // Nothing to talk to, or no microphone here (and not in text mode): the alert explains why
     this._el.talk.hidden =
       Boolean(this._loadError) ||
       (this._info !== undefined && !this._speakers().length) ||
-      (Boolean(this._info) && this._capturePath() === "none" && !this._preview);
+      (Boolean(this._info) && !textMode && this._capturePath() === "none" && !this._preview);
     this._renderHint();
   }
 
@@ -1522,14 +2300,16 @@ export class HannounceCard extends Base {
     const el = this._el;
     const hass = this._hass;
     const rec = this._rec;
+    const textMode = this._isTextMode();
     let text = "";
     let success = false;
     if (this._successText && rec === "idle") {
       text = this._successText;
       success = true;
     } else if (rec === "idle") {
-      if (this._info && this._speakers().length && (this._preview || this._capturePath() !== "none")) {
-        text = this._targets().length ? t(hass, "hint_idle") : t(hass, "hint_choose");
+      if (this._info && this._speakers().length) {
+        if (!this._targets().length) text = t(hass, "hint_choose");
+        else if (!textMode && (this._preview || this._capturePath() !== "none")) text = t(hass, "hint_idle");
       }
     } else if (rec === "preparing") {
       text = t(hass, "hint_preparing");
@@ -1541,6 +2321,7 @@ export class HannounceCard extends Base {
     } else if (rec === "sending") {
       text = t(hass, "hint_sending");
     }
+    el.hint.hidden = textMode && !text;
     el.hint.classList.toggle("success", success);
     el.hintIcon.hidden = !success;
     if (el.hintText.textContent !== text) el.hintText.textContent = text;
@@ -1551,26 +2332,63 @@ export class HannounceCard extends Base {
     const hass = this._hass;
     const keep = Boolean(this._prefs.keepVolume);
     const volume = this._prefs.volume ?? 60;
+    const quiet = this._info?.quiet;
+    const quietActive = this._isQuietActive();
+    const isCap = quietActive && quiet?.mode === "cap_volume";
+    const cap = quiet?.volume ?? 25;
+    const selectedTargets = this._targets();
+    const allSelectedCapped =
+      isCap && (!quiet.speakers?.length || (selectedTargets.length > 0 && selectedTargets.every((id) => quiet.speakers.includes(id))));
+    const displayVolume = !keep && allSelectedCapped ? Math.min(volume, cap) : volume;
+
     el.volume.hidden = this._config.show_volume === false || !this._info || !this._speakers().length;
     el.range.value = String(volume);
     el.range.disabled = keep;
-    el.range.setAttribute("aria-valuetext", keep ? t(hass, "volume_keep") : formatPercent(hass, volume));
+    el.range.setAttribute("aria-valuetext", keep ? t(hass, "volume_keep") : formatPercent(hass, displayVolume));
     el.slider.classList.toggle("off", keep);
-    el.slider.style.setProperty("--fill", `${volume}%`);
+    el.slider.style.setProperty("--fill", `${displayVolume}%`);
+    el.capMark.hidden = !(isCap && !keep);
+    if (isCap) el.capMark.style.setProperty("--cap", `${cap}%`);
     el.sliderLabel.textContent = keep ? t(hass, "volume_keep") : "";
-    el.value.textContent = keep ? "" : formatPercent(hass, volume);
+    el.value.textContent = keep ? "" : formatPercent(hass, displayVolume);
     el.value.hidden = keep;
     el.volumeIcon.setAttribute(
       "icon",
-      keep ? "mdi:volume-equal" : volume < 35 ? "mdi:volume-low" : volume < 70 ? "mdi:volume-medium" : "mdi:volume-high"
+      keep ? "mdi:volume-equal" : displayVolume < 35 ? "mdi:volume-low" : displayVolume < 70 ? "mdi:volume-medium" : "mdi:volume-high"
     );
+
+    if (quietActive) {
+      let pill = "";
+      if (isCap) {
+        pill = t(hass, "quiet_cap", { volume: formatPercent(hass, cap) });
+      } else {
+        const skipped = this._speakers().filter((s) => this._quietSkipped(s));
+        pill =
+          skipped.length > 0 && skipped.length <= 2
+            ? t(hass, "quiet_skip_pill", { targets: skipped.map((s) => s.name).join(", ") })
+            : t(hass, "quiet_hours");
+      }
+      el.quietPillText.textContent = pill;
+      el.quietPill.title = `${t(hass, "quiet_hours")} (${quiet.start}-${quiet.end})`;
+      el.quietPill.hidden = false;
+    } else {
+      el.quietPill.hidden = true;
+    }
   }
 
   _renderOptions() {
     const opts = this._options;
     const hass = this._hass;
     if (!opts || !hass) return;
-    const current = CHIMES.includes(this._prefs.chime) ? this._prefs.chime : "ding_dong";
+    const chimes = this._availableChimes();
+    const chimeKey = chimes.join(",");
+    if (chimeKey !== this._chimeKey) {
+      this._chimeKey = chimeKey;
+      opts.segmented.innerHTML = chimes
+        .map((c) => `<button class="option" type="button" role="radio" data-chime="${c}"><span></span></button>`)
+        .join("");
+    }
+    const current = this._currentChime();
     opts.chimeLabel.textContent = t(hass, "chime");
     const playingChime = Boolean(this._chimePreview);
     const previewDisabled = current === "none";
@@ -1580,7 +2398,7 @@ export class HannounceCard extends Base {
     opts.chimePreview.setAttribute("aria-disabled", String(previewDisabled));
     opts.chimePreview.classList.toggle("playing", playingChime);
     opts.chimePreviewIcon.setAttribute("icon", playingChime ? "mdi:stop" : "mdi:play");
-    for (const button of opts.chimes) {
+    for (const button of opts.segmented.querySelectorAll(".option")) {
       const on = button.dataset.chime === current;
       button.querySelector("span").textContent = t(hass, `chime_${button.dataset.chime}`);
       button.setAttribute("aria-checked", String(on));
@@ -1657,12 +2475,41 @@ export class HannounceCard extends Base {
     if (targets.length === 1) this._moreInfo(targets[0]);
   }
 
+  _toggleMode() {
+    if (!this._ttsAvailable() || this._rec !== "idle" || this._preview) return;
+    const next = this._isTextMode() ? "voice" : "text";
+    this._prefs.mode = next;
+    writeStore({ mode: next });
+    this._renderHeader();
+    this._renderAlert();
+    this._renderRec();
+    if (next === "text") this._el.ttsInput.focus();
+  }
+
+  _toggleArea(areaKey) {
+    if (!this._selected || this._preview) return;
+    const entry = this._areaControls.get(areaKey) || this._dialogAreas.get(areaKey);
+    if (!entry) return;
+    const selectable = entry.area.speakers.filter((s) => this._selectable(s)).map((s) => s.entity_id);
+    if (!selectable.length) return;
+    const allOn = selectable.every((id) => this._selected.has(id));
+    for (const id of selectable) {
+      if (allOn) this._selected.delete(id);
+      else this._selected.add(id);
+    }
+    writeStore({ targets: [...this._selected] });
+    this._renderBadges();
+    this._renderHeader();
+    this._renderRec();
+    this._renderVolume();
+  }
+
   _toggleSpeaker(id) {
     if (!this._selected || this._preview) return;
     if (id === "*") {
-      const available = this._speakers().filter((s) => this._available(s)).map((s) => s.entity_id);
-      const allOn = available.every((s) => this._selected.has(s));
-      this._selected = new Set(allOn ? [] : available);
+      const selectable = this._speakers().filter((s) => this._selectable(s)).map((s) => s.entity_id);
+      const allOn = selectable.every((s) => this._selected.has(s));
+      this._selected = new Set(allOn ? [] : selectable);
     } else if (this._selected.has(id)) {
       this._selected.delete(id);
     } else {
@@ -1672,6 +2519,7 @@ export class HannounceCard extends Base {
     this._renderBadges();
     this._renderHeader();
     this._renderRec();
+    this._renderVolume();
   }
 
   // Talk button: hold to talk, or tap to start and tap again to send
@@ -1746,8 +2594,14 @@ export class HannounceCard extends Base {
   }
 
   async _beginBrowser() {
+    const enhance = this._info?.defaults?.voice_enhancement !== false;
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+      audio: {
+        echoCancellation: enhance,
+        noiseSuppression: enhance,
+        autoGainControl: enhance,
+        channelCount: 1,
+      },
     });
     const mimeType = pickMimeType();
     const recorder = new MediaRecorder(stream, mimeType ? { mimeType, audioBitsPerSecond: 64000 } : undefined);
@@ -1789,7 +2643,7 @@ export class HannounceCard extends Base {
       type: `${DOMAIN}/route`,
       targets,
       volume: volume === "keep" ? "keep" : Number(volume),
-      chime: CHIMES.includes(this._prefs.chime) ? this._prefs.chime : "ding_dong",
+      chime: this._currentChime(),
     });
     const capture = { kind: "app", startedAt: performance.now() };
     this._capture = capture;
@@ -1950,9 +2804,14 @@ export class HannounceCard extends Base {
       this._stopChimePreview();
       return;
     }
-    const chime = CHIMES.includes(this._prefs.chime) ? this._prefs.chime : "ding_dong";
+    const chime = this._currentChime();
+    if (chime === "none") return;
+    if (chime === "custom") {
+      this._playCustomChimePreview();
+      return;
+    }
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx || chime === "none") return;
+    if (!AudioCtx) return;
     try {
       const ctx = new AudioCtx();
       const samples = renderChimeSamples(chime, ctx.sampleRate);
@@ -1978,16 +2837,50 @@ export class HannounceCard extends Base {
     }
   }
 
+  async _playCustomChimePreview() {
+    const controller = new AbortController();
+    const preview = { controller };
+    this._chimePreview = preview;
+    this._renderOptions();
+    try {
+      const response = await this._hass.fetchWithAuth(CHIME_URL, { signal: controller.signal });
+      if (!response.ok || this._chimePreview !== preview) {
+        if (this._chimePreview === preview) this._stopChimePreview();
+        return;
+      }
+      const blob = await response.blob();
+      if (this._chimePreview !== preview) return;
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      preview.url = url;
+      preview.audio = audio;
+      const done = () => {
+        if (this._chimePreview === preview) this._stopChimePreview();
+      };
+      audio.addEventListener("ended", done, { once: true });
+      audio.addEventListener("error", done, { once: true });
+      await audio.play();
+    } catch (_err) {
+      if (this._chimePreview === preview) this._stopChimePreview();
+    }
+  }
+
   _stopChimePreview() {
     const preview = this._chimePreview;
     this._chimePreview = undefined;
     if (!preview) return;
+    preview.controller?.abort();
+    if (preview.audio) {
+      preview.audio.pause();
+      preview.audio.src = "";
+    }
+    if (preview.url) URL.revokeObjectURL(preview.url);
     try {
-      preview.source.stop();
+      preview.source?.stop();
     } catch (_err) {
       // already stopped
     }
-    preview.ctx.close?.().catch(() => undefined);
+    preview.ctx?.close?.().catch(() => undefined);
     if (this._built && this._hass) this._renderOptions();
   }
 
@@ -2025,7 +2918,7 @@ export class HannounceCard extends Base {
     form.append("audio", blob, blob.name || `message.${fileExtension(type)}`);
     form.append("targets", JSON.stringify(targets));
     form.append("volume", this._volumeValue());
-    form.append("chime", CHIMES.includes(this._prefs.chime) ? this._prefs.chime : "ding_dong");
+    form.append("chime", this._currentChime());
     try {
       const response = await this._hass.fetchWithAuth(UPLOAD_URL, { method: "POST", body: form });
       let data = {};
@@ -2035,6 +2928,37 @@ export class HannounceCard extends Base {
         // not JSON
       }
       if (!response.ok) throw new AnnounceError(data.code || String(response.status), data.message || response.statusText);
+      if (this._info) this._info.last = data;
+      this._setRec("idle");
+      this._success(t(this._hass, "sent", { targets: this._names(data.targets) }));
+    } catch (err) {
+      this._setRec("idle");
+      this._showError(err);
+    }
+  }
+
+  async _sendText(ev) {
+    ev.preventDefault();
+    if (this._rec !== "idle" || this._preview) return;
+    const message = this._el.ttsInput.value.trim();
+    if (!message) {
+      this._el.ttsInput.focus();
+      return;
+    }
+    const targets = this._targets();
+    if (!targets.length) return;
+    this._setRec("sending");
+    const volume = this._volumeValue();
+    try {
+      const data = await this._hass.callWS({
+        type: `${DOMAIN}/say`,
+        message,
+        targets,
+        volume: volume === "keep" ? "keep" : Number(volume),
+        chime: this._currentChime(),
+      });
+      this._el.ttsInput.value = "";
+      if (this._el.ttsGrow) this._el.ttsGrow.dataset.replicatedValue = "";
       if (this._info) this._info.last = data;
       this._setRec("idle");
       this._success(t(this._hass, "sent", { targets: this._names(data.targets) }));
@@ -2068,6 +2992,9 @@ export class HannounceCard extends Base {
     else if (err?.code === "audio_error") text = t(this._hass, "err_audio");
     else if (err?.code === "too_large" || err?.code === "413") text = t(this._hass, "err_too_large");
     else if (err?.code === "no_targets") text = t(this._hass, "err_unavailable");
+    else if (err?.code === "quiet_hours") text = t(this._hass, "err_quiet_hours");
+    else if (err?.code === "tts_unavailable") text = t(this._hass, "err_tts_unavailable");
+    else if (err?.code === "tts_failed") text = t(this._hass, "err_tts_failed", { message: err.message });
     else if (err?.code === "app") text = t(this._hass, "err_app", { message: err.message });
     else if (err?.code === "not_set_up") text = t(this._hass, "err_not_set_up");
     else text = t(this._hass, "err_generic", { message: err?.message || String(err) });
@@ -2134,6 +3061,19 @@ export class HannounceCardEditor extends Base {
         flatten: true,
         title: t(this._hass, "editor_content"),
         schema: [
+          {
+            name: "speaker_style",
+            selector: {
+              select: {
+                mode: "dropdown",
+                options: [
+                  { value: "auto", label: t(this._hass, "style_auto") },
+                  { value: "chips", label: t(this._hass, "style_chips") },
+                  { value: "compact", label: t(this._hass, "style_compact") },
+                ],
+              },
+            },
+          },
           { name: "show_volume", selector: { boolean: {} } },
           { name: "show_settings", selector: { boolean: {} } },
           { name: "review", selector: { boolean: {} } },

@@ -3,6 +3,11 @@
     "abort": {
       "single_instance_allowed": "HA-nnounce est déjà configuré."
     },
+    "error": {
+      "path_not_allowed": "Le chemin ne se trouve pas dans un dossier que Home Assistant peut lire (allowlist_external_dirs).",
+      "file_not_found": "Le fichier n'existe pas.",
+      "custom_chime_missing": "Indiquez d'abord le chemin d'un fichier audio personnalisé avant de choisir Personnalisé."
+    },
     "step": {
       "user": {
         "title": "HA-nnounce",
@@ -13,8 +18,18 @@
           "volume": "Volume des messages",
           "announce_volume": "Utiliser le volume d'annonce du haut-parleur",
           "chime": "Carillon avant le message",
+          "custom_chime": "Chemin du carillon personnalisé",
           "normalize": "Égaliser le niveau sonore",
+          "voice_enhancement": "Amélioration vocale",
           "max_duration": "Durée maximale du message",
+          "tts_entity": "Moteur de synthèse vocale (TTS)",
+          "quiet_hours": "Activer les heures silencieuses",
+          "quiet_start": "Début des heures silencieuses",
+          "quiet_end": "Fin des heures silencieuses",
+          "quiet_mode": "Comportement pendant les heures silencieuses",
+          "quiet_volume": "Volume maximal pendant les heures silencieuses",
+          "quiet_speakers": "Haut-parleurs concernés",
+          "quiet_entity": "Interrupteur ou capteur d'heures silencieuses",
           "show_panel": "Afficher Annonces dans la barre latérale",
           "intercom": "Caméras interphone (audio bidirectionnel Labs)"
         },
@@ -22,13 +37,25 @@
           "speakers": "Laissez vide pour proposer tous les haut-parleurs des intégrations prises en charge (Google Cast, Sonos, ESPHome, DLNA, Music Assistant et autres), sans les téléviseurs. Choisissez ici pour ajouter d'autres lecteurs, comme des intégrations personnalisées.",
           "set_volume": "Le haut-parleur revient à son volume précédent à la fin du message.",
           "announce_volume": "Sur Sonos, Music Assistant, Squeezebox et Bang & Olufsen, le message est diffusé à son propre volume par-dessus la musique, sans modifier le volume de la musique. Désactivé : le volume est modifié puis rétabli, comme sur les autres.",
+          "custom_chime": "Fichier audio local facultatif (MP3, WAV, OGG...) dans un dossier autorisé (allowlist_external_dirs). Active l'option Personnalisé dans le sélecteur de carillon.",
           "normalize": "Rend les enregistrements faibles et forts audibles au même niveau.",
+          "voice_enhancement": "Applique réduction de bruit, annulation d'écho, gain automatique du micro, filtre passe-haut et suppression des silences. Désactivez pour un audio brut.",
+          "tts_entity": "Entité TTS facultative pour les annonces texte. Laissez vide pour utiliser le moteur TTS par défaut de Home Assistant.",
+          "quiet_hours": "Limite le volume ou ignore des haut-parleurs pendant la plage horaire ou tant que l'entité de silence est activée.",
+          "quiet_mode": "Choisissez de limiter le volume ou d'ignorer les haut-parleurs concernés pendant les heures silencieuses.",
+          "quiet_speakers": "Laissez vide pour appliquer les heures silencieuses à tous les haut-parleurs.",
+          "quiet_entity": "input_boolean ou binary_sensor facultatif qui active les heures silencieuses lorsqu'il est activé.",
           "intercom": "Ajoute une caméra par haut-parleur avec un bouton pour parler, en utilisant l'audio bidirectionnel de Home Assistant (Paramètres > Système > Labs). Installe aiortc la première fois."
         }
       }
     }
   },
   "options": {
+    "error": {
+      "path_not_allowed": "Le chemin ne se trouve pas dans un dossier que Home Assistant peut lire (allowlist_external_dirs).",
+      "file_not_found": "Le fichier n'existe pas.",
+      "custom_chime_missing": "Indiquez d'abord le chemin d'un fichier audio personnalisé avant de choisir Personnalisé."
+    },
     "step": {
       "init": {
         "title": "HA-nnounce",
@@ -38,8 +65,18 @@
           "volume": "Volume des messages",
           "announce_volume": "Utiliser le volume d'annonce du haut-parleur",
           "chime": "Carillon avant le message",
+          "custom_chime": "Chemin du carillon personnalisé",
           "normalize": "Égaliser le niveau sonore",
+          "voice_enhancement": "Amélioration vocale",
           "max_duration": "Durée maximale du message",
+          "tts_entity": "Moteur de synthèse vocale (TTS)",
+          "quiet_hours": "Activer les heures silencieuses",
+          "quiet_start": "Début des heures silencieuses",
+          "quiet_end": "Fin des heures silencieuses",
+          "quiet_mode": "Comportement pendant les heures silencieuses",
+          "quiet_volume": "Volume maximal pendant les heures silencieuses",
+          "quiet_speakers": "Haut-parleurs concernés",
+          "quiet_entity": "Interrupteur ou capteur d'heures silencieuses",
           "show_panel": "Afficher Annonces dans la barre latérale",
           "intercom": "Caméras interphone (audio bidirectionnel Labs)"
         },
@@ -47,7 +84,14 @@
           "speakers": "Laissez vide pour proposer tous les haut-parleurs des intégrations prises en charge (Google Cast, Sonos, ESPHome, DLNA, Music Assistant et autres), sans les téléviseurs. Choisissez ici pour ajouter d'autres lecteurs, comme des intégrations personnalisées.",
           "set_volume": "Le haut-parleur revient à son volume précédent à la fin du message.",
           "announce_volume": "Sur Sonos, Music Assistant, Squeezebox et Bang & Olufsen, le message est diffusé à son propre volume par-dessus la musique, sans modifier le volume de la musique. Désactivé : le volume est modifié puis rétabli, comme sur les autres.",
+          "custom_chime": "Fichier audio local facultatif (MP3, WAV, OGG...) dans un dossier autorisé (allowlist_external_dirs). Active l'option Personnalisé dans le sélecteur de carillon.",
           "normalize": "Rend les enregistrements faibles et forts audibles au même niveau.",
+          "voice_enhancement": "Applique réduction de bruit, annulation d'écho, gain automatique du micro, filtre passe-haut et suppression des silences. Désactivez pour un audio brut.",
+          "tts_entity": "Entité TTS facultative pour les annonces texte. Laissez vide pour utiliser le moteur TTS par défaut de Home Assistant.",
+          "quiet_hours": "Limite le volume ou ignore des haut-parleurs pendant la plage horaire ou tant que l'entité de silence est activée.",
+          "quiet_mode": "Choisissez de limiter le volume ou d'ignorer les haut-parleurs concernés pendant les heures silencieuses.",
+          "quiet_speakers": "Laissez vide pour appliquer les heures silencieuses à tous les haut-parleurs.",
+          "quiet_entity": "input_boolean ou binary_sensor facultatif qui active les heures silencieuses lorsqu'il est activé.",
           "intercom": "Ajoute une caméra par haut-parleur avec un bouton pour parler, en utilisant l'audio bidirectionnel de Home Assistant (Paramètres > Système > Labs). Installe aiortc la première fois."
         }
       }
@@ -59,7 +103,14 @@
         "none": "Aucun",
         "ding_dong": "Ding dong",
         "soft": "Doux",
-        "three_tone": "Trois notes"
+        "three_tone": "Trois notes",
+        "custom": "Personnalisé"
+      }
+    },
+    "quiet_mode": {
+      "options": {
+        "cap_volume": "Limiter le volume",
+        "skip": "Ignorer les haut-parleurs"
       }
     }
   },
@@ -94,6 +145,21 @@
     "file_not_found": {
       "message": "{path} n'existe pas."
     },
+    "custom_chime_missing": {
+      "message": "Aucun fichier audio de carillon personnalisé n'est configuré dans les options de HA-nnounce."
+    },
+    "quiet_hours": {
+      "message": "Les heures silencieuses sont actives et ont exclu tous les haut-parleurs sélectionnés."
+    },
+    "empty_message": {
+      "message": "Le message texte ne peut pas être vide."
+    },
+    "tts_unavailable": {
+      "message": "Aucun moteur de synthèse vocale n'est configuré dans Home Assistant."
+    },
+    "tts_failed": {
+      "message": "Impossible de générer l'audio de synthèse vocale : {error}"
+    },
     "no_voice": {
       "message": "L'audio est vide ou silencieux."
     },
@@ -113,8 +179,12 @@
   "services": {
     "announce": {
       "name": "Annoncer",
-      "description": "Diffuse un fichier audio ou une URL sur les haut-parleurs, avec le carillon et le volume des annonces.",
+      "description": "Diffuse un message texte, un fichier audio ou une URL sur les haut-parleurs, avec le carillon et le volume des annonces.",
       "fields": {
+        "message": {
+          "name": "Message",
+          "description": "Texte à lire via le moteur de synthèse vocale de Home Assistant."
+        },
         "file": {
           "name": "Fichier",
           "description": "Chemin d'un fichier audio dans un dossier que Home Assistant peut lire."
@@ -123,6 +193,14 @@
           "name": "URL",
           "description": "Adresse d'un fichier audio à télécharger."
         },
+        "tts_entity": {
+          "name": "Moteur TTS",
+          "description": "Entité de synthèse vocale facultative pour le message. Vide utilise le réglage par défaut."
+        },
+        "language": {
+          "name": "Langue",
+          "description": "Code de langue facultatif transmis au moteur de synthèse vocale."
+        },
         "volume": {
           "name": "Volume",
           "description": "Volume pendant la lecture. Vide utilise le réglage de l'intégration."
@@ -130,6 +208,10 @@
         "chime": {
           "name": "Carillon",
           "description": "Carillon avant l'audio. Vide utilise le réglage de l'intégration."
+        },
+        "force": {
+          "name": "Ignorer les heures silencieuses",
+          "description": "Diffuser au volume demandé sur tous les haut-parleurs même pendant les heures silencieuses."
         }
       }
     },
@@ -140,6 +222,10 @@
         "volume": {
           "name": "Volume",
           "description": "Volume pendant la lecture. Vide utilise le réglage de l'intégration."
+        },
+        "force": {
+          "name": "Ignorer les heures silencieuses",
+          "description": "Diffuser au volume demandé sur tous les haut-parleurs même pendant les heures silencieuses."
         }
       }
     }

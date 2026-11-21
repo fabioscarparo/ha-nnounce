@@ -34,6 +34,92 @@ def test_command_without_chime_for_raw_pcm() -> None:
     assert graph.startswith("[0:a]")
 
 
+def test_command_with_custom_chime() -> None:
+    args = audio.build_ffmpeg_args(
+        "ffmpeg",
+        Path("in.webm"),
+        Path("out.mp3"),
+        chime="custom",
+        normalize=True,
+        max_duration=30,
+        custom_chime=Path("/media/chime.wav"),
+    )
+    graph = args[args.index("-filter_complex") + 1]
+    assert "lavfi" not in args
+    assert "/media/chime.wav" in args
+    assert "[0:a]aresample=44100" in graph
+    assert "[chime][voice]concat=n=2" in graph
+
+    with pytest.raises(audio.AudioError):
+        audio.build_ffmpeg_args(
+            "ffmpeg", Path("in.webm"), Path("out.mp3"), chime="custom", normalize=True, max_duration=30
+        )
+
+
+def test_command_without_voice_enhancement() -> None:
+    args = audio.build_ffmpeg_args(
+        "ffmpeg",
+        Path("in.webm"),
+        Path("out.mp3"),
+        chime="none",
+        normalize=False,
+        max_duration=30,
+        trim_silence=False,
+        highpass=False,
+    )
+    graph = args[args.index("-filter_complex") + 1]
+    assert "highpass" not in graph
+    assert "silenceremove" not in graph
+    assert "loudnorm" not in graph
+
+
+@needs_ffmpeg
+async def test_render_without_voice_enhancement_keeps_raw_audio(tmp_path: Path, make_wav) -> None:
+    source = make_wav("quiet.wav", seconds=1.0, silent=True)
+    result = await audio.async_render(
+        _executor,
+        "ffmpeg",
+        source,
+        tmp_path / "raw.mp3",
+        chime="none",
+        normalize=False,
+        max_duration=60,
+        voice_enhancement=False,
+    )
+    assert result.duration >= 1.0
+
+
+@needs_ffmpeg
+async def test_render_custom_chime(tmp_path: Path, make_wav) -> None:
+    chime_file = make_wav("chime.wav", seconds=0.8)
+    voice = make_wav("voice.wav", seconds=1.2)
+    result = await audio.async_render(
+        _executor,
+        "ffmpeg",
+        voice,
+        tmp_path / "out.mp3",
+        chime="custom",
+        normalize=True,
+        max_duration=60,
+        custom_chime=chime_file,
+    )
+    expected = 1.2 + 0.8 + audio.LEAD_IN_MS / 1000 + audio.TAIL_SECONDS
+    assert abs(result.duration - expected) < 0.3
+
+    silent = make_wav("silent.wav", seconds=1.2, silent=True)
+    with pytest.raises(audio.NoVoiceError):
+        await audio.async_render(
+            _executor,
+            "ffmpeg",
+            silent,
+            tmp_path / "silent_out.mp3",
+            chime="custom",
+            normalize=True,
+            max_duration=60,
+            custom_chime=chime_file,
+        )
+
+
 @needs_ffmpeg
 @pytest.mark.parametrize("chime", ["none", "ding_dong", "soft", "three_tone"])
 async def test_render_voice(tmp_path: Path, make_wav, chime: str) -> None:

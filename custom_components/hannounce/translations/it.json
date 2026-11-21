@@ -3,6 +3,11 @@
     "abort": {
       "single_instance_allowed": "HA-nnounce è già configurato."
     },
+    "error": {
+      "path_not_allowed": "Il percorso non è in una cartella che Home Assistant può leggere (allowlist_external_dirs).",
+      "file_not_found": "Il file non esiste.",
+      "custom_chime_missing": "Imposta il percorso di un file audio personalizzato prima di scegliere Personalizzato."
+    },
     "step": {
       "user": {
         "title": "HA-nnounce",
@@ -13,8 +18,18 @@
           "volume": "Volume dei messaggi",
           "announce_volume": "Usa il volume degli annunci dell'altoparlante",
           "chime": "Suono prima del messaggio",
+          "custom_chime": "Percorso file suono personalizzato",
           "normalize": "Uniforma il volume della voce",
+          "voice_enhancement": "Miglioramento vocale",
           "max_duration": "Durata massima del messaggio",
+          "tts_entity": "Motore text-to-speech (TTS)",
+          "quiet_hours": "Attiva orari di silenzio",
+          "quiet_start": "Inizio orari di silenzio",
+          "quiet_end": "Fine orari di silenzio",
+          "quiet_mode": "Comportamento in orari di silenzio",
+          "quiet_volume": "Volume massimo in orari di silenzio",
+          "quiet_speakers": "Altoparlanti in orari di silenzio",
+          "quiet_entity": "Interruttore o sensore orari di silenzio",
           "show_panel": "Mostra Annunci nella barra laterale",
           "intercom": "Interfono come telecamera (audio bidirezionale di Labs)"
         },
@@ -22,13 +37,25 @@
           "speakers": "Lascia vuoto per proporre tutti gli altoparlanti delle integrazioni supportate (Google Cast, Sonos, ESPHome, DLNA, Music Assistant e altre), esclusi i televisori. Sceglili qui per aggiungere altri lettori, come quelli di integrazioni personalizzate.",
           "set_volume": "Alla fine del messaggio l'altoparlante torna al suo volume.",
           "announce_volume": "Su Sonos, Music Assistant, Squeezebox e Bang & Olufsen il messaggio si sente al suo volume sopra la musica, senza toccare il volume della musica. Se disattivato, il volume dell'altoparlante viene cambiato e poi ripristinato, come sugli altri.",
+          "custom_chime": "File audio locale facoltativo (MP3, WAV, OGG...) in una cartella consentita (allowlist_external_dirs). Abilita la voce Personalizzato nel selettore del suono.",
           "normalize": "Le registrazioni piano e forti si sentono allo stesso livello.",
+          "voice_enhancement": "Applica riduzione rumore, cancellazione eco, guadagno automatico del microfono, filtro passa-alto e taglio dei silenzi. Disattiva per audio naturale senza filtri.",
+          "tts_entity": "Entità TTS facoltativa per gli annunci di testo. Lascia vuoto per usare il motore TTS predefinito di Home Assistant.",
+          "quiet_hours": "Limita il volume o esclude gli altoparlanti nella fascia oraria configurata o finché l'entità di silenzio è attiva.",
+          "quiet_mode": "Scegli se limitare il volume degli annunci oppure saltare gli altoparlanti interessati durante gli orari di silenzio.",
+          "quiet_speakers": "Lascia vuoto per applicare gli orari di silenzio a tutti gli altoparlanti.",
+          "quiet_entity": "input_boolean o binary_sensor facoltativo che attiva la modalità silenzio quando è acceso.",
           "intercom": "Aggiunge una telecamera per ogni altoparlante con il pulsante per parlare, usando l'audio bidirezionale di Home Assistant (Two-way audio in Impostazioni > Sistema > Laboratori). La prima volta installa aiortc."
         }
       }
     }
   },
   "options": {
+    "error": {
+      "path_not_allowed": "Il percorso non è in una cartella che Home Assistant può leggere (allowlist_external_dirs).",
+      "file_not_found": "Il file non esiste.",
+      "custom_chime_missing": "Imposta il percorso di un file audio personalizzato prima di scegliere Personalizzato."
+    },
     "step": {
       "init": {
         "title": "HA-nnounce",
@@ -38,8 +65,18 @@
           "volume": "Volume dei messaggi",
           "announce_volume": "Usa il volume degli annunci dell'altoparlante",
           "chime": "Suono prima del messaggio",
+          "custom_chime": "Percorso file suono personalizzato",
           "normalize": "Uniforma il volume della voce",
+          "voice_enhancement": "Miglioramento vocale",
           "max_duration": "Durata massima del messaggio",
+          "tts_entity": "Motore text-to-speech (TTS)",
+          "quiet_hours": "Attiva orari di silenzio",
+          "quiet_start": "Inizio orari di silenzio",
+          "quiet_end": "Fine orari di silenzio",
+          "quiet_mode": "Comportamento in orari di silenzio",
+          "quiet_volume": "Volume massimo in orari di silenzio",
+          "quiet_speakers": "Altoparlanti in orari di silenzio",
+          "quiet_entity": "Interruttore o sensore orari di silenzio",
           "show_panel": "Mostra Annunci nella barra laterale",
           "intercom": "Interfono come telecamera (audio bidirezionale di Labs)"
         },
@@ -47,7 +84,14 @@
           "speakers": "Lascia vuoto per proporre tutti gli altoparlanti delle integrazioni supportate (Google Cast, Sonos, ESPHome, DLNA, Music Assistant e altre), esclusi i televisori. Sceglili qui per aggiungere altri lettori, come quelli di integrazioni personalizzate.",
           "set_volume": "Alla fine del messaggio l'altoparlante torna al suo volume.",
           "announce_volume": "Su Sonos, Music Assistant, Squeezebox e Bang & Olufsen il messaggio si sente al suo volume sopra la musica, senza toccare il volume della musica. Se disattivato, il volume dell'altoparlante viene cambiato e poi ripristinato, come sugli altri.",
+          "custom_chime": "File audio locale facoltativo (MP3, WAV, OGG...) in una cartella consentita (allowlist_external_dirs). Abilita la voce Personalizzato nel selettore del suono.",
           "normalize": "Le registrazioni piano e forti si sentono allo stesso livello.",
+          "voice_enhancement": "Applica riduzione rumore, cancellazione eco, guadagno automatico del microfono, filtro passa-alto e taglio dei silenzi. Disattiva per audio naturale senza filtri.",
+          "tts_entity": "Entità TTS facoltativa per gli annunci di testo. Lascia vuoto per usare il motore TTS predefinito di Home Assistant.",
+          "quiet_hours": "Limita il volume o esclude gli altoparlanti nella fascia oraria configurata o finché l'entità di silenzio è attiva.",
+          "quiet_mode": "Scegli se limitare il volume degli annunci oppure saltare gli altoparlanti interessati durante gli orari di silenzio.",
+          "quiet_speakers": "Lascia vuoto per applicare gli orari di silenzio a tutti gli altoparlanti.",
+          "quiet_entity": "input_boolean o binary_sensor facoltativo che attiva la modalità silenzio quando è acceso.",
           "intercom": "Aggiunge una telecamera per ogni altoparlante con il pulsante per parlare, usando l'audio bidirezionale di Home Assistant (Two-way audio in Impostazioni > Sistema > Laboratori). La prima volta installa aiortc."
         }
       }
@@ -59,7 +103,14 @@
         "none": "Nessuno",
         "ding_dong": "Din don",
         "soft": "Leggero",
-        "three_tone": "Tre note"
+        "three_tone": "Tre note",
+        "custom": "Personalizzato"
+      }
+    },
+    "quiet_mode": {
+      "options": {
+        "cap_volume": "Limita il volume",
+        "skip": "Salta altoparlanti"
       }
     }
   },
@@ -94,6 +145,21 @@
     "file_not_found": {
       "message": "{path} non esiste."
     },
+    "custom_chime_missing": {
+      "message": "Nessun file audio per il suono personalizzato è configurato nelle opzioni di HA-nnounce."
+    },
+    "quiet_hours": {
+      "message": "Gli orari di silenzio sono attivi e hanno escluso tutti gli altoparlanti selezionati."
+    },
+    "empty_message": {
+      "message": "Il messaggio di testo non può essere vuoto."
+    },
+    "tts_unavailable": {
+      "message": "Nessun motore text-to-speech è configurato in Home Assistant."
+    },
+    "tts_failed": {
+      "message": "Impossibile generare l'audio text-to-speech: {error}"
+    },
     "no_voice": {
       "message": "L'audio è vuoto o silenzioso."
     },
@@ -113,8 +179,12 @@
   "services": {
     "announce": {
       "name": "Annuncia",
-      "description": "Riproduce un file audio o un URL sugli altoparlanti, con il suono e il volume degli annunci.",
+      "description": "Riproduce un messaggio di testo, un file audio o un URL sugli altoparlanti, con il suono e il volume degli annunci.",
       "fields": {
+        "message": {
+          "name": "Messaggio",
+          "description": "Testo da leggere tramite il motore text-to-speech di Home Assistant."
+        },
         "file": {
           "name": "File",
           "description": "Percorso di un file audio in una cartella che Home Assistant può leggere."
@@ -123,6 +193,14 @@
           "name": "URL",
           "description": "Indirizzo di un file audio da scaricare."
         },
+        "tts_entity": {
+          "name": "Motore TTS",
+          "description": "Entità text-to-speech facoltativa per il messaggio. Se vuota, usa il valore predefinito."
+        },
+        "language": {
+          "name": "Lingua",
+          "description": "Codice lingua facoltativo da passare al motore text-to-speech."
+        },
         "volume": {
           "name": "Volume",
           "description": "Volume durante la riproduzione. Se vuoto, usa l'impostazione dell'integrazione."
@@ -130,6 +208,10 @@
         "chime": {
           "name": "Suono",
           "description": "Suono prima dell'audio. Se vuoto, usa l'impostazione dell'integrazione."
+        },
+        "force": {
+          "name": "Ignora orari di silenzio",
+          "description": "Riproduce al volume richiesto su tutti gli altoparlanti anche durante gli orari di silenzio."
         }
       }
     },
@@ -140,6 +222,10 @@
         "volume": {
           "name": "Volume",
           "description": "Volume durante la riproduzione. Se vuoto, usa l'impostazione dell'integrazione."
+        },
+        "force": {
+          "name": "Ignora orari di silenzio",
+          "description": "Riproduce al volume richiesto su tutti gli altoparlanti anche durante gli orari di silenzio."
         }
       }
     }

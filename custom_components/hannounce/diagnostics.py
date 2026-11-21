@@ -1,6 +1,6 @@
 """Diagnostics support for HA-nnounce.
 
-Safe to attach to a public issue: no raw URLs, tokens, user IDs, or audio data.
+Safe to attach to a public issue: no raw URLs, file paths, tokens, user IDs, or audio data.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from homeassistant.helpers.network import NoURLAvailableError, get_url
 from homeassistant.loader import async_get_integration
 
 from . import HannounceConfigEntry
-from .const import DOMAIN
+from .const import CONF_CUSTOM_CHIME, DOMAIN
 from .settings import describe_speakers
 
 
@@ -53,13 +53,17 @@ async def async_get_config_entry_diagnostics(
     integration = await async_get_integration(hass, DOMAIN)
     runtime = getattr(entry, "runtime_data", None)
 
+    safe_options = dict(entry.options)
+    if safe_options.get(CONF_CUSTOM_CHIME):
+        safe_options[CONF_CUSTOM_CHIME] = "**REDACTED**"
+
     diagnostics: dict[str, Any] = {
         "integration_version": str(integration.version),
         "home_assistant_version": HA_VERSION,
         "language": hass.config.language,
         "entry": {
             "state": entry.state.value,
-            "options": dict(entry.options),
+            "options": safe_options,
         },
         "url": _url_status(hass),
     }
@@ -99,6 +103,9 @@ async def async_get_config_entry_diagnostics(
             "ffmpeg": {
                 "found": bool(ffmpeg_found),
             },
+            "custom_chime_configured": bool(runtime.settings.custom_chime),
+            "tts": runtime.tts_info(),
+            "quiet": runtime.quiet_info(),
             "intercom": {
                 "enabled": runtime.settings.intercom,
                 "ready": runtime.intercom_ready,
