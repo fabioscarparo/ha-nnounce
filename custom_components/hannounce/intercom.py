@@ -70,6 +70,15 @@ STRINGS = {
         "error": "Invio non riuscito",
         "to": "A",
     },
+    "ro": {
+        "idle": "Gata de vorbit",
+        "recording": "Înregistrare",
+        "sending": "Se trimite…",
+        "sent": "Trimis",
+        "no_voice": "Nicio voce detectată",
+        "error": "Trimiterea a eșuat",
+        "to": "Către",
+    },
 }
 
 

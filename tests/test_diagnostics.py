@@ -70,7 +70,7 @@ def test_translations_match_strings_and_have_no_long_dashes() -> None:
     expected_keys = _flat_keys(strings)
     translations_dir = INTEGRATION_DIR / "translations"
     files = sorted(translations_dir.glob("*.json"))
-    assert {f.stem for f in files} == {"de", "en", "es", "fr", "it", "nl"}
+    assert {f.stem for f in files} == {"de", "en", "es", "fr", "it", "nl", "ro"}
     for path in files:
         content = json.loads(path.read_text(encoding="utf-8"))
         assert _flat_keys(content) == expected_keys, f"key mismatch in {path.name}"
