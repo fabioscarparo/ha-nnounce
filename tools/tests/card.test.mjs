@@ -43,6 +43,7 @@ test("language follows the user, English otherwise", () => {
   assert.equal(languageOf(hass("fr-FR")), "fr");
   assert.equal(languageOf(hass("es")), "es");
   assert.equal(languageOf(hass("nl")), "nl");
+  assert.equal(languageOf(hass("ro-RO")), "ro");
   assert.equal(languageOf({ language: "it", locale: { language: "en" } }), "en");
   assert.equal(languageOf(hass("pt-BR")), "en");
   assert.equal(languageOf(undefined), "en");
@@ -51,6 +52,7 @@ test("language follows the user, English otherwise", () => {
   assert.equal(t(hass("fr"), "send"), "Envoyer");
   assert.equal(t(hass("es"), "send"), "Enviar");
   assert.equal(t(hass("nl"), "send"), "Verzend");
+  assert.equal(t(hass("ro"), "send"), "Trimite");
   assert.equal(t(hass("pt"), "send"), "Send");
   assert.equal(t(hass("it"), "missing_key"), "missing_key");
 });

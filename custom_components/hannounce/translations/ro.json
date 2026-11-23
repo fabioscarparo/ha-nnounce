@@ -1,0 +1,233 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "HA-nnounce este deja configurat."
+    },
+    "error": {
+      "path_not_allowed": "Calea nu se află într-un dosar pe care Home Assistant îl poate citi (allowlist_external_dirs).",
+      "file_not_found": "Fișierul nu există.",
+      "custom_chime_missing": "Setează calea unui fișier audio pentru sunetul personalizat înainte de a alege Personalizat."
+    },
+    "step": {
+      "user": {
+        "title": "HA-nnounce",
+        "description": "Înregistrează-ți vocea de pe telefon sau din browser și redă-o pe difuzoarele tale: Google Home și Nest, Sonos, ESPHome și orice player media care redă audio din Home Assistant. Poți modifica aceste setări oricând.",
+        "data": {
+          "speakers": "Difuzoare",
+          "set_volume": "Setează volumul pentru mesaje",
+          "volume": "Volumul mesajului",
+          "announce_volume": "Folosește volumul de anunțuri al difuzorului",
+          "chime": "Sunet înainte de mesaj",
+          "custom_chime": "Calea fișierului pentru sunetul personalizat",
+          "normalize": "Egalizează volumul",
+          "voice_enhancement": "Îmbunătățirea vocii",
+          "max_duration": "Durata maximă a mesajului",
+          "tts_entity": "Motor de sinteză vocală",
+          "quiet_hours": "Activează orele de liniște",
+          "quiet_start": "Începutul orelor de liniște",
+          "quiet_end": "Sfârșitul orelor de liniște",
+          "quiet_mode": "Comportamentul în orele de liniște",
+          "quiet_volume": "Volumul maxim în orele de liniște",
+          "quiet_speakers": "Difuzoarele pentru orele de liniște",
+          "quiet_entity": "Comutator sau senzor pentru orele de liniște",
+          "show_panel": "Afișează Anunțuri în bara laterală",
+          "intercom": "Camere de interfon (audio bidirecțional din Labs)"
+        },
+        "data_description": {
+          "speakers": "Lasă gol pentru a oferi toate difuzoarele unei integrări compatibile (Google Cast, Sonos, ESPHome, DLNA, Music Assistant și altele), cu excepția televizoarelor. Alege aici pentru a adăuga alte playere media, cum ar fi cele ale integrărilor personalizate.",
+          "set_volume": "Difuzorul revine la volumul său când mesajul se termină.",
+          "announce_volume": "Pe Sonos, Music Assistant, Squeezebox și Bang & Olufsen mesajul se redă la volumul propriu peste muzică, iar volumul muzicii nu este modificat. Dezactivat: volumul difuzorului este schimbat și apoi restabilit, ca la celelalte.",
+          "custom_chime": "Fișier audio local opțional (MP3, WAV, OGG...) dintr-un dosar permis (allowlist_external_dirs). Activează opțiunea Personalizat în selectorul de sunet.",
+          "normalize": "Face ca înregistrările line și cele tare să sune la fel.",
+          "voice_enhancement": "Aplică reducerea zgomotului microfonului, anularea ecoului, controlul automat al câștigului, filtrul trece-sus și tăierea tăcerii. Dezactivează pentru un audio brut, neprelucrat.",
+          "tts_entity": "Entitate TTS opțională pentru anunțurile text. Lasă gol pentru a folosi motorul TTS implicit din Home Assistant.",
+          "quiet_hours": "Limitează volumul sau omite difuzoarele în intervalul configurat sau cât timp entitatea pentru orele de liniște este activă.",
+          "quiet_mode": "Alege dacă se limitează volumul anunțurilor sau se omit difuzoarele afectate în orele de liniște.",
+          "quiet_speakers": "Lasă gol pentru a aplica orele de liniște tuturor difuzoarelor.",
+          "quiet_entity": "input_boolean sau binary_sensor opțional care activează orele de liniște ori de câte ori este pornit.",
+          "intercom": "Adaugă câte o cameră pentru fiecare difuzor, cu buton de vorbire, folosind audio bidirecțional din Home Assistant (Setări > Sistem > Labs). Instalează aiortc la prima utilizare."
+        }
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "path_not_allowed": "Calea nu se află într-un dosar pe care Home Assistant îl poate citi (allowlist_external_dirs).",
+      "file_not_found": "Fișierul nu există.",
+      "custom_chime_missing": "Setează calea unui fișier audio pentru sunetul personalizat înainte de a alege Personalizat."
+    },
+    "step": {
+      "init": {
+        "title": "HA-nnounce",
+        "data": {
+          "speakers": "Difuzoare",
+          "set_volume": "Setează volumul pentru mesaje",
+          "volume": "Volumul mesajului",
+          "announce_volume": "Folosește volumul de anunțuri al difuzorului",
+          "chime": "Sunet înainte de mesaj",
+          "custom_chime": "Calea fișierului pentru sunetul personalizat",
+          "normalize": "Egalizează volumul",
+          "voice_enhancement": "Îmbunătățirea vocii",
+          "max_duration": "Durata maximă a mesajului",
+          "tts_entity": "Motor de sinteză vocală",
+          "quiet_hours": "Activează orele de liniște",
+          "quiet_start": "Începutul orelor de liniște",
+          "quiet_end": "Sfârșitul orelor de liniște",
+          "quiet_mode": "Comportamentul în orele de liniște",
+          "quiet_volume": "Volumul maxim în orele de liniște",
+          "quiet_speakers": "Difuzoarele pentru orele de liniște",
+          "quiet_entity": "Comutator sau senzor pentru orele de liniște",
+          "show_panel": "Afișează Anunțuri în bara laterală",
+          "intercom": "Camere de interfon (audio bidirecțional din Labs)"
+        },
+        "data_description": {
+          "speakers": "Lasă gol pentru a oferi toate difuzoarele unei integrări compatibile (Google Cast, Sonos, ESPHome, DLNA, Music Assistant și altele), cu excepția televizoarelor. Alege aici pentru a adăuga alte playere media, cum ar fi cele ale integrărilor personalizate.",
+          "set_volume": "Difuzorul revine la volumul său când mesajul se termină.",
+          "announce_volume": "Pe Sonos, Music Assistant, Squeezebox și Bang & Olufsen mesajul se redă la volumul propriu peste muzică, iar volumul muzicii nu este modificat. Dezactivat: volumul difuzorului este schimbat și apoi restabilit, ca la celelalte.",
+          "custom_chime": "Fișier audio local opțional (MP3, WAV, OGG...) dintr-un dosar permis (allowlist_external_dirs). Activează opțiunea Personalizat în selectorul de sunet.",
+          "normalize": "Face ca înregistrările line și cele tare să sune la fel.",
+          "voice_enhancement": "Aplică reducerea zgomotului microfonului, anularea ecoului, controlul automat al câștigului, filtrul trece-sus și tăierea tăcerii. Dezactivează pentru un audio brut, neprelucrat.",
+          "tts_entity": "Entitate TTS opțională pentru anunțurile text. Lasă gol pentru a folosi motorul TTS implicit din Home Assistant.",
+          "quiet_hours": "Limitează volumul sau omite difuzoarele în intervalul configurat sau cât timp entitatea pentru orele de liniște este activă.",
+          "quiet_mode": "Alege dacă se limitează volumul anunțurilor sau se omit difuzoarele afectate în orele de liniște.",
+          "quiet_speakers": "Lasă gol pentru a aplica orele de liniște tuturor difuzoarelor.",
+          "quiet_entity": "input_boolean sau binary_sensor opțional care activează orele de liniște ori de câte ori este pornit.",
+          "intercom": "Adaugă câte o cameră pentru fiecare difuzor, cu buton de vorbire, folosind audio bidirecțional din Home Assistant (Setări > Sistem > Labs). Instalează aiortc la prima utilizare."
+        }
+      }
+    }
+  },
+  "selector": {
+    "chime": {
+      "options": {
+        "none": "Niciunul",
+        "ding_dong": "Ding dong",
+        "soft": "Discret",
+        "three_tone": "Trei tonuri",
+        "custom": "Personalizat"
+      }
+    },
+    "quiet_mode": {
+      "options": {
+        "cap_volume": "Limitează volumul",
+        "skip": "Omite difuzoarele"
+      }
+    }
+  },
+  "entity": {
+    "camera": {
+      "intercom": {
+        "name": "{speaker}"
+      },
+      "intercom_all": {
+        "name": "Toate difuzoarele"
+      }
+    }
+  },
+  "device": {
+    "intercom": {
+      "name": "Interfon"
+    }
+  },
+  "issues": {
+    "intercom_requirements": {
+      "title": "Interfonul nu a putut fi instalat",
+      "description": "Camerele de interfon au nevoie de {requirement}, care nu a putut fi instalat pe acest sistem. Înregistrarea din card și din panou funcționează în continuare. Verifică jurnalele sau dezactivează interfonul din opțiuni."
+    }
+  },
+  "exceptions": {
+    "not_set_up": {
+      "message": "HA-nnounce nu este configurat."
+    },
+    "path_not_allowed": {
+      "message": "{path} nu se află într-un dosar pe care Home Assistant îl poate citi (allowlist_external_dirs)."
+    },
+    "file_not_found": {
+      "message": "{path} nu există."
+    },
+    "custom_chime_missing": {
+      "message": "Nu este configurat niciun fișier audio pentru sunetul personalizat în opțiunile HA-nnounce."
+    },
+    "quiet_hours": {
+      "message": "Orele de liniște sunt active și au omis toate difuzoarele selectate."
+    },
+    "empty_message": {
+      "message": "Mesajul text nu poate fi gol."
+    },
+    "tts_unavailable": {
+      "message": "Nu este configurat niciun motor de sinteză vocală în Home Assistant."
+    },
+    "tts_failed": {
+      "message": "Nu s-a putut genera audio prin sinteză vocală: {error}"
+    },
+    "no_voice": {
+      "message": "Audio este gol sau silențios."
+    },
+    "audio_error": {
+      "message": "Nu s-a putut procesa audio: {error}"
+    },
+    "too_large": {
+      "message": "Fișierul audio este prea mare."
+    },
+    "download_failed": {
+      "message": "Nu s-a putut descărca audio: {error}"
+    },
+    "no_message": {
+      "message": "Nu există niciun mesaj recent de redat din nou."
+    }
+  },
+  "services": {
+    "announce": {
+      "name": "Anunță",
+      "description": "Redă pe difuzoare un mesaj text, un fișier audio sau o adresă URL, cu sunetul și volumul anunțurilor.",
+      "fields": {
+        "message": {
+          "name": "Mesaj",
+          "description": "Text de rostit cu motorul de sinteză vocală din Home Assistant."
+        },
+        "file": {
+          "name": "Fișier",
+          "description": "Calea unui fișier audio dintr-un dosar pe care Home Assistant îl poate citi."
+        },
+        "url": {
+          "name": "URL",
+          "description": "Adresa unui fișier audio de descărcat."
+        },
+        "tts_entity": {
+          "name": "Motor TTS",
+          "description": "Entitate de sinteză vocală opțională pentru mesaj. Gol folosește integrarea sau valoarea implicită din Home Assistant."
+        },
+        "language": {
+          "name": "Limbă",
+          "description": "Cod de limbă opțional transmis motorului de sinteză vocală."
+        },
+        "volume": {
+          "name": "Volum",
+          "description": "Volumul în timpul redării. Gol folosește setarea integrării."
+        },
+        "chime": {
+          "name": "Sunet de atenționare",
+          "description": "Sunetul de dinaintea audio. Gol folosește setarea integrării."
+        },
+        "force": {
+          "name": "Ignoră orele de liniște",
+          "description": "Redă la volumul cerut, pe toate difuzoarele, chiar și în orele de liniște."
+        }
+      }
+    },
+    "replay": {
+      "name": "Redă din nou ultimul mesaj",
+      "description": "Redă din nou ultimul mesaj (mesajele sunt păstrate o oră).",
+      "fields": {
+        "volume": {
+          "name": "Volum",
+          "description": "Volumul în timpul redării. Gol folosește setarea integrării."
+        },
+        "force": {
+          "name": "Ignoră orele de liniște",
+          "description": "Redă la volumul cerut, pe toate difuzoarele, chiar și în orele de liniște."
+        }
+      }
+    }
+  }
+}

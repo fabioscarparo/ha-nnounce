@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Translations:** Added Romanian (`ro`) for the backend config flow and services, the card and panel, and the intercom camera screen.
+
 ## 0.3.0
 
 ### New features
