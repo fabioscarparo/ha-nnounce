@@ -166,3 +166,21 @@ async def test_talk_from_the_camera_view(hass: HomeAssistant, players, setup_int
     camera = get_camera_from_entity_id(hass, "camera.intercom_kitchen")
     image = await camera.async_camera_image()
     assert image[:2] == b"\xff\xd8"  # JPEG
+
+
+def test_intercom_screen_handles_unicode_and_ascii_fallback() -> None:
+    """Romanian diacritics render cleanly with system fonts and degrade gracefully without them."""
+    from custom_components.hannounce import intercom  # noqa: PLC0415
+
+    assert intercom.strings("ro-RO")["recording"] == "Înregistrare"
+    assert intercom._strip_diacritics("Înregistrare · Către eșuat…") == "Inregistrare · Catre esuat…"
+
+    screen = intercom.Screen("Toate difuzoarele", "Bucătărie", "ro-RO")
+    screen.set("recording")
+    assert screen.jpeg()[:2] == b"\xff\xd8"
+
+    with patch.object(intercom, "FONT_PATHS", ()):
+        fallback = intercom.Screen("Toate difuzoarele", "Bucătărie", "ro-RO")
+        assert fallback._unicode_font is False
+        fallback.set("error")
+        assert fallback.jpeg()[:2] == b"\xff\xd8"

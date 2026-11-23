@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from homeassistant.core import HomeAssistant
 
+from custom_components.hannounce import TEXT
 from custom_components.hannounce.diagnostics import async_get_config_entry_diagnostics
 
 INTEGRATION_DIR = Path(__file__).resolve().parent.parent / "custom_components" / "hannounce"
@@ -44,35 +46,35 @@ async def test_diagnostics_reports_runtime_without_leaking_url(
     assert by_id["media_player.living_room"]["features"]["media_announce"] is True
 
 
-def _flat_keys(obj: dict, prefix: str = "") -> set[str]:
-    keys: set[str] = set()
+def _flat_items(obj: dict, prefix: str = "") -> dict[str, str]:
+    items: dict[str, str] = {}
     for key, value in obj.items():
         path = f"{prefix}.{key}" if prefix else key
         if isinstance(value, dict):
-            keys |= _flat_keys(value, path)
-        else:
-            keys.add(path)
-    return keys
-
-
-def _flat_values(obj: dict) -> list[str]:
-    values: list[str] = []
-    for value in obj.values():
-        if isinstance(value, dict):
-            values.extend(_flat_values(value))
+            items.update(_flat_items(value, path))
         elif isinstance(value, str):
-            values.append(value)
-    return values
+            items[path] = value
+    return items
+
+
+def _placeholders(text: str) -> list[str]:
+    return sorted(re.findall(r"\{(\w+)\}", text))
 
 
 def test_translations_match_strings_and_have_no_long_dashes() -> None:
-    strings = json.loads((INTEGRATION_DIR / "strings.json").read_text(encoding="utf-8"))
-    expected_keys = _flat_keys(strings)
+    strings = _flat_items(
+        json.loads((INTEGRATION_DIR / "strings.json").read_text(encoding="utf-8"))
+    )
     translations_dir = INTEGRATION_DIR / "translations"
     files = sorted(translations_dir.glob("*.json"))
-    assert {f.stem for f in files} == {"de", "en", "es", "fr", "it", "nl", "ro"}
+    languages = {f.stem for f in files}
+    assert languages == {"de", "en", "es", "fr", "it", "nl", "ro"}
+    assert set(TEXT) == languages
     for path in files:
-        content = json.loads(path.read_text(encoding="utf-8"))
-        assert _flat_keys(content) == expected_keys, f"key mismatch in {path.name}"
-        for text in _flat_values(content):
+        content = _flat_items(json.loads(path.read_text(encoding="utf-8")))
+        assert set(content) == set(strings), f"key mismatch in {path.name}"
+        for key, text in content.items():
             assert "\u2013" not in text and "\u2014" not in text, f"long dash in {path.name}: {text}"
+            assert _placeholders(text) == _placeholders(strings[key]), (
+                f"placeholder mismatch in {path.name}:{key}"
+            )

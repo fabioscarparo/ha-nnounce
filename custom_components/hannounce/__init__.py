@@ -41,6 +41,7 @@ TEXT = {
     "fr": {"title": "Annonce", "panel": "Annonces", "all": "Tous les haut-parleurs"},
     "es": {"title": "Anuncio", "panel": "Anuncios", "all": "Todos los altavoces"},
     "nl": {"title": "Omroep", "panel": "Omroepen", "all": "Alle luidsprekers"},
+    "ro": {"title": "Anunț", "panel": "Anunțuri", "all": "Toate difuzoarele"},
 }
 
 type HannounceConfigEntry = ConfigEntry[HannounceData]

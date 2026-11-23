@@ -30,7 +30,7 @@ HA-nnounce turns Home Assistant `media_player` entities into a local, whole-home
 
 ## Features
 
-- **UI:** Dedicated sidebar panel and `custom:hannounce-card` (no dashboard resource to add, visual editor, separated area shortcuts & compact speaker dialog for large homes, voice or text-to-speech mode, quiet hours indicators, chime preview, EN/IT/DE/FR/ES/NL, light/dark themes).
+- **UI:** Dedicated sidebar panel and `custom:hannounce-card` (no dashboard resource to add, visual editor, separated area shortcuts & compact speaker dialog for large homes, voice or text-to-speech mode, quiet hours indicators, chime preview, EN/IT/DE/FR/ES/NL/RO, light/dark themes).
 - **Audio pipeline:** Local `ffmpeg` processing with optional voice enhancement (microphone DSP, high-pass filter, silence trimming) and EBU R128 loudness normalization, synthesized or custom audio chimes, and MP3 encoding.
 - **Playback control:** Dedicated announcement volume (where supported) or temporary volume/mute override with automatic restoration, plus configurable quiet hours (volume cap or speaker skip).
 - **Text-to-speech mode:** Uses Home Assistant's configured TTS engine (Piper, PicoTTS, HA Cloud, Google Translate...) and routes the generated audio through HA-nnounce's chime, volume, and quiet hours pipeline.
@@ -185,7 +185,7 @@ Fired on every announcement with payload: `id`, `targets`, `duration` (seconds, 
 
 See [tools/README.md](tools/README.md).
 
-- **Backend tests:** `pip install -r requirements_test.txt && pytest` (50 tests via `pytest-homeassistant`).
+- **Backend tests:** `pip install -r requirements_test.txt && pytest` (51 tests via `pytest-homeassistant`).
 - **Frontend tests:** `node --test tools/tests/*.test.mjs`.
 
 Released under the [MIT License](LICENSE).

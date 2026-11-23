@@ -17,9 +17,11 @@ import fractions
 import io
 import logging
 import time
+import unicodedata
 from array import array
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from pathlib import Path
 
 import av
 from aiortc import (
@@ -82,16 +84,45 @@ STRINGS = {
 }
 
 
+FONT_PATHS = (
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/TTF/DejaVuSans.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+    "/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
+    "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+    "/usr/share/fonts/noto/NotoSans-Regular.ttf",
+    "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+    "/System/Library/Fonts/Supplemental/Arial.ttf",
+    "/System/Library/Fonts/SFNS.ttf",
+    "/System/Library/Fonts/Helvetica.ttc",
+)
+
+
 def strings(language: str) -> dict[str, str]:
     """Return the screen strings for a language, English otherwise."""
     return STRINGS.get(language.split("-")[0], STRINGS["en"])
 
 
-def _font(size: int) -> ImageFont.ImageFont | ImageFont.FreeTypeFont:
+def _strip_diacritics(text: str) -> str:
+    """Drop combining accents when falling back to Pillow's ASCII-only font."""
+    decomposed = unicodedata.normalize("NFD", text)
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+
+
+def _font(size: int) -> tuple[ImageFont.ImageFont | ImageFont.FreeTypeFont, bool]:
+    """Load a Unicode TrueType font when available, else Pillow's built-in font."""
+    for path in FONT_PATHS:
+        if Path(path).is_file():
+            try:
+                return ImageFont.truetype(path, size=size), True
+            except OSError:
+                continue
     try:
-        return ImageFont.load_default(size=size)
+        return ImageFont.load_default(size=size), False
     except (TypeError, OSError):  # Pillow without FreeType
-        return ImageFont.load_default()
+        return ImageFont.load_default(), False
 
 
 @dataclass
@@ -114,7 +145,9 @@ class Screen:
         """Initialize."""
         self.state = ScreenState(title=title, targets=targets)
         self._text = strings(language)
-        self._fonts = {size: _font(size) for size in (22, 30, 40)}
+        loaded = {size: _font(size) for size in (22, 30, 40)}
+        self._fonts = {size: font for size, (font, _) in loaded.items()}
+        self._unicode_font = all(has_unicode for _, has_unicode in loaded.values())
         self._cache_key: tuple | None = None
         self._cache: Image.Image | None = None
 
@@ -182,8 +215,9 @@ class Screen:
         self._cache = image
         return image
 
-    @staticmethod
-    def _centered(draw: ImageDraw.ImageDraw, y: int, text: str, font, fill) -> None:
+    def _centered(self, draw: ImageDraw.ImageDraw, y: int, text: str, font, fill) -> None:
+        if not self._unicode_font:
+            text = _strip_diacritics(text)
         if len(text) > 48:
             text = text[:47] + "…"
         box = draw.textbbox((0, 0), text, font=font)

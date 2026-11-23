@@ -4,7 +4,7 @@
  * Served by the integration itself: no dashboard resource to add, no build step.
  */
 
-export const VERSION = "0.3.0";
+export const VERSION = "0.3.1";
 const DOMAIN = "hannounce";
 const CARD_TYPE = "hannounce-card";
 const EDITOR_TYPE = "hannounce-card-editor";
@@ -676,7 +676,7 @@ export const STRINGS = {
     chime_ding_dong: "Ding dong",
     chime_soft: "Discret",
     chime_three_tone: "3 tonuri",
-    chime_custom: "Personalizat",
+    chime_custom: "Pers.",
     mode_text: "Mod text",
     mode_voice: "Mod voce",
     tts_label: "Mesajul anunțului",

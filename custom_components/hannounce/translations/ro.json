@@ -38,7 +38,7 @@
           "set_volume": "Difuzorul revine la volumul său când mesajul se termină.",
           "announce_volume": "Pe Sonos, Music Assistant, Squeezebox și Bang & Olufsen mesajul se redă la volumul propriu peste muzică, iar volumul muzicii nu este modificat. Dezactivat: volumul difuzorului este schimbat și apoi restabilit, ca la celelalte.",
           "custom_chime": "Fișier audio local opțional (MP3, WAV, OGG...) dintr-un dosar permis (allowlist_external_dirs). Activează opțiunea Personalizat în selectorul de sunet.",
-          "normalize": "Face ca înregistrările line și cele tare să sune la fel.",
+          "normalize": "Face ca înregistrările încete și cele tari să sune la fel.",
           "voice_enhancement": "Aplică reducerea zgomotului microfonului, anularea ecoului, controlul automat al câștigului, filtrul trece-sus și tăierea tăcerii. Dezactivează pentru un audio brut, neprelucrat.",
           "tts_entity": "Entitate TTS opțională pentru anunțurile text. Lasă gol pentru a folosi motorul TTS implicit din Home Assistant.",
           "quiet_hours": "Limitează volumul sau omite difuzoarele în intervalul configurat sau cât timp entitatea pentru orele de liniște este activă.",
@@ -85,7 +85,7 @@
           "set_volume": "Difuzorul revine la volumul său când mesajul se termină.",
           "announce_volume": "Pe Sonos, Music Assistant, Squeezebox și Bang & Olufsen mesajul se redă la volumul propriu peste muzică, iar volumul muzicii nu este modificat. Dezactivat: volumul difuzorului este schimbat și apoi restabilit, ca la celelalte.",
           "custom_chime": "Fișier audio local opțional (MP3, WAV, OGG...) dintr-un dosar permis (allowlist_external_dirs). Activează opțiunea Personalizat în selectorul de sunet.",
-          "normalize": "Face ca înregistrările line și cele tare să sune la fel.",
+          "normalize": "Face ca înregistrările încete și cele tari să sune la fel.",
           "voice_enhancement": "Aplică reducerea zgomotului microfonului, anularea ecoului, controlul automat al câștigului, filtrul trece-sus și tăierea tăcerii. Dezactivează pentru un audio brut, neprelucrat.",
           "tts_entity": "Entitate TTS opțională pentru anunțurile text. Lasă gol pentru a folosi motorul TTS implicit din Home Assistant.",
           "quiet_hours": "Limitează volumul sau omite difuzoarele în intervalul configurat sau cât timp entitatea pentru orele de liniște este activă.",
@@ -207,7 +207,7 @@
         },
         "chime": {
           "name": "Sunet de atenționare",
-          "description": "Sunetul de dinaintea audio. Gol folosește setarea integrării."
+          "description": "Sunetul de dinaintea mesajului audio. Gol folosește setarea integrării."
         },
         "force": {
           "name": "Ignoră orele de liniște",

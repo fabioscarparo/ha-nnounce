@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.3.1
 
-- **Translations:** Added Romanian (`ro`) for the backend config flow and services, the card and panel, and the intercom camera screen.
+- **Translations:** Added Romanian (`ro`) across the integration config flow, services, sidebar panel, card, card editor, and intercom screen (thanks to @robex2005 in #1).
+- **Intercom screen Unicode support:** Loads a system Unicode TrueType font (`DejaVuSans`, `LiberationSans`, `NotoSans`, `FreeSans`, `Arial`, etc.) when available so accented letters and diacritics render cleanly on the intercom camera stream, with an ASCII diacritic-stripping fallback if only Pillow's built-in font is present.
 
 ## 0.3.0
 
