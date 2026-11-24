@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 import voluptuous as vol
@@ -57,6 +56,7 @@ from .const import (
     MIN_DURATION,
     QUIET_MODES,
 )
+from .settings import async_check_allowed_file
 
 
 def _suggested(value: Any) -> dict[str, Any] | None:
@@ -216,11 +216,10 @@ async def _async_validate(
     """Validate option paths and combinations."""
     errors: dict[str, str] = {}
     custom_chime = data.get(CONF_CUSTOM_CHIME)
-    if custom_chime:
-        if not hass.config.is_allowed_path(custom_chime):
-            errors[CONF_CUSTOM_CHIME] = "path_not_allowed"
-        elif not await hass.async_add_executor_job(Path(custom_chime).is_file):
-            errors[CONF_CUSTOM_CHIME] = "file_not_found"
+    if custom_chime and (
+        path_error := await async_check_allowed_file(hass, custom_chime)
+    ):
+        errors[CONF_CUSTOM_CHIME] = path_error
     if data.get(CONF_CHIME) == CHIME_CUSTOM and not custom_chime:
         errors[CONF_CHIME] = "custom_chime_missing"
     return errors

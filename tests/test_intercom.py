@@ -29,8 +29,19 @@ def intercoms(hass: HomeAssistant) -> dict[str, str]:
 
 
 async def test_one_intercom_per_speaker(hass: HomeAssistant, players, setup_integration) -> None:
+    from custom_components.hannounce import intercom  # noqa: PLC0415
+
     assert await async_setup_component(hass, "labs", {})
-    await setup_integration(intercom=True)
+    with (
+        patch.object(intercom, "load_fonts", wraps=intercom.load_fonts) as mocked_load,
+        patch.object(
+            hass, "async_add_executor_job", wraps=hass.async_add_executor_job
+        ) as executor,
+    ):
+        await setup_integration(intercom=True)
+    # Fonts are loaded once via the executor and shared across all intercom cameras
+    assert mocked_load.call_count == 1
+    assert any(call.args and call.args[0] is mocked_load for call in executor.call_args_list)
     cameras = intercoms(hass)
     assert set(cameras) == {"broadcast", "media_player.desk", "media_player.kitchen", "media_player.living_room"}
     assert cameras["media_player.kitchen"] == "camera.intercom_kitchen"
@@ -175,12 +186,15 @@ def test_intercom_screen_handles_unicode_and_ascii_fallback() -> None:
     assert intercom.strings("ro-RO")["recording"] == "Înregistrare"
     assert intercom._strip_diacritics("Înregistrare · Către eșuat…") == "Inregistrare · Catre esuat…"
 
-    screen = intercom.Screen("Toate difuzoarele", "Bucătărie", "ro-RO")
+    fonts = intercom.load_fonts()
+    screen = intercom.Screen("Toate difuzoarele", "Bucătărie", "ro-RO", fonts)
     screen.set("recording")
     assert screen.jpeg()[:2] == b"\xff\xd8"
 
     with patch.object(intercom, "FONT_PATHS", ()):
-        fallback = intercom.Screen("Toate difuzoarele", "Bucătărie", "ro-RO")
+        fallback_fonts = intercom.load_fonts()
+        assert fallback_fonts.has_unicode is False
+        fallback = intercom.Screen("Toate difuzoarele", "Bucătărie", "ro-RO", fallback_fonts)
         assert fallback._unicode_font is False
         fallback.set("error")
         assert fallback.jpeg()[:2] == b"\xff\xd8"

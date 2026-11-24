@@ -58,7 +58,7 @@ from .const import (
     PLAYBACK_START_TIMEOUT,
 )
 from .media_source import media_source_id
-from .settings import AnnounceSettings
+from .settings import AnnounceSettings, async_check_allowed_file
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -176,11 +176,14 @@ class Announcer:
         if chosen_chime == CHIME_CUSTOM:
             if not settings.custom_chime:
                 raise audio.AudioError("Custom chime is not configured")
-            if not self.hass.config.is_allowed_path(settings.custom_chime):
+            path_error = await async_check_allowed_file(
+                self.hass, settings.custom_chime
+            )
+            if path_error == "path_not_allowed":
                 raise audio.AudioError("Custom chime path is not allowed")
-            custom_chime_path = Path(settings.custom_chime)
-            if not await self.hass.async_add_executor_job(custom_chime_path.is_file):
+            if path_error == "file_not_found":
                 raise audio.AudioError("Custom chime file not found")
+            custom_chime_path = Path(settings.custom_chime)
         announcement_id = self.new_id()
         target = self.folder / f"{announcement_id}.mp3"
         rendered = await audio.async_render(

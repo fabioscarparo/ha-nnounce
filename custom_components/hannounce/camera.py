@@ -24,6 +24,7 @@ from .const import DOMAIN, INTERCOM_BROADCAST
 
 if TYPE_CHECKING:
     from . import HannounceData
+    from .intercom import FontSet
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,10 +35,13 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Add one intercom per speaker and one for all of them."""
+    from .intercom import load_fonts  # noqa: PLC0415
+
     runtime: HannounceData = entry.runtime_data
+    fonts = await hass.async_add_executor_job(load_fonts)
     speakers = runtime.speakers()
-    entities = [IntercomCamera(runtime, entity_id) for entity_id in speakers]
-    entities.append(IntercomCamera(runtime, None))
+    entities = [IntercomCamera(runtime, entity_id, fonts) for entity_id in speakers]
+    entities.append(IntercomCamera(runtime, None, fonts))
     async_add_entities(entities)
 
 
@@ -48,7 +52,9 @@ class IntercomCamera(Camera):
     _attr_supported_features = CameraEntityFeature.STREAM
     _attr_should_poll = False
 
-    def __init__(self, runtime: HannounceData, speaker: str | None) -> None:
+    def __init__(
+        self, runtime: HannounceData, speaker: str | None, fonts: FontSet
+    ) -> None:
         """Initialize."""
         super().__init__()
         from .intercom import Screen  # noqa: PLC0415
@@ -80,6 +86,7 @@ class IntercomCamera(Camera):
             title=runtime.speaker_name(speaker) if speaker else runtime.text("all"),
             targets=self._targets_label(),
             language=runtime.hass.config.language,
+            fonts=fonts,
         )
 
     def _targets_label(self) -> str:

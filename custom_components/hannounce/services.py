@@ -50,6 +50,7 @@ from .const import (
     SERVICE_ANNOUNCE,
     SERVICE_REPLAY,
 )
+from .settings import async_check_allowed_file
 
 TARGET_KEYS = (
     ATTR_ENTITY_ID,
@@ -186,19 +187,13 @@ def async_setup(hass: HomeAssistant) -> None:
 
         downloaded: Path | None = None
         if file := call.data.get(ATTR_FILE):
+            if path_error := await async_check_allowed_file(hass, file):
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key=path_error,
+                    translation_placeholders={"path": file},
+                )
             source = Path(file)
-            if not hass.config.is_allowed_path(str(source)):
-                raise ServiceValidationError(
-                    translation_domain=DOMAIN,
-                    translation_key="path_not_allowed",
-                    translation_placeholders={"path": file},
-                )
-            if not await hass.async_add_executor_job(source.is_file):
-                raise ServiceValidationError(
-                    translation_domain=DOMAIN,
-                    translation_key="file_not_found",
-                    translation_placeholders={"path": file},
-                )
             runtime.plan_playback(targets, volume, force=force)
         else:
             runtime.plan_playback(targets, volume, force=force)

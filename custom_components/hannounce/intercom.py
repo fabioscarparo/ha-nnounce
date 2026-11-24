@@ -84,6 +84,8 @@ STRINGS = {
 }
 
 
+SCREEN_FONT_SIZES = (22, 30)
+
 FONT_PATHS = (
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     "/usr/share/fonts/dejavu/DejaVuSans.ttf",
@@ -100,6 +102,14 @@ FONT_PATHS = (
 )
 
 
+@dataclass(frozen=True)
+class FontSet:
+    """Preloaded fonts shared by intercom status screens."""
+
+    fonts: dict[int, ImageFont.ImageFont | ImageFont.FreeTypeFont]
+    has_unicode: bool
+
+
 def strings(language: str) -> dict[str, str]:
     """Return the screen strings for a language, English otherwise."""
     return STRINGS.get(language.split("-")[0], STRINGS["en"])
@@ -111,18 +121,45 @@ def _strip_diacritics(text: str) -> str:
     return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
 
 
-def _font(size: int) -> tuple[ImageFont.ImageFont | ImageFont.FreeTypeFont, bool]:
-    """Load a Unicode TrueType font when available, else Pillow's built-in font."""
+def _read_font_bytes() -> bytes | None:
+    """Read the first usable Unicode TrueType font from disk once."""
     for path in FONT_PATHS:
-        if Path(path).is_file():
+        font_path = Path(path)
+        if font_path.is_file():
             try:
-                return ImageFont.truetype(path, size=size), True
+                data = font_path.read_bytes()
+                ImageFont.truetype(io.BytesIO(data), size=SCREEN_FONT_SIZES[0])
             except OSError:
                 continue
+            else:
+                return data
+    return None
+
+
+def load_fonts() -> FontSet:
+    """Load the intercom screen fonts once (blocking I/O: call in the executor)."""
+    data = _read_font_bytes()
+    if data is not None:
+        return FontSet(
+            fonts={
+                size: ImageFont.truetype(io.BytesIO(data), size=size)
+                for size in SCREEN_FONT_SIZES
+            },
+            has_unicode=True,
+        )
     try:
-        return ImageFont.load_default(size=size), False
+        return FontSet(
+            fonts={
+                size: ImageFont.load_default(size=size) for size in SCREEN_FONT_SIZES
+            },
+            has_unicode=False,
+        )
     except (TypeError, OSError):  # Pillow without FreeType
-        return ImageFont.load_default(), False
+        default = ImageFont.load_default()
+        return FontSet(
+            fonts={size: default for size in SCREEN_FONT_SIZES},
+            has_unicode=False,
+        )
 
 
 @dataclass
@@ -141,13 +178,14 @@ class ScreenState:
 class Screen:
     """Draw the status frames of an intercom."""
 
-    def __init__(self, title: str, targets: str, language: str) -> None:
-        """Initialize."""
+    def __init__(
+        self, title: str, targets: str, language: str, fonts: FontSet
+    ) -> None:
+        """Initialize with fonts already loaded in the executor."""
         self.state = ScreenState(title=title, targets=targets)
         self._text = strings(language)
-        loaded = {size: _font(size) for size in (22, 30, 40)}
-        self._fonts = {size: font for size, (font, _) in loaded.items()}
-        self._unicode_font = all(has_unicode for _, has_unicode in loaded.values())
+        self._fonts = fonts.fonts
+        self._unicode_font = fonts.has_unicode
         self._cache_key: tuple | None = None
         self._cache: Image.Image | None = None
 

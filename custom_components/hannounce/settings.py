@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import time
+from pathlib import Path
 from typing import Any
 
 from homeassistant.components.media_player import (
@@ -178,6 +179,20 @@ class AnnounceSettings:
     def affects_speaker(self, entity_id: str) -> bool:
         """Return True if quiet hours apply to the given speaker."""
         return not self.quiet_speakers or entity_id in self.quiet_speakers
+
+
+def _check_allowed_file(hass: HomeAssistant, path: str) -> str | None:
+    """Validate that a local path is allowed and points to a file (blocking I/O)."""
+    if not hass.config.is_allowed_path(path):
+        return "path_not_allowed"
+    if not Path(path).is_file():
+        return "file_not_found"
+    return None
+
+
+async def async_check_allowed_file(hass: HomeAssistant, path: str) -> str | None:
+    """Check in the executor that a path is in allowlist_external_dirs and exists."""
+    return await hass.async_add_executor_job(_check_allowed_file, hass, path)
 
 
 def speaker_ids(hass: HomeAssistant, settings: AnnounceSettings) -> list[str]:

@@ -24,6 +24,7 @@ from .const import (
     DOMAIN,
     MAX_UPLOAD_BYTES,
 )
+from .settings import async_check_allowed_file
 
 if TYPE_CHECKING:
     from . import HannounceData
@@ -229,11 +230,9 @@ class AnnounceChimeView(HomeAssistantView):
         if not custom_chime:
             raise web.HTTPNotFound
         hass = request.app[KEY_HASS]
-        if not hass.config.is_allowed_path(custom_chime):
+        if await async_check_allowed_file(hass, custom_chime) is not None:
             raise web.HTTPNotFound
         path = Path(custom_chime)
-        if not await hass.async_add_executor_job(path.is_file):
-            raise web.HTTPNotFound
         content_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
         return web.FileResponse(
             path,

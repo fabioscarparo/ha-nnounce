@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+
+- **Non-blocking setup & file validation:** Intercom screen fonts are now loaded once in the Home Assistant executor (`load_fonts()`) and shared across all intercom cameras instead of doing blocking file I/O on the event loop per speaker. Also moved `is_allowed_path` + `is_file` checks into a shared executor helper (`async_check_allowed_file`) across config flow, services, HTTP preview, and audio creation.
+
 ## 0.3.1
 
 - **Translations:** Added Romanian (`ro`) across the integration config flow, services, sidebar panel, card, card editor, and intercom screen (thanks to @robex2005 in #1).
