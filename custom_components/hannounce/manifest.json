@@ -30,5 +30,5 @@
   "issue_tracker": "https://github.com/fabioscarparo/ha-nnounce/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "0.4.1"
+  "version": "0.4.2"
 }

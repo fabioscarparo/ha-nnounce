@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2
+
+- **Integration categories:** The manifest now declares `media_entertainment.speakers_audio` (primary) and `security_safety.doorbells_intercoms` (intercom cameras), so HA-nnounce is listed under the right categories and the HACS validation no longer warns about missing categories.
+
 ## 0.4.1
 
 - **Translated Alexa errors in the card and panel:** `Alexa support is disabled` and `External HTTPS URL required` now show in all 7 languages, instead of a generic message followed by the English server text.
