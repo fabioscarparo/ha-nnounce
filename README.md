@@ -14,7 +14,7 @@
 <p align="center">
   <a href="https://github.com/fabioscarparo/ha-nnounce/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/fabioscarparo/ha-nnounce?label=Release&color=5CC300"></a>
   <a href="https://github.com/fabioscarparo/ha-nnounce/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/fabioscarparo/ha-nnounce/ci.yml?branch=main&label=CI"></a>
-  <a href="https://hacs.xyz/docs/faq/custom_repositories"><img alt="HACS Custom" src="https://img.shields.io/badge/HACS-Custom-41BDF5?logo=homeassistantcommunitystore&logoColor=fff"></a>
+  <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=fabioscarparo&repository=ha-nnounce&category=integration"><img alt="HACS Default" src="https://img.shields.io/badge/HACS-Default-41BDF5?logo=homeassistantcommunitystore&logoColor=fff"></a>
   <a href="https://www.home-assistant.io/"><img alt="Home Assistant 2026.11+" src="https://img.shields.io/badge/Home_Assistant-2026.11%2B-18BCF2?logo=homeassistant&logoColor=fff"></a>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/License-MIT-333"></a>
 </p>
@@ -84,12 +84,12 @@ Works with any Home Assistant `media_player` integration capable of playing audi
 - Home Assistant **2026.11+** with `ffmpeg` (included in HA OS and official containers).
 - A local URL reachable by speakers configured in **Settings > System > Network** (e.g., `http://192.168.1.10:8123`). Self-signed HTTPS certificates are not supported.
 
-**Install via HACS:**
-1. HACS > Menu > **Custom repositories** > Add this repo URL (category: **Integration**).
-2. Install **HA-nnounce** and restart Home Assistant.
+**Install via HACS (Default) or Home Assistant Marketplace:**
+1. Search for **HA-nnounce** directly in **HACS** or **Home Assistant Marketplace**, or open [this link](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabioscarparo&repository=ha-nnounce&category=integration).
+2. Download **HA-nnounce** and restart Home Assistant.
 3. **Settings > Devices & services > Add integration > HA-nnounce**, or open [this link](https://my.home-assistant.io/redirect/config_flow_start/?domain=hannounce).
 
-*(Manual install: copy `custom_components/hannounce` to `config/custom_components/` and restart.)*
+*(Fallback: add this repo URL under HACS > Menu > **Custom repositories** as an **Integration**, or copy `custom_components/hannounce` to `config/custom_components/` and restart.)*
 
 ## Configuration
 
