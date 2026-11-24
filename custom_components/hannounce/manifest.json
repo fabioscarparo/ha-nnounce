@@ -7,6 +7,10 @@
     "labs",
     "tts"
   ],
+  "categories": [
+    "media_entertainment.speakers_audio",
+    "security_safety.doorbells_intercoms"
+  ],
   "codeowners": [
     "@fabioscarparo"
   ],
