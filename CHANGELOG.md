@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3
+
+- **Translated expired replay errors:** The card and panel now also read `translation_key` from `service_validation_error` responses and show `There is no recent message to replay.` in all 7 languages if Replay is tapped after the 1-hour retention window expires.
+- **Consistent WebSocket and HTTP error codes:** `hannounce/replay`, `hannounce/say`, and the upload endpoint now propagate `translation_key` codes (such as `alexa_disabled` or `external_https_required`) on playback failures instead of falling back to a generic `play_failed`.
+
 ## 0.4.2
 
 - **Integration categories:** The manifest now declares `media_entertainment.speakers_audio` (primary) and `security_safety.doorbells_intercoms` (intercom cameras), so HA-nnounce is listed under the right categories and the HACS validation no longer warns about missing categories.
