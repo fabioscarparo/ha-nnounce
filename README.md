@@ -84,12 +84,22 @@ Works with any Home Assistant `media_player` integration capable of playing audi
 - Home Assistant **2026.11+** with `ffmpeg` (included in HA OS and official containers).
 - A local URL reachable by speakers configured in **Settings > System > Network** (e.g., `http://192.168.1.10:8123`). Self-signed HTTPS certificates are not supported.
 
-**Install via HACS (Default) or Home Assistant Marketplace:**
-1. Search for **HA-nnounce** directly in **HACS** or **Home Assistant Marketplace**, or open [this link](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabioscarparo&repository=ha-nnounce&category=integration).
+### HACS / Marketplace (recommended)
+
+HA-nnounce is in HACS's default store, with no custom repository to add:
+
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabioscarparo&repository=ha-nnounce&category=integration)
+
+1. Open the repository in HACS with the button above, or search directly for **HA-nnounce** in **HACS** or **Home Assistant Marketplace**.
 2. Download **HA-nnounce** and restart Home Assistant.
-3. **Settings > Devices & services > Add integration > HA-nnounce**, or open [this link](https://my.home-assistant.io/redirect/config_flow_start/?domain=hannounce).
 
 *(Fallback: add this repo URL under HACS > Menu > **Custom repositories** as an **Integration**, or copy `custom_components/hannounce` to `config/custom_components/` and restart.)*
+
+### Setup
+
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=hannounce)
+
+Add **HA-nnounce** with the button above, or from **Settings > Devices & services > Add integration**.
 
 ## Configuration
 
