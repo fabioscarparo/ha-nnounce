@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+- **Translated Alexa errors in the card and panel:** `Alexa support is disabled` and `External HTTPS URL required` now show in all 7 languages, instead of a generic message followed by the English server text.
+- **Translated errors from Replay:** The card now reads the `translation_key` of action errors, so `Replay last message` failures (quiet hours, Alexa) show in the user's language too.
+- **Clearer privacy notes in the README:** Alexa support is the only path where audio leaves the local network (Amazon's servers download it through a signed link that expires after 1 hour), and an Echo in Do Not Disturb stays silent without reporting an error.
+
 ## 0.4.0
 
 - **Complete intercom screen translations:** Added German (`de`), French (`fr`), Spanish (`es`), and Dutch (`nl`) strings to the WebRTC intercom status screen so all 7 supported languages (`en`, `it`, `de`, `fr`, `es`, `nl`, `ro`) have full parity.
