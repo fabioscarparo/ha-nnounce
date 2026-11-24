@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   CARD_DEFAULTS,
+  allSpeakers,
   CHIME_SPECS,
   STRINGS,
   cleanConfig,
@@ -21,6 +22,7 @@ import {
   quickAreas,
   renderChimeSamples,
   t,
+  targetsStoreKey,
 } from "../../custom_components/hannounce/frontend/hannounce.js";
 
 const hass = (language, number_format = "language") => ({ language, locale: { language, number_format } });
@@ -164,4 +166,36 @@ test("area grouping and quick area chips skip single-speaker and all-speaker are
   assert.equal(formatSpeakerSummary(hass("it"), []), "Scegli altoparlanti");
   assert.equal(formatSpeakerSummary(hass("en"), ["Kitchen", "Living"]), "Kitchen, Living");
   assert.equal(formatSpeakerSummary(hass("it"), ["Cucina", "Soggiorno", "Studio", "Camera"]), "Cucina, Soggiorno (+2)");
+});
+
+test("All never adds a group next to its own members", () => {
+  const kitchen = { entity_id: "media_player.kitchen", group: false };
+  const study = { entity_id: "media_player.study", group: false };
+  const house = { entity_id: "media_player.whole_house", group: true };
+  assert.deepEqual(allSpeakers([kitchen, house, study]), [kitchen, study]);
+  // Only groups: All is those groups
+  assert.deepEqual(allSpeakers([house]), [house]);
+  assert.deepEqual(allSpeakers([]), []);
+  assert.deepEqual(allSpeakers(undefined), []);
+});
+
+test("cards limited to some speakers keep their own selection", () => {
+  assert.equal(targetsStoreKey({}), "");
+  assert.equal(targetsStoreKey({ entities: [] }), "");
+  assert.equal(targetsStoreKey(undefined), "");
+  assert.equal(targetsStoreKey({ entities: ["media_player.a", "media_player.b"] }), "media_player.a,media_player.b");
+  // Order and duplicates don't split the saved selection
+  assert.equal(
+    targetsStoreKey({ entities: ["media_player.b", "media_player.a", "media_player.b"] }),
+    "media_player.a,media_player.b"
+  );
+});
+
+test("quickAreas skips areas that only have one single speaker plus a group", () => {
+  const speakers = [
+    { entity_id: "media_player.kitchen", name: "Kitchen", area: "Living", area_id: "living", group: false },
+    { entity_id: "media_player.living_grp", name: "Living Group", area: "Living", area_id: "living", group: true },
+    { entity_id: "media_player.bedroom", name: "Bedroom", area: "Bedroom", area_id: "bed", group: false },
+  ];
+  assert.deepEqual(quickAreas(speakers), []);
 });

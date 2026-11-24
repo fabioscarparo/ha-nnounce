@@ -4,7 +4,7 @@
  * Served by the integration itself: no dashboard resource to add, no build step.
  */
 
-export const VERSION = "0.3.2";
+export const VERSION = "0.3.3";
 const DOMAIN = "hannounce";
 const CARD_TYPE = "hannounce-card";
 const EDITOR_TYPE = "hannounce-card-editor";
@@ -892,10 +892,22 @@ export const groupSpeakersByArea = (speakers) => {
   return { areas: [...byKey.values()], ungrouped };
 };
 
+/* What "All" selects: the single speakers, never a group next to its own members (it would play twice). */
+export const allSpeakers = (speakers) => {
+  const singles = (speakers || []).filter((speaker) => !speaker.group);
+  return singles.length ? singles : speakers || [];
+};
+
+/* Where a card keeps its selection: cards limited to some speakers keep their own. */
+export const targetsStoreKey = (config) =>
+  Array.isArray(config?.entities) && config.entities.length
+    ? [...new Set(config.entities)].sort().join(",")
+    : "";
+
 export const quickAreas = (speakers) => {
   const total = (speakers || []).length;
   return groupSpeakersByArea(speakers).areas.filter(
-    (area) => area.speakers.length >= 2 && area.speakers.length < total
+    (area) => allSpeakers(area.speakers).length >= 2 && area.speakers.length < total
   );
 };
 
@@ -995,17 +1007,23 @@ const STYLES = `
   /* Speakers: separated area strip, chips, compact selector row & dialog checklist */
   .picker { display: flex; flex-direction: column; gap: var(--ha-space-2, 8px); }
   .area-strip {
-    display: flex; gap: 6px; overflow-x: auto; padding: 2px 0;
+    display: flex; gap: 6px; overflow-x: auto; padding: 3px 2px; margin: -1px -2px;
     scrollbar-width: none;
+    --fade: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
   }
   .area-strip::-webkit-scrollbar { display: none; }
+  /* A fade on the side that scrolls, so cut chips read as "more to see" */
+  .area-strip.fade-left { --fade: linear-gradient(to right, transparent, #000 24px); }
+  .area-strip.fade-right { --fade: linear-gradient(to left, transparent, #000 24px); }
+  .area-strip.fade-left.fade-right { --fade: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
+  .area-strip.fade-left, .area-strip.fade-right { -webkit-mask-image: var(--fade); mask-image: var(--fade); }
   .area-chip {
     position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px;
     height: 34px; padding: 0 11px 0 9px; box-sizing: border-box;
-    border-radius: var(--ha-border-radius-md, 10px);
+    border-radius: var(--ha-border-radius-md, 8px);
     border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color, rgba(0, 0, 0, 0.12)));
     background: transparent;
-    font-size: var(--ha-font-size-s, 13px); font-weight: var(--ha-font-weight-medium, 500);
+    font-size: var(--ha-font-size-s, 12px); font-weight: var(--ha-font-weight-medium, 500);
     color: var(--primary-text-color); --mdc-icon-size: 16px; outline: none;
     user-select: none; -webkit-user-select: none;
   }
@@ -1019,7 +1037,7 @@ const STYLES = `
   .area-chip ha-icon { position: relative; flex: none; color: var(--secondary-text-color); }
   .area-chip[aria-checked="true"] ha-icon, .area-chip[aria-checked="mixed"] ha-icon { color: var(--tile-color); }
   .area-chip span { position: relative; white-space: nowrap; }
-  .area-chip .count { font-size: var(--ha-font-size-xs, 11px); color: var(--secondary-text-color); font-variant-numeric: tabular-nums; }
+  .area-chip .count { font-size: var(--ha-font-size-xs, 10px); color: var(--secondary-text-color); font-variant-numeric: tabular-nums; }
   .area-chip[aria-checked="true"] .count { color: var(--tile-color); }
   .area-chip:focus-visible { box-shadow: 0 0 0 2px var(--tile-color); }
   .area-chip:disabled { color: var(--disabled-text-color, #bdbdbd); border-style: dashed; cursor: default; }
@@ -1064,14 +1082,15 @@ const STYLES = `
   .sheet-search { display: block; padding: 4px 24px 12px; }
   .speakers-search {
     display: block; width: 100%; height: 40px; padding: 0 12px; box-sizing: border-box;
-    border-radius: var(--ha-border-radius-md, 10px);
+    border-radius: var(--ha-border-radius-md, 8px);
     border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color, rgba(0, 0, 0, 0.12)));
     background: var(--primary-background-color, #fafafa); color: var(--primary-text-color);
     font: inherit; font-size: max(1rem, var(--ha-font-size-m, 14px)); outline: none;
   }
   .speakers-search::placeholder { color: var(--secondary-text-color); }
   .speakers-search:focus-visible { border-color: var(--tile-color); box-shadow: 0 0 0 1px var(--tile-color); }
-  .speakers-list { padding: 0 0 12px; border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12)); }
+  /* Full width rows: more specific than .dialog-content, which would inset them by 24px */
+  .dialog-content.speakers-list { padding: 0 0 12px; border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12)); }
   .list-area-head {
     width: 100%; display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 24px; box-sizing: border-box;
     background: var(--primary-background-color, #fafafa);
@@ -1081,7 +1100,7 @@ const STYLES = `
   }
   .list-area-head:focus-visible { box-shadow: inset 0 0 0 2px var(--tile-color); }
   .list-area-head .a-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .list-area-head .a-act { flex: none; font-size: var(--ha-font-size-xs, 11px); color: var(--tile-color); }
+  .list-area-head .a-act { flex: none; font-size: var(--ha-font-size-s, 12px); color: var(--tile-color); }
   .list-item {
     position: relative; width: 100%; display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 4px 24px; box-sizing: border-box;
     border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
@@ -1098,7 +1117,7 @@ const STYLES = `
   .list-item:disabled > ha-icon { color: var(--disabled-text-color, #bdbdbd); }
   .list-item .sp-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .list-item .sp-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .list-item .sp-sub { font-size: var(--ha-font-size-xs, 11px); line-height: 15px; color: var(--secondary-text-color); }
+  .list-item .sp-sub { font-size: var(--ha-font-size-s, 12px); line-height: 16px; letter-spacing: 0.4px; color: var(--secondary-text-color); }
   .list-item .chk {
     flex: none; width: 18px; height: 18px; border-radius: 4px; box-sizing: border-box;
     border: 2px solid var(--secondary-text-color);
@@ -1203,7 +1222,7 @@ const STYLES = `
   .quiet-pill {
     position: relative; display: inline-flex; align-items: center; gap: 4px; flex: none; max-width: 48%;
     padding: 1px 8px; border-radius: var(--ha-border-radius-pill, 9999px); overflow: hidden;
-    font-size: var(--ha-font-size-xs, 11px); font-weight: var(--ha-font-weight-medium, 500);
+    font-size: var(--ha-font-size-s, 12px); font-weight: var(--ha-font-weight-medium, 500);
     line-height: 16px; color: var(--indigo-color, #3f51b5); --mdc-icon-size: 14px;
   }
   .quiet-pill::before { content: ""; position: absolute; inset: 0; background: var(--indigo-color, #3f51b5); opacity: 0.14; pointer-events: none; }
@@ -1246,7 +1265,7 @@ const STYLES = `
   .segmented { position: relative; display: flex; gap: 4px; padding: 4px; height: 42px; box-sizing: border-box; border-radius: var(--gha-radius); }
   .segmented::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--disabled-color, #bdbdbd); opacity: 0.2; pointer-events: none; }
   .option { position: relative; flex: 1; min-width: 0; border-radius: calc(var(--gha-radius) - 4px); font-size: var(--ha-font-size-m, 14px); font-weight: var(--ha-font-weight-medium, 500); color: var(--primary-text-color); outline: none; }
-  .segmented:has(:nth-child(5)) .option { flex: 1 1 auto; font-size: var(--ha-font-size-s, 13px); }
+  .segmented:has(:nth-child(5)) .option { flex: 1 1 auto; font-size: var(--ha-font-size-s, 12px); }
   .option::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--tile-color); opacity: 0; transition: opacity 80ms ease-in-out; }
   .option:hover::before { opacity: 0.2; }
   .option[aria-checked="true"] { color: var(--text-primary-color, #fff); }
@@ -1259,9 +1278,10 @@ const STYLES = `
   .row .helper { font-size: var(--ha-font-size-s, 12px); line-height: 16px; color: var(--secondary-text-color); margin-top: 2px; }
   .switch { position: relative; flex: none; width: 36px; height: 20px; border-radius: 10px; outline: none; }
   .switch::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--disabled-color, #bdbdbd); transition: background-color 150ms ease-in-out; }
-  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--card-background-color, #fff); transition: transform 150ms ease-in-out; }
+  /* A light thumb in both states: a card colored thumb vanished on the dark theme's grey track */
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--text-primary-color, #fff); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); transition: transform 150ms ease-in-out; }
   .switch[aria-checked="true"]::before { background: var(--tile-color); }
-  .switch[aria-checked="true"]::after { transform: translateX(16px); background: var(--text-primary-color, #fff); }
+  .switch[aria-checked="true"]::after { transform: translateX(16px); }
   .switch:focus-visible { box-shadow: 0 0 0 2px var(--card-background-color, #fff), 0 0 0 4px var(--tile-color); }
   .section { display: flex; flex-direction: column; gap: var(--ha-space-3, 12px); padding-top: var(--ha-space-4, 16px); border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12)); }
   .section-title { font-size: var(--ha-font-size-l, 16px); font-weight: var(--ha-font-weight-medium, 500); line-height: 24px; }
@@ -1296,6 +1316,11 @@ const STYLES = `
   @container (max-width: 320px) {
     .mic { width: 76px; height: 76px; --mdc-icon-size: 34px; }
     .badge { padding: 0 12px 0 8px; }
+  }
+  /* Half a sections column: smaller header buttons leave room for the title */
+  @container (max-width: 280px) {
+    .tile { gap: 8px; }
+    .actions .icon-button { width: 36px; height: 36px; --mdc-icon-size: 20px; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { animation-duration: 1ms !important; transition-duration: 1ms !important; }
@@ -1351,9 +1376,11 @@ export class HannounceCard extends Base {
     if (config.entities !== undefined && (!Array.isArray(config.entities) || config.entities.some((e) => typeof e !== "string"))) {
       throw new Error("entities must be a list of media_player entity ids");
     }
+    const prevKey = targetsStoreKey(this._config);
     this._config = { ...config };
     this.style.setProperty("--tile-color", colorVar(this._config.color));
     if (this._built) {
+      if (targetsStoreKey(this._config) !== prevKey) this._selected = undefined;
       this._badgeKey = undefined;
       this._initSelection();
       this._render();
@@ -1391,9 +1418,11 @@ export class HannounceCard extends Base {
     if (this._hass && this._info) this._load();
     this._subscribe();
     this._startQuietTimer();
+    this._observeStrip();
   }
 
   disconnectedCallback() {
+    this._stripObserver?.disconnect();
     this._cancel();
     this._stopChimePreview();
     this._unsubscribe();
@@ -1547,22 +1576,38 @@ export class HannounceCard extends Base {
     return this._available(speaker) && !this._quietSkipped(speaker);
   }
 
+  _single() {
+    const speakers = this._speakers();
+    return speakers.length === 1 ? speakers[0] : undefined;
+  }
+
   _initSelection() {
     if (!this._info) return;
     const speakers = this._speakers();
     const ids = new Set(speakers.map((s) => s.entity_id));
-    const stored = (readStore().targets || []).filter((id) => ids.has(id));
-    if (this._selected) {
-      this._selected = new Set([...this._selected].filter((id) => ids.has(id)));
-    } else if (speakers.length === 1) {
+    if (speakers.length === 1) {
+      // One speaker: the card is that speaker's, there is nothing to choose
       this._selected = new Set([speakers[0].entity_id]);
+    } else if (this._selected) {
+      this._selected = new Set([...this._selected].filter((id) => ids.has(id)));
     } else {
-      this._selected = new Set(stored);
+      const store = readStore();
+      const scoped = store.cardTargets?.[targetsStoreKey(this._config)];
+      this._selected = new Set((Array.isArray(scoped) ? scoped : store.targets || []).filter((id) => ids.has(id)));
     }
     if (this._preview && !this._selected.size) {
       const first = speakers.find((s) => this._selectable(s));
       if (first) this._selected = new Set([first.entity_id]);
     }
+  }
+
+  _saveTargets() {
+    if (this._single()) return;
+    const ids = [...this._selected];
+    const key = targetsStoreKey(this._config);
+    // The panel and the cards with every speaker share one selection; a card limited to some speakers keeps its own
+    if (!key) writeStore({ targets: ids });
+    else writeStore({ cardTargets: { ...(readStore().cardTargets || {}), [key]: ids } });
   }
 
   _targets() {
@@ -1750,6 +1795,7 @@ export class HannounceCard extends Base {
     this._options = this._buildOptions();
     this._placeOptions();
     this._wire();
+    if (this.isConnected) this._observeStrip();
   }
 
   _placeOptions() {
@@ -1832,6 +1878,7 @@ export class HannounceCard extends Base {
     });
 
     // Speakers and areas: a tap selects, a long press or a right click opens the speaker
+    el.areaStrip.addEventListener("scroll", () => this._updateStripFade(), { passive: true });
     el.areaStrip.addEventListener("click", (ev) => {
       const chip = ev.target.closest(".area-chip");
       if (!chip || chip.disabled) return;
@@ -2010,7 +2057,7 @@ export class HannounceCard extends Base {
       button.title = t(hass, key);
       button.setAttribute("aria-label", t(hass, key));
     }
-    el.settings.hidden = this._page || this._config.show_settings === false || !this._info;
+    el.settings.hidden = this._page || this._config.show_settings === false || !this._info || !this._speakers().length;
     el.dialogTitle.textContent = t(hass, "settings");
     el.optionsTitle.textContent = t(hass, "settings");
     el.areaStrip.setAttribute("aria-label", t(hass, "speakers"));
@@ -2040,19 +2087,20 @@ export class HannounceCard extends Base {
     const el = this._el;
     const targets = this._targets();
     el.primary.textContent = this._config.title || t(this._hass, "title");
+    const single = this._single();
     let secondary = "";
     if (this._info === undefined) secondary = t(this._hass, "loading");
-    else if (this._info && this._speakers().length) {
-      secondary = targets.length ? this._names(targets) : t(this._hass, "no_selection");
-      // A card named after its only speaker shows the speaker's state instead, like a tile card
+    else if (this._info && single) {
+      // A card of one speaker reads like its tile: the speaker, or its state when the title already names it
       const title = (this._config.title || "").trim().toLowerCase();
-      const stateObj = targets.length === 1 ? this._hass.states[targets[0]] : undefined;
-      if (stateObj && title && title === secondary.toLowerCase()) {
-        secondary = this._hass.formatEntityState?.(stateObj) ?? stateObj.state;
-      }
+      const stateObj = this._hass.states[single.entity_id];
+      const state = stateObj ? this._hass.formatEntityState?.(stateObj) ?? stateObj.state : t(this._hass, "unavailable");
+      secondary = title && title === single.name.toLowerCase() ? state : single.name;
+    } else if (this._info && this._speakers().length) {
+      secondary = targets.length ? this._names(targets) : t(this._hass, "no_selection");
     }
     el.secondary.textContent = secondary;
-    const clickable = targets.length === 1 && !this._preview;
+    const clickable = (Boolean(single) || targets.length === 1) && !this._preview;
     el.tile.classList.toggle("clickable", clickable);
     if (clickable) {
       el.tile.setAttribute("role", "button");
@@ -2069,7 +2117,7 @@ export class HannounceCard extends Base {
     el.modeToggle.title = modeLabel;
     el.modeToggle.setAttribute("aria-label", modeLabel);
     el.modeToggleIcon.setAttribute("icon", textMode ? "mdi:microphone" : "mdi:keyboard-outline");
-    el.replay.hidden = !this._info?.last;
+    el.replay.hidden = !this._info?.last || !this._speakers().length;
     el.replay.disabled = this._rec !== "idle";
   }
 
@@ -2157,7 +2205,7 @@ export class HannounceCard extends Base {
       el.badges.textContent = "";
       if (showAreaStrip) {
         el.areaStrip.appendChild(
-          this._makeAreaChip("*", t(hass, "all"), "mdi:checkbox-multiple-marked-outline", { speakers })
+          this._makeAreaChip("*", t(hass, "all"), "mdi:checkbox-multiple-marked-outline", { speakers: allSpeakers(speakers) })
         );
         for (const area of stripAreas) {
           el.areaStrip.appendChild(this._makeAreaChip(area.key, area.name, area.icon, area));
@@ -2171,7 +2219,8 @@ export class HannounceCard extends Base {
       }
     }
 
-    el.picker.hidden = !speakers.length;
+    // A card of one speaker names it in the header: a chip would only let it be switched off
+    el.picker.hidden = speakers.length <= 1;
     el.areaStrip.hidden = !showAreaStrip;
     el.badges.hidden = compact || !speakers.length;
     el.pickerRow.hidden = !compact;
@@ -2181,7 +2230,7 @@ export class HannounceCard extends Base {
     const chosen = selectable.filter((s) => selected.has(s.entity_id));
 
     for (const { button, count, area } of this._areaControls.values()) {
-      const areaSelectable = area.speakers.filter((s) => this._selectable(s));
+      const areaSelectable = allSpeakers(area.speakers).filter((s) => this._selectable(s));
       const areaSelected = areaSelectable.filter((s) => selected.has(s.entity_id));
       const state =
         areaSelectable.length > 0 && areaSelected.length === areaSelectable.length
@@ -2195,18 +2244,21 @@ export class HannounceCard extends Base {
     }
 
     if (compact) {
-      el.pickerMain.textContent = formatSpeakerSummary(
+      const summary = formatSpeakerSummary(
         hass,
         chosen.map((s) => s.name)
       );
+      el.pickerMain.textContent = summary;
       el.pickerCount.textContent = `${chosen.length}/${selectable.length}`;
+      el.pickerRow.setAttribute("aria-label", `${t(hass, "choose_speakers")}: ${chosen.length ? summary : t(hass, "no_selection")}`);
     }
 
+    const allSelectable = allSpeakers(speakers).filter((s) => this._selectable(s));
     for (const { badge, speaker } of this._badges.values()) {
       if (speaker.all) {
-        const allOn = selectable.length > 0 && selectable.every((s) => selected.has(s.entity_id));
+        const allOn = allSelectable.length > 0 && allSelectable.every((s) => selected.has(s.entity_id));
         badge.setAttribute("aria-checked", String(allOn));
-        badge.disabled = !selectable.length;
+        badge.disabled = !allSelectable.length;
         badge.querySelector("ha-icon").setAttribute("icon", "mdi:checkbox-multiple-marked-outline");
         continue;
       }
@@ -2232,6 +2284,25 @@ export class HannounceCard extends Base {
     }
 
     if (el.speakersDialog.open) this._renderSpeakersDialog();
+    this._updateStripFade();
+  }
+
+  _updateStripFade() {
+    const strip = this._el?.areaStrip;
+    if (!strip) return;
+    const max = strip.hidden ? 0 : strip.scrollWidth - strip.clientWidth;
+    const pos = Math.abs(strip.scrollLeft);
+    const fromStart = max > 1 && pos > 1;
+    const toEnd = max > 1 && pos < max - 1;
+    const rtl = max > 1 && getComputedStyle(strip).direction === "rtl";
+    strip.classList.toggle("fade-left", rtl ? toEnd : fromStart);
+    strip.classList.toggle("fade-right", rtl ? fromStart : toEnd);
+  }
+
+  _observeStrip() {
+    if (!this._el || !globalThis.ResizeObserver) return;
+    this._stripObserver ??= new ResizeObserver(() => this._updateStripFade());
+    this._stripObserver.observe(this._el.areaStrip);
   }
 
   _makeDialogRow(speaker) {
@@ -2311,7 +2382,7 @@ export class HannounceCard extends Base {
 
     for (const { act, head, area } of this._dialogAreas.values()) {
       if (!head || !act) continue;
-      const av = area.speakers.filter((s) => this._selectable(s));
+      const av = allSpeakers(area.speakers).filter((s) => this._selectable(s));
       const allOn = av.length > 0 && av.every((s) => selected.has(s.entity_id));
       head.disabled = !av.length;
       act.textContent = !av.length ? "" : t(hass, allOn ? "deselect_all" : "all");
@@ -2401,8 +2472,11 @@ export class HannounceCard extends Base {
       text = this._successText;
       success = true;
     } else if (rec === "idle") {
+      const single = this._single();
       if (this._info && this._speakers().length) {
-        if (!this._targets().length) text = t(hass, "hint_choose");
+        // One speaker: say why it can't take a message, there is nothing to choose
+        if (!this._targets().length && single) text = t(hass, this._available(single) ? "quiet_skipped" : "unavailable");
+        else if (!this._targets().length) text = t(hass, "hint_choose");
         else if (!textMode && (this._preview || this._capturePath() !== "none")) text = t(hass, "hint_idle");
       }
     } else if (rec === "preparing") {
@@ -2565,8 +2639,10 @@ export class HannounceCard extends Base {
   }
 
   _openSpeakerInfo() {
+    const single = this._single();
     const targets = this._targets();
-    if (targets.length === 1) this._moreInfo(targets[0]);
+    if (single) this._moreInfo(single.entity_id);
+    else if (targets.length === 1) this._moreInfo(targets[0]);
   }
 
   _toggleMode() {
@@ -2584,14 +2660,20 @@ export class HannounceCard extends Base {
     if (!this._selected || this._preview) return;
     const entry = this._areaControls.get(areaKey) || this._dialogAreas.get(areaKey);
     if (!entry) return;
-    const selectable = entry.area.speakers.filter((s) => this._selectable(s)).map((s) => s.entity_id);
+    const selectable = allSpeakers(entry.area.speakers).filter((s) => this._selectable(s)).map((s) => s.entity_id);
     if (!selectable.length) return;
     const allOn = selectable.every((id) => this._selected.has(id));
+    if (!allOn) {
+      // Drop groups in the same area so toggling the area on never plays twice
+      for (const speaker of entry.area.speakers) {
+        if (speaker.group && !selectable.includes(speaker.entity_id)) this._selected.delete(speaker.entity_id);
+      }
+    }
     for (const id of selectable) {
       if (allOn) this._selected.delete(id);
       else this._selected.add(id);
     }
-    writeStore({ targets: [...this._selected] });
+    this._saveTargets();
     this._renderBadges();
     this._renderHeader();
     this._renderRec();
@@ -2601,7 +2683,7 @@ export class HannounceCard extends Base {
   _toggleSpeaker(id) {
     if (!this._selected || this._preview) return;
     if (id === "*") {
-      const selectable = this._speakers().filter((s) => this._selectable(s)).map((s) => s.entity_id);
+      const selectable = allSpeakers(this._speakers()).filter((s) => this._selectable(s)).map((s) => s.entity_id);
       const allOn = selectable.every((s) => this._selected.has(s));
       this._selected = new Set(allOn ? [] : selectable);
     } else if (this._selected.has(id)) {
@@ -2609,7 +2691,7 @@ export class HannounceCard extends Base {
     } else {
       this._selected.add(id);
     }
-    writeStore({ targets: [...this._selected] });
+    this._saveTargets();
     this._renderBadges();
     this._renderHeader();
     this._renderRec();

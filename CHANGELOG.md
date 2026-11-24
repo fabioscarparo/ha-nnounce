@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.3
+
+- **Prevent duplicate playback on speaker groups:** Selecting `All` or an area shortcut now selects individual speakers instead of also selecting a speaker group alongside its own members (falling back to groups only when no individual speakers exist).
+- **Per-card speaker selection:** Cards configured with a custom `entities` subset now keep their own saved selection (`cardTargets`) without overwriting the shared selection used by the sidebar panel and full-home cards, and reload cleanly when `entities` changes in the visual editor.
+- **Cleaner single-speaker cards:** Cards targeting a single speaker now hide the redundant speaker chip row, keep the header clickable for more-info, and show `Unavailable` or `Silenced by quiet hours` directly in the hint when the speaker cannot play.
+- **Card UI polish & dark mode fixes:** Added dynamic scroll fade edges (with RTL and resize support) on the horizontal area strip, fixed full-width speaker rows in the selection dialog (`.dialog-content.speakers-list`), fixed the toggle switch thumb contrast in dark mode, aligned Home Assistant CSS token fallbacks, added compact header buttons for narrow (`<= 280px`) columns, and regenerated the light/dark README wall SVGs.
+
 ## 0.3.2
 
 - **Non-blocking setup & file validation:** Intercom screen fonts are now loaded once in the Home Assistant executor (`load_fonts()`) and shared across all intercom cameras instead of doing blocking file I/O on the event loop per speaker. Also moved `is_allowed_path` + `is_file` checks into a shared executor helper (`async_check_allowed_file`) across config flow, services, HTTP preview, and audio creation.
