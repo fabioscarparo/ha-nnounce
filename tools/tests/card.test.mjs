@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   CARD_DEFAULTS,
+  HannounceCard,
   allSpeakers,
   CHIME_SPECS,
   STRINGS,
@@ -198,4 +199,20 @@ test("quickAreas skips areas that only have one single speaker plus a group", ()
     { entity_id: "media_player.bedroom", name: "Bedroom", area: "Bedroom", area_id: "bed", group: false },
   ];
   assert.deepEqual(quickAreas(speakers), []);
+});
+
+test("errors from the upload, the WebSocket and the actions read in the user's language", () => {
+  const shown = [];
+  const card = { _hass: hass("it"), _toast: (text) => shown.push(text) };
+  const show = (err) => HannounceCard.prototype._showError.call(card, err);
+  show({ code: "alexa_disabled", message: "Alexa support is disabled." }); // upload and hannounce/say
+  show({ code: "home_assistant_error", translation_key: "external_https_required", message: "Alexa speakers require..." }); // replay action
+  show({ code: "home_assistant_error", translation_key: "quiet_hours", message: "Quiet hours..." });
+  show({ code: "home_assistant_error", message: "Something else" });
+  assert.deepEqual(shown, [
+    STRINGS.it.err_alexa_disabled,
+    STRINGS.it.err_external_https,
+    STRINGS.it.err_quiet_hours,
+    t(hass("it"), "err_generic", { message: "Something else" }),
+  ]);
 });

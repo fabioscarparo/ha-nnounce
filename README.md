@@ -19,7 +19,7 @@
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/License-MIT-333"></a>
 </p>
 
-HA-nnounce turns Home Assistant `media_player` entities into a local, whole-home announcement system. Audio is recorded on your device, processed locally by Home Assistant, and delivered directly to speakers via `media-source://hannounce/...` with no cloud services involved.
+HA-nnounce turns Home Assistant `media_player` entities into a local, whole-home announcement system. Audio is recorded on your device, processed locally by Home Assistant, and delivered directly to speakers via `media-source://hannounce/...` with no cloud services involved (the only exception is the optional Alexa support, off by default: see [Amazon Alexa / Echo](#supported-speakers)).
 
 **Choose the speakers, hold the microphone button, talk, and release to send.**
 
@@ -77,7 +77,7 @@ Works with any Home Assistant `media_player` integration capable of playing audi
 
 **Google Home:** speakers work through Home Assistant's Google Cast integration. Google Assistant broadcast only accepts text, so it cannot play a recording.
 
-**Amazon Alexa / Echo:** Echo devices cannot fetch local LAN URLs; Amazon's servers fetch the signed MP3 directly, so enabling Alexa support requires a valid external HTTPS URL (Home Assistant Cloud / Nabu Casa or a public HTTPS domain).
+**Amazon Alexa / Echo:** Echo devices cannot fetch local LAN URLs; Amazon's servers fetch the signed MP3 directly, so enabling Alexa support requires a valid external HTTPS URL (Home Assistant Cloud / Nabu Casa or a public HTTPS domain). Messages to Echo devices therefore leave your local network. An Echo with Do Not Disturb on stays silent, and Amazon reports no error.
 
 **Not supported:** Players that cannot play arbitrary audio URLs (e.g., Spotify, or Alexa without an external HTTPS URL).  
 *Note: Tested on HA 2026.11.1 with simulated players; not every listed hardware integration has been verified on physical devices.*
@@ -194,7 +194,7 @@ Fired on every announcement with payload: `id`, `targets`, `duration` (seconds, 
 ## Technical Notes & Limitations
 
 - **Synchronization:** Selecting multiple individual speakers starts playback roughly simultaneously but is not synced. Use native speaker groups (Google Home, Sonos, or HA `media_player` groups) for synchronized audio.
-- **Retention & Privacy:** Audio is processed by Home Assistant and served to speakers on your local network. Files and signed URLs expire and are auto-deleted after **1 hour**, and are excluded from HA backups.
+- **Retention & Privacy:** Audio is processed by Home Assistant and served to speakers on your local network. With Alexa support on, Echo messages are the exception: Amazon's servers download them from your external HTTPS URL through a signed link. Files and signed URLs expire and are auto-deleted after **1 hour**, and are excluded from HA backups.
 - **Diagnostics:** Download diagnostics from **Settings > Devices & services > HA-nnounce > ⋮ > Download diagnostics** when reporting issues (no URLs, tokens, user IDs, or audio are included).
 
 ## Development & License

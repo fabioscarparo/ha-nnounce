@@ -146,6 +146,8 @@ export const STRINGS = {
     err_insecure_app: " The iOS app can also use the microphone over HTTP once the intercom is turned on in the integration options.",
     err_not_set_up: "HA-nnounce is not set up.",
     err_quiet_hours: "Quiet hours are active and skipped all selected speakers.",
+    err_alexa_disabled: "Alexa support is disabled. Enable it in the HA-nnounce options to play announcements on Echo speakers.",
+    err_external_https: "Alexa speakers require an external HTTPS URL configured in Settings > System > Network (such as Home Assistant Cloud).",
     err_tts_unavailable: "No text-to-speech engine is configured in Home Assistant.",
     err_tts_failed: "Could not generate speech: {message}",
     err_no_speakers: "No speakers yet. Add the integration of your speakers (Google Cast, Sonos, ESPHome...), or choose them in the HA-nnounce options.",
@@ -240,6 +242,8 @@ export const STRINGS = {
     err_insecure_app: " Nell'app iOS il microfono funziona anche in HTTP, attivando l'interfono nelle opzioni dell'integrazione.",
     err_not_set_up: "HA-nnounce non è configurato.",
     err_quiet_hours: "Gli orari di silenzio sono attivi e hanno escluso gli altoparlanti scelti.",
+    err_alexa_disabled: "Il supporto Alexa è disattivato. Attivalo nelle opzioni di HA-nnounce per inviare annunci agli altoparlanti Echo.",
+    err_external_https: "Gli altoparlanti Alexa richiedono un URL esterno HTTPS configurato in Impostazioni > Sistema > Rete (come Home Assistant Cloud).",
     err_tts_unavailable: "Nessun motore text-to-speech è configurato in Home Assistant.",
     err_tts_failed: "Impossibile generare la voce: {message}",
     err_no_speakers:
@@ -335,6 +339,8 @@ export const STRINGS = {
     err_insecure_app: " Die iOS-App kann das Mikrofon auch über HTTP nutzen, wenn die Gegensprechanlage in den Integrationsoptionen aktiviert ist.",
     err_not_set_up: "HA-nnounce ist nicht eingerichtet.",
     err_quiet_hours: "Die Ruhezeit ist aktiv und hat alle gewählten Lautsprecher übersprungen.",
+    err_alexa_disabled: "Die Alexa-Unterstützung ist deaktiviert. Aktiviere sie in den HA-nnounce-Optionen, um Durchsagen auf Echo-Lautsprechern abzuspielen.",
+    err_external_https: "Alexa-Lautsprecher erfordern eine externe HTTPS-URL unter Einstellungen > System > Netzwerk (z. B. Home Assistant Cloud).",
     err_tts_unavailable: "In Home Assistant ist kein Text-zu-Sprache-Dienst konfiguriert.",
     err_tts_failed: "Sprachausgabe fehlgeschlagen: {message}",
     err_no_speakers: "Noch keine Lautsprecher. Füge die Integration deiner Lautsprecher hinzu (Google Cast, Sonos, ESPHome...) oder wähle sie in den HA-nnounce-Optionen.",
@@ -429,6 +435,8 @@ export const STRINGS = {
     err_insecure_app: " L'application iOS peut aussi utiliser le microphone en HTTP lorsque l'interphone est activé dans les options de l'intégration.",
     err_not_set_up: "HA-nnounce n'est pas configuré.",
     err_quiet_hours: "Les heures silencieuses sont actives et ont exclu les haut-parleurs choisis.",
+    err_alexa_disabled: "La prise en charge d'Alexa est désactivée. Activez-la dans les options de HA-nnounce pour diffuser des annonces sur les haut-parleurs Echo.",
+    err_external_https: "Les haut-parleurs Alexa nécessitent une URL externe HTTPS configurée dans Paramètres > Système > Réseau (comme Home Assistant Cloud).",
     err_tts_unavailable: "Aucun moteur de synthèse vocale n'est configuré dans Home Assistant.",
     err_tts_failed: "Impossible de générer la voix : {message}",
     err_no_speakers: "Aucun haut-parleur pour le moment. Ajoutez l'intégration de vos haut-parleurs (Google Cast, Sonos, ESPHome...) ou choisissez-les dans les options de HA-nnounce.",
@@ -523,6 +531,8 @@ export const STRINGS = {
     err_insecure_app: " La app de iOS también puede usar el micrófono por HTTP si el intercomunicador está activado en las opciones de la integración.",
     err_not_set_up: "HA-nnounce no está configurado.",
     err_quiet_hours: "El horario de silencio está activo y ha omitido los altavoces elegidos.",
+    err_alexa_disabled: "La compatibilidad con Alexa está desactivada. Actívala en las opciones de HA-nnounce para reproducir anuncios en altavoces Echo.",
+    err_external_https: "Los altavoces Alexa requieren una URL externa HTTPS configurada en Ajustes > Sistema > Red (como Home Assistant Cloud).",
     err_tts_unavailable: "No hay ningún motor de texto a voz configurado en Home Assistant.",
     err_tts_failed: "No se pudo generar la voz: {message}",
     err_no_speakers: "Aún no hay altavoces. Añade la integración de tus altavoces (Google Cast, Sonos, ESPHome...) o elígelos en las opciones de HA-nnounce.",
@@ -617,6 +627,8 @@ export const STRINGS = {
     err_insecure_app: " De iOS-app kan de microfoon ook via HTTP gebruiken zodra de intercom is ingeschakeld in de integratie-opties.",
     err_not_set_up: "HA-nnounce is niet ingesteld.",
     err_quiet_hours: "Stille uren zijn actief en hebben de gekozen luidsprekers overgeslagen.",
+    err_alexa_disabled: "Alexa-ondersteuning is uitgeschakeld. Schakel deze in bij de opties van HA-nnounce om berichten op Echo-luidsprekers af te spelen.",
+    err_external_https: "Alexa-luidsprekers vereisen een externe HTTPS-URL onder Instellingen > Systeem > Netwerk (zoals Home Assistant Cloud).",
     err_tts_unavailable: "Er is geen tekst-naar-spraak-engine geconfigureerd in Home Assistant.",
     err_tts_failed: "Kon spraak niet genereren: {message}",
     err_no_speakers: "Nog geen luidsprekers. Voeg de integratie van je luidsprekers toe (Google Cast, Sonos, ESPHome...) of kies ze in de opties van HA-nnounce.",
@@ -711,6 +723,8 @@ export const STRINGS = {
     err_insecure_app: " Aplicația iOS poate folosi microfonul și prin HTTP după ce interfonul este activat în opțiunile integrării.",
     err_not_set_up: "HA-nnounce nu este configurat.",
     err_quiet_hours: "Orele de liniște sunt active și au omis toate difuzoarele selectate.",
+    err_alexa_disabled: "Suportul pentru Alexa este dezactivat. Activează-l din opțiunile HA-nnounce pentru a reda anunțuri pe difuzoarele Echo.",
+    err_external_https: "Difuzoarele Alexa necesită o adresă URL externă HTTPS configurată în Setări > Sistem > Rețea (precum Home Assistant Cloud).",
     err_tts_unavailable: "Nu este configurat niciun motor de sinteză vocală în Home Assistant.",
     err_tts_failed: "Nu s-a putut genera vocea: {message}",
     err_no_speakers: "Încă nu există difuzoare. Adaugă integrarea difuzoarelor tale (Google Cast, Sonos, ESPHome...) sau alege-le în opțiunile HA-nnounce.",
@@ -3161,18 +3175,22 @@ export class HannounceCard extends Base {
 
   _showError(err) {
     const name = err?.name;
+    // Actions (replay) fail with code home_assistant_error and say what went wrong in translation_key
+    const code = err?.code === "home_assistant_error" && err?.translation_key ? err.translation_key : err?.code;
     let text;
-    if (name === "NotAllowedError" || name === "SecurityError" || err?.code === "mic_denied") text = t(this._hass, "err_mic_denied");
+    if (name === "NotAllowedError" || name === "SecurityError" || code === "mic_denied") text = t(this._hass, "err_mic_denied");
     else if (name === "NotFoundError" || name === "OverconstrainedError") text = t(this._hass, "err_mic_missing");
-    else if (err?.code === "no_voice") text = t(this._hass, "err_no_voice");
-    else if (err?.code === "audio_error") text = t(this._hass, "err_audio");
-    else if (err?.code === "too_large" || err?.code === "413") text = t(this._hass, "err_too_large");
-    else if (err?.code === "no_targets") text = t(this._hass, "err_unavailable");
-    else if (err?.code === "quiet_hours") text = t(this._hass, "err_quiet_hours");
-    else if (err?.code === "tts_unavailable") text = t(this._hass, "err_tts_unavailable");
-    else if (err?.code === "tts_failed") text = t(this._hass, "err_tts_failed", { message: err.message });
-    else if (err?.code === "app") text = t(this._hass, "err_app", { message: err.message });
-    else if (err?.code === "not_set_up") text = t(this._hass, "err_not_set_up");
+    else if (code === "no_voice") text = t(this._hass, "err_no_voice");
+    else if (code === "audio_error") text = t(this._hass, "err_audio");
+    else if (code === "too_large" || code === "413") text = t(this._hass, "err_too_large");
+    else if (code === "no_targets") text = t(this._hass, "err_unavailable");
+    else if (code === "quiet_hours") text = t(this._hass, "err_quiet_hours");
+    else if (code === "alexa_disabled") text = t(this._hass, "err_alexa_disabled");
+    else if (code === "external_https_required") text = t(this._hass, "err_external_https");
+    else if (code === "tts_unavailable") text = t(this._hass, "err_tts_unavailable");
+    else if (code === "tts_failed") text = t(this._hass, "err_tts_failed", { message: err.message });
+    else if (code === "app") text = t(this._hass, "err_app", { message: err.message });
+    else if (code === "not_set_up") text = t(this._hass, "err_not_set_up");
     else text = t(this._hass, "err_generic", { message: err?.message || String(err) });
     this._toast(text);
   }
