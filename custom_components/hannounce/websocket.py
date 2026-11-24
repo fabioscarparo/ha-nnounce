@@ -185,7 +185,8 @@ async def ws_say(
         connection.send_error(msg["id"], "quiet_hours", str(err))
         return
     except HomeAssistantError as err:
-        connection.send_error(msg["id"], "play_failed", str(err))
+        code = getattr(err, "translation_key", None) or "play_failed"
+        connection.send_error(msg["id"], code, str(err))
         return
     connection.send_result(msg["id"], {**announcement.as_dict(), "targets": used})
 
@@ -218,7 +219,8 @@ def ws_replay(hass: HomeAssistant, connection: websocket_api.ActiveConnection, m
         connection.send_error(msg["id"], "quiet_hours", str(err))
         return
     except HomeAssistantError as err:
-        connection.send_error(msg["id"], "play_failed", str(err))
+        code = getattr(err, "translation_key", None) or "play_failed"
+        connection.send_error(msg["id"], code, str(err))
         return
     connection.send_result(msg["id"], {**last.as_dict(), "targets": used})
 

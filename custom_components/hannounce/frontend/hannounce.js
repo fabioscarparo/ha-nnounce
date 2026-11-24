@@ -148,6 +148,7 @@ export const STRINGS = {
     err_quiet_hours: "Quiet hours are active and skipped all selected speakers.",
     err_alexa_disabled: "Alexa support is disabled. Enable it in the HA-nnounce options to play announcements on Echo speakers.",
     err_external_https: "Alexa speakers require an external HTTPS URL configured in Settings > System > Network (such as Home Assistant Cloud).",
+    err_no_message: "There is no recent message to replay.",
     err_tts_unavailable: "No text-to-speech engine is configured in Home Assistant.",
     err_tts_failed: "Could not generate speech: {message}",
     err_no_speakers: "No speakers yet. Add the integration of your speakers (Google Cast, Sonos, ESPHome...), or choose them in the HA-nnounce options.",
@@ -244,6 +245,7 @@ export const STRINGS = {
     err_quiet_hours: "Gli orari di silenzio sono attivi e hanno escluso gli altoparlanti scelti.",
     err_alexa_disabled: "Il supporto Alexa è disattivato. Attivalo nelle opzioni di HA-nnounce per inviare annunci agli altoparlanti Echo.",
     err_external_https: "Gli altoparlanti Alexa richiedono un URL esterno HTTPS configurato in Impostazioni > Sistema > Rete (come Home Assistant Cloud).",
+    err_no_message: "Non c'è un messaggio recente da ripetere.",
     err_tts_unavailable: "Nessun motore text-to-speech è configurato in Home Assistant.",
     err_tts_failed: "Impossibile generare la voce: {message}",
     err_no_speakers:
@@ -341,6 +343,7 @@ export const STRINGS = {
     err_quiet_hours: "Die Ruhezeit ist aktiv und hat alle gewählten Lautsprecher übersprungen.",
     err_alexa_disabled: "Die Alexa-Unterstützung ist deaktiviert. Aktiviere sie in den HA-nnounce-Optionen, um Durchsagen auf Echo-Lautsprechern abzuspielen.",
     err_external_https: "Alexa-Lautsprecher erfordern eine externe HTTPS-URL unter Einstellungen > System > Netzwerk (z. B. Home Assistant Cloud).",
+    err_no_message: "Es gibt keine aktuelle Durchsage zum Wiederholen.",
     err_tts_unavailable: "In Home Assistant ist kein Text-zu-Sprache-Dienst konfiguriert.",
     err_tts_failed: "Sprachausgabe fehlgeschlagen: {message}",
     err_no_speakers: "Noch keine Lautsprecher. Füge die Integration deiner Lautsprecher hinzu (Google Cast, Sonos, ESPHome...) oder wähle sie in den HA-nnounce-Optionen.",
@@ -437,6 +440,7 @@ export const STRINGS = {
     err_quiet_hours: "Les heures silencieuses sont actives et ont exclu les haut-parleurs choisis.",
     err_alexa_disabled: "La prise en charge d'Alexa est désactivée. Activez-la dans les options de HA-nnounce pour diffuser des annonces sur les haut-parleurs Echo.",
     err_external_https: "Les haut-parleurs Alexa nécessitent une URL externe HTTPS configurée dans Paramètres > Système > Réseau (comme Home Assistant Cloud).",
+    err_no_message: "Il n'y a aucun message récent à réécouter.",
     err_tts_unavailable: "Aucun moteur de synthèse vocale n'est configuré dans Home Assistant.",
     err_tts_failed: "Impossible de générer la voix : {message}",
     err_no_speakers: "Aucun haut-parleur pour le moment. Ajoutez l'intégration de vos haut-parleurs (Google Cast, Sonos, ESPHome...) ou choisissez-les dans les options de HA-nnounce.",
@@ -533,6 +537,7 @@ export const STRINGS = {
     err_quiet_hours: "El horario de silencio está activo y ha omitido los altavoces elegidos.",
     err_alexa_disabled: "La compatibilidad con Alexa está desactivada. Actívala en las opciones de HA-nnounce para reproducir anuncios en altavoces Echo.",
     err_external_https: "Los altavoces Alexa requieren una URL externa HTTPS configurada en Ajustes > Sistema > Red (como Home Assistant Cloud).",
+    err_no_message: "No hay ningún mensaje reciente para repetir.",
     err_tts_unavailable: "No hay ningún motor de texto a voz configurado en Home Assistant.",
     err_tts_failed: "No se pudo generar la voz: {message}",
     err_no_speakers: "Aún no hay altavoces. Añade la integración de tus altavoces (Google Cast, Sonos, ESPHome...) o elígelos en las opciones de HA-nnounce.",
@@ -629,6 +634,7 @@ export const STRINGS = {
     err_quiet_hours: "Stille uren zijn actief en hebben de gekozen luidsprekers overgeslagen.",
     err_alexa_disabled: "Alexa-ondersteuning is uitgeschakeld. Schakel deze in bij de opties van HA-nnounce om berichten op Echo-luidsprekers af te spelen.",
     err_external_https: "Alexa-luidsprekers vereisen een externe HTTPS-URL onder Instellingen > Systeem > Netwerk (zoals Home Assistant Cloud).",
+    err_no_message: "Er is geen recent bericht om opnieuw af te spelen.",
     err_tts_unavailable: "Er is geen tekst-naar-spraak-engine geconfigureerd in Home Assistant.",
     err_tts_failed: "Kon spraak niet genereren: {message}",
     err_no_speakers: "Nog geen luidsprekers. Voeg de integratie van je luidsprekers toe (Google Cast, Sonos, ESPHome...) of kies ze in de opties van HA-nnounce.",
@@ -725,6 +731,7 @@ export const STRINGS = {
     err_quiet_hours: "Orele de liniște sunt active și au omis toate difuzoarele selectate.",
     err_alexa_disabled: "Suportul pentru Alexa este dezactivat. Activează-l din opțiunile HA-nnounce pentru a reda anunțuri pe difuzoarele Echo.",
     err_external_https: "Difuzoarele Alexa necesită o adresă URL externă HTTPS configurată în Setări > Sistem > Rețea (precum Home Assistant Cloud).",
+    err_no_message: "Nu există niciun mesaj recent de redat din nou.",
     err_tts_unavailable: "Nu este configurat niciun motor de sinteză vocală în Home Assistant.",
     err_tts_failed: "Nu s-a putut genera vocea: {message}",
     err_no_speakers: "Încă nu există difuzoare. Adaugă integrarea difuzoarelor tale (Google Cast, Sonos, ESPHome...) sau alege-le în opțiunile HA-nnounce.",
@@ -3175,8 +3182,11 @@ export class HannounceCard extends Base {
 
   _showError(err) {
     const name = err?.name;
-    // Actions (replay) fail with code home_assistant_error and say what went wrong in translation_key
-    const code = err?.code === "home_assistant_error" && err?.translation_key ? err.translation_key : err?.code;
+    // Actions (replay) fail with home_assistant_error or service_validation_error and say what went wrong in translation_key
+    const code =
+      (err?.code === "home_assistant_error" || err?.code === "service_validation_error") && err?.translation_key
+        ? err.translation_key
+        : err?.code;
     let text;
     if (name === "NotAllowedError" || name === "SecurityError" || code === "mic_denied") text = t(this._hass, "err_mic_denied");
     else if (name === "NotFoundError" || name === "OverconstrainedError") text = t(this._hass, "err_mic_missing");
@@ -3187,6 +3197,7 @@ export class HannounceCard extends Base {
     else if (code === "quiet_hours") text = t(this._hass, "err_quiet_hours");
     else if (code === "alexa_disabled") text = t(this._hass, "err_alexa_disabled");
     else if (code === "external_https_required") text = t(this._hass, "err_external_https");
+    else if (code === "no_message") text = t(this._hass, "err_no_message");
     else if (code === "tts_unavailable") text = t(this._hass, "err_tts_unavailable");
     else if (code === "tts_failed") text = t(this._hass, "err_tts_failed", { message: err.message });
     else if (code === "app") text = t(this._hass, "err_app", { message: err.message });

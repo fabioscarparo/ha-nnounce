@@ -79,6 +79,18 @@ async def test_replay_and_events(hass: HomeAssistant, players, setup_integration
     replay = await hass.services.async_call(DOMAIN, "replay", {"volume": 20}, blocking=True, return_response=True)
     assert replay["targets"] == ["media_player.desk"]
 
+    # WebSocket replay propagates translation_key errors (e.g. alexa_disabled)
+    er.async_get(hass).async_get_or_create(
+        "media_player", "alexa_devices", "ECHO_REPLAY", suggested_object_id="echo_replay"
+    )
+    hass.states.async_set("media_player.echo_replay", "standby", {})
+    ws_alexa_err = await ws_call(
+        client, {"type": f"{DOMAIN}/replay", "targets": ["media_player.echo_replay"]}
+    )
+    assert ws_alexa_err["success"] is False
+    assert ws_alexa_err["error"]["code"] == "alexa_disabled"
+    await hass.async_block_till_done(wait_background_tasks=True)
+
 
 async def test_route_needs_the_intercom(hass: HomeAssistant, players, setup_integration, hass_ws_client) -> None:
     await setup_integration()

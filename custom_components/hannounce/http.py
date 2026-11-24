@@ -186,7 +186,8 @@ class AnnounceUploadView(HomeAssistantView):
         except QuietHoursError as err:
             return _error(str(err), HTTPStatus.UNPROCESSABLE_ENTITY, "quiet_hours")
         except HomeAssistantError as err:
-            return _error(str(err), HTTPStatus.BAD_REQUEST, "play_failed")
+            code = getattr(err, "translation_key", None) or "play_failed"
+            return _error(str(err), HTTPStatus.BAD_REQUEST, code)
         return web.json_response({**announcement.as_dict(), "targets": used})
 
 

@@ -208,11 +208,13 @@ test("errors from the upload, the WebSocket and the actions read in the user's l
   show({ code: "alexa_disabled", message: "Alexa support is disabled." }); // upload and hannounce/say
   show({ code: "home_assistant_error", translation_key: "external_https_required", message: "Alexa speakers require..." }); // replay action
   show({ code: "home_assistant_error", translation_key: "quiet_hours", message: "Quiet hours..." });
+  show({ code: "service_validation_error", translation_key: "no_message", message: "There is no recent message..." }); // expired replay
   show({ code: "home_assistant_error", message: "Something else" });
   assert.deepEqual(shown, [
     STRINGS.it.err_alexa_disabled,
     STRINGS.it.err_external_https,
     STRINGS.it.err_quiet_hours,
+    STRINGS.it.err_no_message,
     t(hass("it"), "err_generic", { message: "Something else" }),
   ]);
 });
