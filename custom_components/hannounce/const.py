@@ -18,6 +18,8 @@ CONF_MAX_DURATION: Final = "max_duration"
 CONF_SHOW_PANEL: Final = "show_panel"
 CONF_INTERCOM: Final = "intercom"
 CONF_ANNOUNCE_VOLUME: Final = "announce_volume"
+CONF_RESUME_PLAYBACK: Final = "resume_playback"
+CONF_ALEXA_SUPPORT: Final = "alexa_support"
 CONF_TTS_ENTITY: Final = "tts_entity"
 CONF_QUIET_HOURS: Final = "quiet_hours"
 CONF_QUIET_START: Final = "quiet_start"
@@ -37,6 +39,8 @@ DEFAULT_MAX_DURATION: Final = 60
 DEFAULT_SHOW_PANEL: Final = True
 DEFAULT_INTERCOM: Final = False
 DEFAULT_ANNOUNCE_VOLUME: Final = True
+DEFAULT_RESUME_PLAYBACK: Final = False
+DEFAULT_ALEXA_SUPPORT: Final = False
 DEFAULT_TTS_ENTITY: Final = ""
 DEFAULT_QUIET_HOURS: Final = False
 DEFAULT_QUIET_START: Final = "22:00:00"
@@ -117,6 +121,12 @@ MEDIA_SOURCE_PLATFORMS: Final = frozenset(
         "yamaha_musiccast",
     }
 )
+
+# Optional Alexa integrations supported via SSML <audio> over an external HTTPS URL
+ALEXA_PLATFORMS: Final = frozenset({"alexa_devices", "alexa_media"})
+ALEXA_AUDIO_SUFFIX: Final = "-alexa.mp3"
+ALEXA_MAX_DURATION: Final = 240.0
+ALEXA_PLAYBACK_BUFFER: Final = 2.0
 
 SERVICE_ANNOUNCE: Final = "announce"
 SERVICE_REPLAY: Final = "replay"

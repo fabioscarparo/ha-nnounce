@@ -6,7 +6,8 @@
     "error": {
       "path_not_allowed": "Der Pfad liegt nicht in einem Ordner, den Home Assistant lesen darf (allowlist_external_dirs).",
       "file_not_found": "Die Datei existiert nicht.",
-      "custom_chime_missing": "Gib zuerst den Pfad zu einer eigenen Signalton-Audiodatei an."
+      "custom_chime_missing": "Gib zuerst den Pfad zu einer eigenen Signalton-Audiodatei an.",
+      "external_https_required": "Die Alexa-Unterstützung erfordert eine externe HTTPS-URL (z. B. Home Assistant Cloud oder eine öffentliche HTTPS-Domain unter Einstellungen > System > Netzwerk)."
     },
     "step": {
       "user": {
@@ -17,6 +18,7 @@
           "set_volume": "Lautstärke für Durchsagen festlegen",
           "volume": "Lautstärke der Durchsage",
           "announce_volume": "Durchsagelautstärke des Lautsprechers verwenden",
+          "resume_playback": "Wiedergabe nach Durchsagen fortsetzen (Best Effort)",
           "chime": "Signalton vor der Durchsage",
           "custom_chime": "Pfad zur eigenen Signalton-Datei",
           "normalize": "Lautstärke angleichen",
@@ -31,12 +33,14 @@
           "quiet_speakers": "Lautsprecher für Ruhezeiten",
           "quiet_entity": "Schalter oder Sensor für Ruhezeiten",
           "show_panel": "Durchsagen in der Seitenleiste anzeigen",
-          "intercom": "Gegensprech-Kameras (Labs Zwei-Wege-Audio)"
+          "intercom": "Gegensprech-Kameras (Labs Zwei-Wege-Audio)",
+          "alexa_support": "Amazon Alexa / Echo-Unterstützung (experimentell)"
         },
         "data_description": {
           "speakers": "Leer lassen, um alle Lautsprecher unterstützter Integrationen (Google Cast, Sonos, ESPHome, DLNA, Music Assistant und weitere) ohne Fernseher anzubieten. Hier auswählen, um weitere Mediaplayer wie benutzerdefinierte Integrationen hinzuzufügen.",
           "set_volume": "Nach der Durchsage kehrt der Lautsprecher zu seiner ursprünglichen Lautstärke zurück.",
           "announce_volume": "Auf Sonos, Music Assistant, Squeezebox und Bang & Olufsen wird die Durchsage mit eigener Lautstärke über die Musik gespielt, ohne die Musiklautstärke zu ändern. Aus: Die Lautstärke wird geändert und danach wiederhergestellt, wie bei den anderen.",
+          "resume_playback": "Auf Lautsprechern ohne nativen Durchsagemodus (wie Google Cast und DLNA) wird versucht, direkt abspielbare Streams, URLs und Medienquellen nach der Durchsage fortzusetzen. App-Sitzungen wie Spotify oder YouTube Music können nicht fortgesetzt werden.",
           "custom_chime": "Optionale lokale Audiodatei (MP3, WAV, OGG...) in einem erlaubten Ordner (allowlist_external_dirs). Aktiviert die Auswahl Eigener im Signalton-Menü.",
           "normalize": "Lässt leise und laute Aufnahmen gleich laut klingen.",
           "voice_enhancement": "Aktiviert Mikrofon-Rauschunterdrückung, Echokompensation, automatische Verstärkung, Hochpassfilter und Stille-Schnitt. Ausschalten für unbearbeitetes Audio.",
@@ -45,7 +49,8 @@
           "quiet_mode": "Wähle, ob die Lautstärke während der Ruhezeit begrenzt oder betroffene Lautsprecher übersprungen werden.",
           "quiet_speakers": "Leer lassen, um die Ruhezeit auf alle Lautsprecher anzuwenden.",
           "quiet_entity": "Optionaler input_boolean oder binary_sensor, der die Ruhezeit aktiviert, solange er eingeschaltet ist.",
-          "intercom": "Fügt pro Lautsprecher eine Kamera mit Sprechtaste hinzu, über das Zwei-Wege-Audio von Home Assistant (Einstellungen > System > Labs). Installiert beim ersten Mal aiortc."
+          "intercom": "Fügt pro Lautsprecher eine Kamera mit Sprechtaste hinzu, über das Zwei-Wege-Audio von Home Assistant (Einstellungen > System > Labs). Installiert beim ersten Mal aiortc.",
+          "alexa_support": "Fügt Amazon-Echo-Lautsprecher aus den Integrationen Alexa Devices oder Alexa Media Player per SSML-Audio hinzu. Erfordert eine von Amazon erreichbare externe HTTPS-URL (Home Assistant Cloud oder öffentliche HTTPS-Domain)."
         }
       }
     }
@@ -54,7 +59,8 @@
     "error": {
       "path_not_allowed": "Der Pfad liegt nicht in einem Ordner, den Home Assistant lesen darf (allowlist_external_dirs).",
       "file_not_found": "Die Datei existiert nicht.",
-      "custom_chime_missing": "Gib zuerst den Pfad zu einer eigenen Signalton-Audiodatei an."
+      "custom_chime_missing": "Gib zuerst den Pfad zu einer eigenen Signalton-Audiodatei an.",
+      "external_https_required": "Die Alexa-Unterstützung erfordert eine externe HTTPS-URL (z. B. Home Assistant Cloud oder eine öffentliche HTTPS-Domain unter Einstellungen > System > Netzwerk)."
     },
     "step": {
       "init": {
@@ -64,6 +70,7 @@
           "set_volume": "Lautstärke für Durchsagen festlegen",
           "volume": "Lautstärke der Durchsage",
           "announce_volume": "Durchsagelautstärke des Lautsprechers verwenden",
+          "resume_playback": "Wiedergabe nach Durchsagen fortsetzen (Best Effort)",
           "chime": "Signalton vor der Durchsage",
           "custom_chime": "Pfad zur eigenen Signalton-Datei",
           "normalize": "Lautstärke angleichen",
@@ -78,12 +85,14 @@
           "quiet_speakers": "Lautsprecher für Ruhezeiten",
           "quiet_entity": "Schalter oder Sensor für Ruhezeiten",
           "show_panel": "Durchsagen in der Seitenleiste anzeigen",
-          "intercom": "Gegensprech-Kameras (Labs Zwei-Wege-Audio)"
+          "intercom": "Gegensprech-Kameras (Labs Zwei-Wege-Audio)",
+          "alexa_support": "Amazon Alexa / Echo-Unterstützung (experimentell)"
         },
         "data_description": {
           "speakers": "Leer lassen, um alle Lautsprecher unterstützter Integrationen (Google Cast, Sonos, ESPHome, DLNA, Music Assistant und weitere) ohne Fernseher anzubieten. Hier auswählen, um weitere Mediaplayer wie benutzerdefinierte Integrationen hinzuzufügen.",
           "set_volume": "Nach der Durchsage kehrt der Lautsprecher zu seiner ursprünglichen Lautstärke zurück.",
           "announce_volume": "Auf Sonos, Music Assistant, Squeezebox und Bang & Olufsen wird die Durchsage mit eigener Lautstärke über die Musik gespielt, ohne die Musiklautstärke zu ändern. Aus: Die Lautstärke wird geändert und danach wiederhergestellt, wie bei den anderen.",
+          "resume_playback": "Auf Lautsprechern ohne nativen Durchsagemodus (wie Google Cast und DLNA) wird versucht, direkt abspielbare Streams, URLs und Medienquellen nach der Durchsage fortzusetzen. App-Sitzungen wie Spotify oder YouTube Music können nicht fortgesetzt werden.",
           "custom_chime": "Optionale lokale Audiodatei (MP3, WAV, OGG...) in einem erlaubten Ordner (allowlist_external_dirs). Aktiviert die Auswahl Eigener im Signalton-Menü.",
           "normalize": "Lässt leise und laute Aufnahmen gleich laut klingen.",
           "voice_enhancement": "Aktiviert Mikrofon-Rauschunterdrückung, Echokompensation, automatische Verstärkung, Hochpassfilter und Stille-Schnitt. Ausschalten für unbearbeitetes Audio.",
@@ -92,7 +101,8 @@
           "quiet_mode": "Wähle, ob die Lautstärke während der Ruhezeit begrenzt oder betroffene Lautsprecher übersprungen werden.",
           "quiet_speakers": "Leer lassen, um die Ruhezeit auf alle Lautsprecher anzuwenden.",
           "quiet_entity": "Optionaler input_boolean oder binary_sensor, der die Ruhezeit aktiviert, solange er eingeschaltet ist.",
-          "intercom": "Fügt pro Lautsprecher eine Kamera mit Sprechtaste hinzu, über das Zwei-Wege-Audio von Home Assistant (Einstellungen > System > Labs). Installiert beim ersten Mal aiortc."
+          "intercom": "Fügt pro Lautsprecher eine Kamera mit Sprechtaste hinzu, über das Zwei-Wege-Audio von Home Assistant (Einstellungen > System > Labs). Installiert beim ersten Mal aiortc.",
+          "alexa_support": "Fügt Amazon-Echo-Lautsprecher aus den Integrationen Alexa Devices oder Alexa Media Player per SSML-Audio hinzu. Erfordert eine von Amazon erreichbare externe HTTPS-URL (Home Assistant Cloud oder öffentliche HTTPS-Domain)."
         }
       }
     }
@@ -174,6 +184,12 @@
     },
     "no_message": {
       "message": "Es gibt keine aktuelle Durchsage zum Wiederholen."
+    },
+    "external_https_required": {
+      "message": "Alexa-Lautsprecher erfordern eine externe HTTPS-URL unter Einstellungen > System > Netzwerk (z. B. Home Assistant Cloud)."
+    },
+    "alexa_disabled": {
+      "message": "Die Alexa-Unterstützung ist deaktiviert. Aktiviere sie in den HA-nnounce-Optionen, um Durchsagen auf Echo-Lautsprechern abzuspielen."
     }
   },
   "services": {

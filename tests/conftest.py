@@ -125,9 +125,15 @@ async def players(hass: HomeAssistant) -> AsyncGenerator[FakePlayers]:
 
             def stop(entity_id: str = entity_id) -> None:
                 current = hass.states.get(entity_id)
-                hass.states.async_set(entity_id, "idle", dict(current.attributes))
+                if current is not None:
+                    hass.states.async_set(entity_id, "idle", dict(current.attributes))
 
-            fake.timers.append(hass.loop.call_later(fake.play_seconds, stop))
+            if not hass.is_stopping:
+                fake.timers.append(hass.loop.call_later(fake.play_seconds, stop))
+
+    async def media_seek(call: ServiceCall) -> None:
+        for entity_id in _entity_ids(call):
+            fake.calls.append(("media_seek", {**call.data, ATTR_ENTITY_ID: entity_id}))
 
     # Set up media_player first, then answer its actions ourselves
     from homeassistant.setup import async_setup_component
@@ -136,6 +142,7 @@ async def players(hass: HomeAssistant) -> AsyncGenerator[FakePlayers]:
     hass.services.async_register(MEDIA_PLAYER_DOMAIN, "volume_set", volume_set)
     hass.services.async_register(MEDIA_PLAYER_DOMAIN, "volume_mute", volume_mute)
     hass.services.async_register(MEDIA_PLAYER_DOMAIN, "play_media", play_media)
+    hass.services.async_register(MEDIA_PLAYER_DOMAIN, "media_seek", media_seek)
     yield fake
     for timer in fake.timers:
         timer.cancel()

@@ -6,7 +6,8 @@
     "error": {
       "path_not_allowed": "Calea nu se află într-un dosar pe care Home Assistant îl poate citi (allowlist_external_dirs).",
       "file_not_found": "Fișierul nu există.",
-      "custom_chime_missing": "Setează calea unui fișier audio pentru sunetul personalizat înainte de a alege Personalizat."
+      "custom_chime_missing": "Setează calea unui fișier audio pentru sunetul personalizat înainte de a alege Personalizat.",
+      "external_https_required": "Suportul pentru Alexa necesită o adresă URL externă HTTPS (precum Home Assistant Cloud sau un domeniu public HTTPS în Setări > Sistem > Rețea)."
     },
     "step": {
       "user": {
@@ -17,6 +18,7 @@
           "set_volume": "Setează volumul pentru mesaje",
           "volume": "Volumul mesajului",
           "announce_volume": "Folosește volumul de anunțuri al difuzorului",
+          "resume_playback": "Reia redarea după mesaje (după posibilități)",
           "chime": "Sunet înainte de mesaj",
           "custom_chime": "Calea fișierului pentru sunetul personalizat",
           "normalize": "Egalizează volumul",
@@ -31,12 +33,14 @@
           "quiet_speakers": "Difuzoarele pentru orele de liniște",
           "quiet_entity": "Comutator sau senzor pentru orele de liniște",
           "show_panel": "Afișează Anunțuri în bara laterală",
-          "intercom": "Camere de interfon (audio bidirecțional din Labs)"
+          "intercom": "Camere de interfon (audio bidirecțional din Labs)",
+          "alexa_support": "Suport Amazon Alexa / Echo (experimental)"
         },
         "data_description": {
           "speakers": "Lasă gol pentru a oferi toate difuzoarele unei integrări compatibile (Google Cast, Sonos, ESPHome, DLNA, Music Assistant și altele), cu excepția televizoarelor. Alege aici pentru a adăuga alte playere media, cum ar fi cele ale integrărilor personalizate.",
           "set_volume": "Difuzorul revine la volumul său când mesajul se termină.",
           "announce_volume": "Pe Sonos, Music Assistant, Squeezebox și Bang & Olufsen mesajul se redă la volumul propriu peste muzică, iar volumul muzicii nu este modificat. Dezactivat: volumul difuzorului este schimbat și apoi restabilit, ca la celelalte.",
+          "resume_playback": "Pe difuzoarele fără mod nativ de anunțuri (precum Google Cast și DLNA), încearcă să reia fluxuri, adrese URL și surse media redabile direct după încheierea mesajului. Sesiunile din aplicații precum Spotify sau YouTube Music nu pot fi reluate.",
           "custom_chime": "Fișier audio local opțional (MP3, WAV, OGG...) dintr-un dosar permis (allowlist_external_dirs). Activează opțiunea Personalizat în selectorul de sunet.",
           "normalize": "Face ca înregistrările încete și cele tari să sune la fel.",
           "voice_enhancement": "Aplică reducerea zgomotului microfonului, anularea ecoului, controlul automat al câștigului, filtrul trece-sus și tăierea tăcerii. Dezactivează pentru un audio brut, neprelucrat.",
@@ -45,7 +49,8 @@
           "quiet_mode": "Alege dacă se limitează volumul anunțurilor sau se omit difuzoarele afectate în orele de liniște.",
           "quiet_speakers": "Lasă gol pentru a aplica orele de liniște tuturor difuzoarelor.",
           "quiet_entity": "input_boolean sau binary_sensor opțional care activează orele de liniște ori de câte ori este pornit.",
-          "intercom": "Adaugă câte o cameră pentru fiecare difuzor, cu buton de vorbire, folosind audio bidirecțional din Home Assistant (Setări > Sistem > Labs). Instalează aiortc la prima utilizare."
+          "intercom": "Adaugă câte o cameră pentru fiecare difuzor, cu buton de vorbire, folosind audio bidirecțional din Home Assistant (Setări > Sistem > Labs). Instalează aiortc la prima utilizare.",
+          "alexa_support": "Adaugă difuzoarele Amazon Echo din integrările Alexa Devices sau Alexa Media Player prin audio SSML. Necesită o adresă URL externă HTTPS accesibilă de Amazon (Home Assistant Cloud sau domeniu public HTTPS)."
         }
       }
     }
@@ -54,7 +59,8 @@
     "error": {
       "path_not_allowed": "Calea nu se află într-un dosar pe care Home Assistant îl poate citi (allowlist_external_dirs).",
       "file_not_found": "Fișierul nu există.",
-      "custom_chime_missing": "Setează calea unui fișier audio pentru sunetul personalizat înainte de a alege Personalizat."
+      "custom_chime_missing": "Setează calea unui fișier audio pentru sunetul personalizat înainte de a alege Personalizat.",
+      "external_https_required": "Suportul pentru Alexa necesită o adresă URL externă HTTPS (precum Home Assistant Cloud sau un domeniu public HTTPS în Setări > Sistem > Rețea)."
     },
     "step": {
       "init": {
@@ -64,6 +70,7 @@
           "set_volume": "Setează volumul pentru mesaje",
           "volume": "Volumul mesajului",
           "announce_volume": "Folosește volumul de anunțuri al difuzorului",
+          "resume_playback": "Reia redarea după mesaje (după posibilități)",
           "chime": "Sunet înainte de mesaj",
           "custom_chime": "Calea fișierului pentru sunetul personalizat",
           "normalize": "Egalizează volumul",
@@ -78,12 +85,14 @@
           "quiet_speakers": "Difuzoarele pentru orele de liniște",
           "quiet_entity": "Comutator sau senzor pentru orele de liniște",
           "show_panel": "Afișează Anunțuri în bara laterală",
-          "intercom": "Camere de interfon (audio bidirecțional din Labs)"
+          "intercom": "Camere de interfon (audio bidirecțional din Labs)",
+          "alexa_support": "Suport Amazon Alexa / Echo (experimental)"
         },
         "data_description": {
           "speakers": "Lasă gol pentru a oferi toate difuzoarele unei integrări compatibile (Google Cast, Sonos, ESPHome, DLNA, Music Assistant și altele), cu excepția televizoarelor. Alege aici pentru a adăuga alte playere media, cum ar fi cele ale integrărilor personalizate.",
           "set_volume": "Difuzorul revine la volumul său când mesajul se termină.",
           "announce_volume": "Pe Sonos, Music Assistant, Squeezebox și Bang & Olufsen mesajul se redă la volumul propriu peste muzică, iar volumul muzicii nu este modificat. Dezactivat: volumul difuzorului este schimbat și apoi restabilit, ca la celelalte.",
+          "resume_playback": "Pe difuzoarele fără mod nativ de anunțuri (precum Google Cast și DLNA), încearcă să reia fluxuri, adrese URL și surse media redabile direct după încheierea mesajului. Sesiunile din aplicații precum Spotify sau YouTube Music nu pot fi reluate.",
           "custom_chime": "Fișier audio local opțional (MP3, WAV, OGG...) dintr-un dosar permis (allowlist_external_dirs). Activează opțiunea Personalizat în selectorul de sunet.",
           "normalize": "Face ca înregistrările încete și cele tari să sune la fel.",
           "voice_enhancement": "Aplică reducerea zgomotului microfonului, anularea ecoului, controlul automat al câștigului, filtrul trece-sus și tăierea tăcerii. Dezactivează pentru un audio brut, neprelucrat.",
@@ -92,7 +101,8 @@
           "quiet_mode": "Alege dacă se limitează volumul anunțurilor sau se omit difuzoarele afectate în orele de liniște.",
           "quiet_speakers": "Lasă gol pentru a aplica orele de liniște tuturor difuzoarelor.",
           "quiet_entity": "input_boolean sau binary_sensor opțional care activează orele de liniște ori de câte ori este pornit.",
-          "intercom": "Adaugă câte o cameră pentru fiecare difuzor, cu buton de vorbire, folosind audio bidirecțional din Home Assistant (Setări > Sistem > Labs). Instalează aiortc la prima utilizare."
+          "intercom": "Adaugă câte o cameră pentru fiecare difuzor, cu buton de vorbire, folosind audio bidirecțional din Home Assistant (Setări > Sistem > Labs). Instalează aiortc la prima utilizare.",
+          "alexa_support": "Adaugă difuzoarele Amazon Echo din integrările Alexa Devices sau Alexa Media Player prin audio SSML. Necesită o adresă URL externă HTTPS accesibilă de Amazon (Home Assistant Cloud sau domeniu public HTTPS)."
         }
       }
     }
@@ -174,6 +184,12 @@
     },
     "no_message": {
       "message": "Nu există niciun mesaj recent de redat din nou."
+    },
+    "external_https_required": {
+      "message": "Difuzoarele Alexa necesită o adresă URL externă HTTPS configurată în Setări > Sistem > Rețea (precum Home Assistant Cloud)."
+    },
+    "alexa_disabled": {
+      "message": "Suportul pentru Alexa este dezactivat. Activează-l din opțiunile HA-nnounce pentru a reda anunțuri pe difuzoarele Echo."
     }
   },
   "services": {

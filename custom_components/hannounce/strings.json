@@ -6,7 +6,8 @@
     "error": {
       "path_not_allowed": "Path is not in a folder Home Assistant may read (allowlist_external_dirs).",
       "file_not_found": "File does not exist.",
-      "custom_chime_missing": "Set a custom chime audio file path before choosing Custom."
+      "custom_chime_missing": "Set a custom chime audio file path before choosing Custom.",
+      "external_https_required": "Alexa support requires an external HTTPS URL (such as Home Assistant Cloud or a public HTTPS domain in Settings > System > Network)."
     },
     "step": {
       "user": {
@@ -17,6 +18,7 @@
           "set_volume": "Set the volume for messages",
           "volume": "Message volume",
           "announce_volume": "Use the announcement volume of the speaker",
+          "resume_playback": "Resume playback after messages (best effort)",
           "chime": "Chime before the message",
           "custom_chime": "Custom chime file path",
           "normalize": "Even out the loudness",
@@ -31,12 +33,14 @@
           "quiet_speakers": "Quiet hours speakers",
           "quiet_entity": "Quiet hours switch or sensor",
           "show_panel": "Show Announcements in the sidebar",
-          "intercom": "Intercom cameras (Labs two-way audio)"
+          "intercom": "Intercom cameras (Labs two-way audio)",
+          "alexa_support": "Amazon Alexa / Echo support (experimental)"
         },
         "data_description": {
           "speakers": "Leave empty to offer every speaker of a supported integration (Google Cast, Sonos, ESPHome, DLNA, Music Assistant and more), televisions excluded. Choose here to add other media players, such as those of custom integrations.",
           "set_volume": "The speaker goes back to its own volume when the message ends.",
           "announce_volume": "On Sonos, Music Assistant, Squeezebox and Bang & Olufsen the message plays at its own volume over the music, and the volume of the music is not touched. Off: the speaker volume is changed and then restored, like on the others.",
+          "resume_playback": "On speakers without native announcement mode (such as Google Cast and DLNA), tries to resume directly playable streams, URLs, and media sources after the message ends. App sessions like Spotify or YouTube Music cannot be resumed.",
           "custom_chime": "Optional local audio file (MP3, WAV, OGG...) inside an allowed folder (allowlist_external_dirs). Enables the Custom option in the chime selector.",
           "normalize": "Makes quiet and loud recordings sound the same.",
           "voice_enhancement": "Applies microphone noise suppression, echo cancellation, auto gain, high-pass filter, and silence trimming. Turn off for raw, unprocessed audio.",
@@ -45,7 +49,8 @@
           "quiet_mode": "Choose whether to cap announcement volume or skip affected speakers during quiet hours.",
           "quiet_speakers": "Leave empty to apply quiet hours to every speaker.",
           "quiet_entity": "Optional input_boolean or binary_sensor that activates quiet hours whenever it is on.",
-          "intercom": "Adds one camera per speaker with a talk button, using Home Assistant's two-way audio (Settings > System > Labs). Installs aiortc the first time."
+          "intercom": "Adds one camera per speaker with a talk button, using Home Assistant's two-way audio (Settings > System > Labs). Installs aiortc the first time.",
+          "alexa_support": "Adds Amazon Echo speakers from the Alexa Devices or Alexa Media Player integrations using SSML audio. Requires an external HTTPS URL reachable by Amazon (Home Assistant Cloud or public HTTPS domain)."
         }
       }
     }
@@ -54,7 +59,8 @@
     "error": {
       "path_not_allowed": "[%key:component::hannounce::config::error::path_not_allowed%]",
       "file_not_found": "[%key:component::hannounce::config::error::file_not_found%]",
-      "custom_chime_missing": "[%key:component::hannounce::config::error::custom_chime_missing%]"
+      "custom_chime_missing": "[%key:component::hannounce::config::error::custom_chime_missing%]",
+      "external_https_required": "[%key:component::hannounce::config::error::external_https_required%]"
     },
     "step": {
       "init": {
@@ -64,6 +70,7 @@
           "set_volume": "[%key:component::hannounce::config::step::user::data::set_volume%]",
           "volume": "[%key:component::hannounce::config::step::user::data::volume%]",
           "announce_volume": "[%key:component::hannounce::config::step::user::data::announce_volume%]",
+          "resume_playback": "[%key:component::hannounce::config::step::user::data::resume_playback%]",
           "chime": "[%key:component::hannounce::config::step::user::data::chime%]",
           "custom_chime": "[%key:component::hannounce::config::step::user::data::custom_chime%]",
           "normalize": "[%key:component::hannounce::config::step::user::data::normalize%]",
@@ -78,12 +85,14 @@
           "quiet_speakers": "[%key:component::hannounce::config::step::user::data::quiet_speakers%]",
           "quiet_entity": "[%key:component::hannounce::config::step::user::data::quiet_entity%]",
           "show_panel": "[%key:component::hannounce::config::step::user::data::show_panel%]",
-          "intercom": "[%key:component::hannounce::config::step::user::data::intercom%]"
+          "intercom": "[%key:component::hannounce::config::step::user::data::intercom%]",
+          "alexa_support": "[%key:component::hannounce::config::step::user::data::alexa_support%]"
         },
         "data_description": {
           "speakers": "[%key:component::hannounce::config::step::user::data_description::speakers%]",
           "set_volume": "[%key:component::hannounce::config::step::user::data_description::set_volume%]",
           "announce_volume": "[%key:component::hannounce::config::step::user::data_description::announce_volume%]",
+          "resume_playback": "[%key:component::hannounce::config::step::user::data_description::resume_playback%]",
           "custom_chime": "[%key:component::hannounce::config::step::user::data_description::custom_chime%]",
           "normalize": "[%key:component::hannounce::config::step::user::data_description::normalize%]",
           "voice_enhancement": "[%key:component::hannounce::config::step::user::data_description::voice_enhancement%]",
@@ -92,7 +101,8 @@
           "quiet_mode": "[%key:component::hannounce::config::step::user::data_description::quiet_mode%]",
           "quiet_speakers": "[%key:component::hannounce::config::step::user::data_description::quiet_speakers%]",
           "quiet_entity": "[%key:component::hannounce::config::step::user::data_description::quiet_entity%]",
-          "intercom": "[%key:component::hannounce::config::step::user::data_description::intercom%]"
+          "intercom": "[%key:component::hannounce::config::step::user::data_description::intercom%]",
+          "alexa_support": "[%key:component::hannounce::config::step::user::data_description::alexa_support%]"
         }
       }
     }
@@ -174,6 +184,12 @@
     },
     "no_message": {
       "message": "There is no recent message to replay."
+    },
+    "external_https_required": {
+      "message": "Alexa speakers require an external HTTPS URL configured in Settings > System > Network (such as Home Assistant Cloud)."
+    },
+    "alexa_disabled": {
+      "message": "Alexa support is disabled. Enable it in the HA-nnounce options to play announcements on Echo speakers."
     }
   },
   "services": {

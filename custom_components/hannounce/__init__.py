@@ -133,8 +133,14 @@ class HannounceData:
                 ]
                 if not valid:
                     raise QuietHoursError
+                self.announcer.check_delivery(
+                    valid, alexa_support=self.settings.alexa_support
+                )
                 return valid, {entity_id: volume for entity_id in valid}
 
+            self.announcer.check_delivery(
+                valid, alexa_support=self.settings.alexa_support
+            )
             cap = self.settings.quiet_volume_level
             volumes: dict[str, float | None] = {}
             for entity_id in valid:
@@ -155,6 +161,7 @@ class HannounceData:
                     volumes[entity_id] = volume
             return valid, volumes
 
+        self.announcer.check_delivery(valid, alexa_support=self.settings.alexa_support)
         return valid, {entity_id: volume for entity_id in valid}
 
     async def async_create_tts(
@@ -232,6 +239,8 @@ class HannounceData:
                 volume=volume,
                 title=self.text("title"),
                 announce_volume=self.settings.announce_volume,
+                resume_playback=self.settings.resume_playback,
+                alexa_support=self.settings.alexa_support,
             ),
             speaker_volumes=speaker_volumes,
         )

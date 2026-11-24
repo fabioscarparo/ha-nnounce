@@ -14,10 +14,12 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import selector
+from homeassistant.helpers.network import NoURLAvailableError, get_url
 
 from .const import (
     ALL_CHIMES,
     CHIME_CUSTOM,
+    CONF_ALEXA_SUPPORT,
     CONF_ANNOUNCE_VOLUME,
     CONF_CHIME,
     CONF_CUSTOM_CHIME,
@@ -31,12 +33,14 @@ from .const import (
     CONF_QUIET_SPEAKERS,
     CONF_QUIET_START,
     CONF_QUIET_VOLUME,
+    CONF_RESUME_PLAYBACK,
     CONF_SET_VOLUME,
     CONF_SHOW_PANEL,
     CONF_SPEAKERS,
     CONF_TTS_ENTITY,
     CONF_VOICE_ENHANCEMENT,
     CONF_VOLUME,
+    DEFAULT_ALEXA_SUPPORT,
     DEFAULT_ANNOUNCE_VOLUME,
     DEFAULT_CHIME,
     DEFAULT_INTERCOM,
@@ -47,6 +51,7 @@ from .const import (
     DEFAULT_QUIET_MODE,
     DEFAULT_QUIET_START,
     DEFAULT_QUIET_VOLUME,
+    DEFAULT_RESUME_PLAYBACK,
     DEFAULT_SET_VOLUME,
     DEFAULT_SHOW_PANEL,
     DEFAULT_VOICE_ENHANCEMENT,
@@ -93,6 +98,10 @@ def _options_schema(options: dict[str, Any]) -> vol.Schema:
             vol.Optional(
                 CONF_ANNOUNCE_VOLUME,
                 default=options.get(CONF_ANNOUNCE_VOLUME, DEFAULT_ANNOUNCE_VOLUME),
+            ): selector.BooleanSelector(),
+            vol.Optional(
+                CONF_RESUME_PLAYBACK,
+                default=options.get(CONF_RESUME_PLAYBACK, DEFAULT_RESUME_PLAYBACK),
             ): selector.BooleanSelector(),
             vol.Optional(
                 CONF_CHIME, default=options.get(CONF_CHIME, DEFAULT_CHIME)
@@ -191,6 +200,10 @@ def _options_schema(options: dict[str, Any]) -> vol.Schema:
                 CONF_INTERCOM,
                 default=options.get(CONF_INTERCOM, DEFAULT_INTERCOM),
             ): selector.BooleanSelector(),
+            vol.Optional(
+                CONF_ALEXA_SUPPORT,
+                default=options.get(CONF_ALEXA_SUPPORT, DEFAULT_ALEXA_SUPPORT),
+            ): selector.BooleanSelector(),
         }
     )
 
@@ -222,6 +235,11 @@ async def _async_validate(
         errors[CONF_CUSTOM_CHIME] = path_error
     if data.get(CONF_CHIME) == CHIME_CUSTOM and not custom_chime:
         errors[CONF_CHIME] = "custom_chime_missing"
+    if data.get(CONF_ALEXA_SUPPORT):
+        try:
+            get_url(hass, allow_internal=False, allow_ip=False, require_ssl=True)
+        except NoURLAvailableError:
+            errors[CONF_ALEXA_SUPPORT] = "external_https_required"
     return errors
 
 

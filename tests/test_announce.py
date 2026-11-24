@@ -364,3 +364,466 @@ def test_quiet_time_window_logic() -> None:
 
     # Equal bounds disable schedule
     assert is_in_time_window(time(0, 0), time(0, 0), time(0, 0)) is False
+
+
+@needs_ffmpeg
+async def test_resume_playback_stream_and_seek(
+    hass: HomeAssistant, players, setup_integration, hass_client, make_wav
+) -> None:
+    from datetime import timedelta
+
+    from homeassistant.components.media_player import MediaPlayerEntityFeature
+    from homeassistant.util import dt as dt_util
+
+    from .conftest import BASE_FEATURES
+
+    await setup_integration(resume_playback=True)
+
+    # Cast with SEEK playing a finite media-source track
+    hass.states.async_set(
+        "media_player.kitchen",
+        "playing",
+        {
+            "supported_features": BASE_FEATURES | MediaPlayerEntityFeature.SEEK,
+            "volume_level": 0.3,
+            "media_content_id": "media-source://media_source/local/song.mp3",
+            "media_content_type": "music",
+            "media_duration": 180.0,
+            "media_position": 42.0,
+            "media_position_updated_at": dt_util.utcnow() - timedelta(seconds=3),
+            "friendly_name": "Kitchen",
+        },
+    )
+    # Custom player without SEEK playing a live radio stream (no duration)
+    hass.states.async_set(
+        "media_player.garage",
+        "playing",
+        {
+            "supported_features": BASE_FEATURES,
+            "volume_level": 0.3,
+            "media_content_id": "https://radio.example.com/live.mp3",
+            "media_content_type": "music",
+            "friendly_name": "Garage",
+        },
+    )
+    # Sonos with native MEDIA_ANNOUNCE playing a stream: must NOT manually resume
+    sonos_state = hass.states.get("media_player.living_room")
+    hass.states.async_set(
+        "media_player.living_room",
+        "playing",
+        {
+            **sonos_state.attributes,
+            "media_content_id": "https://radio.example.com/jazz.mp3",
+            "media_content_type": "music",
+        },
+    )
+
+    status, _ = await upload(
+        await hass_client(),
+        make_wav(),
+        targets=json.dumps(
+            ["media_player.kitchen", "media_player.garage", "media_player.living_room"]
+        ),
+    )
+    assert status == 200
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+    # Kitchen: volume up -> announcement -> volume restored -> resume track -> seek
+    kitchen_calls = [
+        (name, data)
+        for name, data in players.calls
+        if data["entity_id"] == "media_player.kitchen"
+    ]
+    assert [name for name, _ in kitchen_calls] == [
+        "volume_set",
+        "play_media",
+        "volume_set",
+        "play_media",
+        "media_seek",
+    ]
+    assert kitchen_calls[2][1]["volume_level"] == 0.3
+    assert kitchen_calls[3][1]["media_content_id"] == "media-source://media_source/local/song.mp3"
+    assert kitchen_calls[3][1]["media_content_type"] == "music"
+    assert 44.0 <= kitchen_calls[4][1]["seek_position"] < 60.0
+
+    # Garage: volume up -> announcement -> volume restored -> resume stream (no seek)
+    garage_calls = [
+        (name, data)
+        for name, data in players.calls
+        if data["entity_id"] == "media_player.garage"
+    ]
+    assert [name for name, _ in garage_calls] == [
+        "volume_set",
+        "play_media",
+        "volume_set",
+        "play_media",
+    ]
+    assert garage_calls[3][1]["media_content_id"] == "https://radio.example.com/live.mp3"
+
+    # Sonos: native announce handles resume itself
+    assert len(players.calls_for("media_player.living_room", "play_media")) == 1
+    assert players.calls_for("media_player.living_room", "media_seek") == []
+
+
+@needs_ffmpeg
+async def test_resume_playback_skips_disabled_paused_and_non_url(
+    hass: HomeAssistant, players, setup_integration, hass_client, make_wav
+) -> None:
+    from .conftest import BASE_FEATURES
+
+    # Disabled by default: stream is not resumed
+    entry = await setup_integration(resume_playback=False)
+    hass.states.async_set(
+        "media_player.kitchen",
+        "playing",
+        {
+            "supported_features": BASE_FEATURES,
+            "volume_level": 0.3,
+            "media_content_id": "https://radio.example.com/live.mp3",
+            "media_content_type": "music",
+        },
+    )
+    client = await hass_client()
+    status, _ = await upload(client, make_wav(), targets="media_player.kitchen")
+    assert status == 200
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert len(players.calls_for("media_player.kitchen", "play_media")) == 1
+
+    # Enable resume_playback: paused, opaque app IDs, and own hannounce URLs are skipped
+    hass.config_entries.async_update_entry(
+        entry, options={**entry.options, "resume_playback": True}
+    )
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+
+    for state_name, content_id in (
+        ("paused", "https://radio.example.com/live.mp3"),
+        ("playing", "spotify:track:4cOdK2wGLETKBW3PvgPWqT"),
+        ("playing", "http://homeassistant.local:8123/api/hannounce/audio/old.mp3"),
+        ("playing", "media-source://hannounce/old.mp3"),
+    ):
+        players.calls.clear()
+        hass.states.async_set(
+            "media_player.kitchen",
+            state_name,
+            {
+                "supported_features": BASE_FEATURES,
+                "volume_level": 0.3,
+                "media_content_id": content_id,
+                "media_content_type": "music",
+            },
+        )
+        status, _ = await upload(client, make_wav(), targets="media_player.kitchen")
+        assert status == 200
+        await hass.async_block_till_done(wait_background_tasks=True)
+        assert len(players.calls_for("media_player.kitchen", "play_media")) == 1, (
+            f"unexpected resume for {state_name} / {content_id}"
+        )
+
+
+def _register_alexa_speakers(hass: HomeAssistant, entry_id: str) -> None:
+    """Register alexa_devices (single + WHA group) and alexa_media speakers."""
+    from homeassistant.helpers import device_registry as dr
+    from homeassistant.helpers import entity_registry as er
+
+    from .conftest import BASE_FEATURES
+
+    devices = dr.async_get(hass)
+    entities = er.async_get(hass)
+
+    # 1. Official alexa_devices single Echo with sibling _speak and _announce notify entities
+    echo_dev = devices.async_get_or_create(
+        config_entry_id=entry_id,
+        identifiers={("alexa_devices", "ECHO123")},
+        name="Echo Kitchen",
+        model="Echo Dot",
+    )
+    entities.async_get_or_create(
+        "media_player",
+        "alexa_devices",
+        "ECHO123-media",
+        suggested_object_id="echo_kitchen",
+        device_id=echo_dev.id,
+        supported_features=BASE_FEATURES,
+    )
+    entities.async_get_or_create(
+        "notify",
+        "alexa_devices",
+        "ECHO123-announce",
+        suggested_object_id="echo_kitchen_announce",
+        device_id=echo_dev.id,
+        translation_key="announce",
+    )
+    entities.async_get_or_create(
+        "notify",
+        "alexa_devices",
+        "ECHO123-speak",
+        suggested_object_id="echo_kitchen_speak",
+        device_id=echo_dev.id,
+        translation_key="speak",
+    )
+    hass.states.async_set(
+        "media_player.echo_kitchen",
+        "standby",
+        {
+            "supported_features": BASE_FEATURES,
+            "volume_level": 0.3,
+            "friendly_name": "Echo Kitchen",
+        },
+    )
+    hass.states.async_set("notify.echo_kitchen_speak", "unknown")
+    hass.states.async_set("notify.echo_kitchen_announce", "unknown")
+
+    # 2. Official alexa_devices WHA speaker group (only has _announce, no _speak)
+    group_dev = devices.async_get_or_create(
+        config_entry_id=entry_id,
+        identifiers={("alexa_devices", "GROUP123")},
+        name="Everywhere",
+        model="WHA",
+    )
+    entities.async_get_or_create(
+        "media_player",
+        "alexa_devices",
+        "GROUP123-media",
+        suggested_object_id="everywhere",
+        device_id=group_dev.id,
+        supported_features=BASE_FEATURES,
+    )
+    entities.async_get_or_create(
+        "notify",
+        "alexa_devices",
+        "GROUP123-announce",
+        suggested_object_id="everywhere_announce",
+        device_id=group_dev.id,
+        translation_key="announce",
+    )
+    hass.states.async_set(
+        "media_player.everywhere",
+        "standby",
+        {
+            "supported_features": BASE_FEATURES,
+            "volume_level": 0.3,
+            "friendly_name": "Everywhere",
+        },
+    )
+    hass.states.async_set("notify.everywhere_announce", "unknown")
+
+    # 3. HACS alexa_media speaker
+    entities.async_get_or_create(
+        "media_player",
+        "alexa_media",
+        "AM_OFFICE",
+        suggested_object_id="echo_office",
+        supported_features=BASE_FEATURES,
+    )
+    hass.states.async_set(
+        "media_player.echo_office",
+        "standby",
+        {
+            "supported_features": BASE_FEATURES,
+            "volume_level": 0.3,
+            "friendly_name": "Echo Office",
+        },
+    )
+
+
+@needs_ffmpeg
+async def test_alexa_disabled_by_default(
+    hass: HomeAssistant, players, setup_integration, hass_client, make_wav, tmp_path
+) -> None:
+    import pytest
+    from homeassistant.exceptions import HomeAssistantError
+    from pytest_homeassistant.common import MockConfigEntry
+
+    hass.config.allowlist_external_dirs = {str(tmp_path)}
+    alexa_entry = MockConfigEntry(domain="alexa_devices")
+    alexa_entry.add_to_hass(hass)
+    _register_alexa_speakers(hass, alexa_entry.entry_id)
+
+    entry = await setup_integration(alexa_support=False)
+    runtime = entry.runtime_data
+
+    # Not auto-discovered when opt-in is off
+    discovered = runtime.speakers()
+    assert "media_player.echo_kitchen" not in discovered
+    assert "media_player.everywhere" not in discovered
+    assert "media_player.echo_office" not in discovered
+
+    # Direct service call raises alexa_disabled
+    with pytest.raises(HomeAssistantError) as err:
+        await hass.services.async_call(
+            "hannounce",
+            "announce",
+            {"entity_id": "media_player.echo_kitchen", "file": str(make_wav()), "chime": "none"},
+            blocking=True,
+        )
+    assert err.value.translation_key == "alexa_disabled"
+
+    # Direct HTTP upload returns 400 alexa_disabled
+    status, body = await upload(
+        await hass_client(), make_wav(), targets="media_player.echo_office"
+    )
+    assert (status, body["code"]) == (400, "alexa_disabled")
+
+
+@needs_ffmpeg
+async def test_alexa_delivery_both_platforms_and_signed_endpoint(
+    hass: HomeAssistant, players, setup_integration, hass_client, hass_client_no_auth, make_wav
+) -> None:
+    import re
+    from unittest.mock import AsyncMock, patch
+
+    from mutagen.mp3 import MP3
+    from pytest_homeassistant.common import MockConfigEntry
+
+    from custom_components.hannounce import audio
+    from custom_components.hannounce.announcer import Announcer
+    from custom_components.hannounce.settings import describe_speakers
+
+    hass.config.external_url = "https://my-home.ui.nabu.casa"
+    alexa_entry = MockConfigEntry(domain="alexa_devices")
+    alexa_entry.add_to_hass(hass)
+    _register_alexa_speakers(hass, alexa_entry.entry_id)
+
+    notify_calls: list[tuple[str, dict]] = []
+
+    async def fake_send_message(call) -> None:
+        notify_calls.append(("send_message", dict(call.data)))
+
+    async def fake_alexa_media(call) -> None:
+        notify_calls.append(("alexa_media", dict(call.data)))
+
+    hass.services.async_register("notify", "send_message", fake_send_message)
+    hass.services.async_register("notify", "alexa_media", fake_alexa_media)
+
+    entry = await setup_integration(alexa_support=True)
+    runtime = entry.runtime_data
+
+    # Discovered when opt-in is on, and WHA group is tagged as group=True
+    discovered = runtime.speakers()
+    assert "media_player.echo_kitchen" in discovered
+    assert "media_player.everywhere" in discovered
+    assert "media_player.echo_office" in discovered
+    described = {s["entity_id"]: s for s in describe_speakers(hass, discovered)}
+    assert described["media_player.echo_kitchen"]["group"] is False
+    assert described["media_player.everywhere"]["group"] is True
+
+    with (
+        patch.object(Announcer, "_async_wait_alexa", new=AsyncMock()) as mocked_wait,
+        patch.object(
+            audio, "async_render_alexa", wraps=audio.async_render_alexa
+        ) as mocked_render,
+    ):
+        status, body = await upload(
+            await hass_client(),
+            make_wav(),
+            targets=json.dumps(
+                [
+                    "media_player.echo_kitchen",
+                    "media_player.everywhere",
+                    "media_player.echo_office",
+                ]
+            ),
+            chime="none",
+        )
+        assert status == 200, body
+        await hass.async_block_till_done(wait_background_tasks=True)
+
+    # Shared single transcode across all 3 Alexa speakers
+    assert mocked_render.call_count == 1
+    assert mocked_wait.call_count == 3
+
+    # Check alexa_devices notify calls (_speak for Echo, _announce fallback for WHA group)
+    send_by_entity = {
+        data["entity_id"]: data["message"]
+        for service, data in notify_calls
+        if service == "send_message"
+    }
+    assert set(send_by_entity) == {
+        "notify.echo_kitchen_speak",
+        "notify.everywhere_announce",
+    }
+
+    # Check HACS alexa_media notify call
+    media_calls = [
+        data for service, data in notify_calls if service == "alexa_media"
+    ]
+    assert len(media_calls) == 1
+    assert media_calls[0]["target"] == ["media_player.echo_office"]
+    assert media_calls[0]["data"] == {"type": "tts"}
+
+    # Validate SSML payload and signed HTTPS -alexa.mp3 URL
+    ssml = send_by_entity["notify.echo_kitchen_speak"]
+    match = re.fullmatch(r'<audio src="(https://my-home\.ui\.nabu\.casa/api/hannounce/audio/[^"]+-alexa\.mp3\?authSig=[^"]+)"/>', ssml)
+    assert match, f"unexpected SSML: {ssml}"
+    signed_url = URL(match.group(1))
+    assert signed_url.path == f"/api/hannounce/audio/{body['id']}-alexa.mp3"
+
+    # Volume set and restored on Echo speakers
+    assert [c["volume_level"] for c in players.calls_for("media_player.echo_kitchen", "volume_set")] == [0.7, 0.3]
+    assert [c["volume_level"] for c in players.calls_for("media_player.echo_office", "volume_set")] == [0.7, 0.3]
+
+    # Signed -alexa.mp3 endpoint serves valid 48 kbps / 24 kHz mono MP3 and requires auth
+    anonymous = await hass_client_no_auth()
+    resp = await anonymous.get(signed_url.path_qs)
+    assert resp.status == 200
+    assert resp.headers["Content-Type"] == "audio/mpeg"
+    data = await resp.read()
+    alexa_mp3 = runtime.announcer.folder / "downloaded_alexa.mp3"
+    alexa_mp3.write_bytes(data)
+    info = MP3(str(alexa_mp3)).info
+    assert info.sample_rate == 24000
+    assert info.bitrate == 48000
+    assert info.channels == 1
+
+    assert (await anonymous.get(signed_url.path)).status == 401
+
+    # Non-Alexa announcement does NOT transcode an Alexa variant and returns 404 for -alexa.mp3
+    status2, body2 = await upload(
+        await hass_client(), make_wav(), targets="media_player.kitchen", chime="none"
+    )
+    assert status2 == 200
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert (
+        await (await hass_client()).get(f"/api/hannounce/audio/{body2['id']}-alexa.mp3")
+    ).status == 404
+
+
+@needs_ffmpeg
+async def test_alexa_requires_external_https_at_runtime(
+    hass: HomeAssistant, players, setup_integration, make_wav, tmp_path
+) -> None:
+    import pytest
+    from homeassistant.exceptions import HomeAssistantError
+    from pytest_homeassistant.common import MockConfigEntry
+
+    hass.config.allowlist_external_dirs = {str(tmp_path)}
+    alexa_entry = MockConfigEntry(domain="alexa_devices")
+    alexa_entry.add_to_hass(hass)
+    _register_alexa_speakers(hass, alexa_entry.entry_id)
+
+    hass.config.external_url = "https://my-home.ui.nabu.casa"
+    await setup_integration(alexa_support=True)
+
+    # Simulate user later removing external HTTPS URL
+    hass.config.external_url = None
+    wav = str(make_wav())
+
+    with pytest.raises(HomeAssistantError) as err:
+        await hass.services.async_call(
+            "hannounce",
+            "announce",
+            {"entity_id": "media_player.echo_kitchen", "file": wav, "chime": "none"},
+            blocking=True,
+        )
+    assert err.value.translation_key == "external_https_required"
+
+    # Standard local Cast speaker still works fine without external HTTPS
+    response = await hass.services.async_call(
+        "hannounce",
+        "announce",
+        {"entity_id": "media_player.kitchen", "file": wav, "chime": "none"},
+        blocking=True,
+        return_response=True,
+    )
+    assert response["targets"] == ["media_player.kitchen"]

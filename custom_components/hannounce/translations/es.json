@@ -6,7 +6,8 @@
     "error": {
       "path_not_allowed": "La ruta no está en una carpeta que Home Assistant pueda leer (allowlist_external_dirs).",
       "file_not_found": "El archivo no existe.",
-      "custom_chime_missing": "Configura primero la ruta de un archivo de audio personalizado antes de elegir Personalizado."
+      "custom_chime_missing": "Configura primero la ruta de un archivo de audio personalizado antes de elegir Personalizado.",
+      "external_https_required": "La compatibilidad con Alexa requiere una URL externa HTTPS (como Home Assistant Cloud o un dominio público HTTPS en Ajustes > Sistema > Red)."
     },
     "step": {
       "user": {
@@ -17,6 +18,7 @@
           "set_volume": "Establecer volumen para los mensajes",
           "volume": "Volumen del mensaje",
           "announce_volume": "Usar el volumen de anuncios del altavoz",
+          "resume_playback": "Reanudar la reproducción tras los mensajes (mejor esfuerzo)",
           "chime": "Sonido antes del mensaje",
           "custom_chime": "Ruta de archivo de sonido personalizado",
           "normalize": "Igualar el nivel de volumen",
@@ -31,12 +33,14 @@
           "quiet_speakers": "Altavoces en horario de silencio",
           "quiet_entity": "Interruptor o sensor de horario de silencio",
           "show_panel": "Mostrar Anuncios en la barra lateral",
-          "intercom": "Cámaras de intercomunicador (audio bidireccional de Labs)"
+          "intercom": "Cámaras de intercomunicador (audio bidireccional de Labs)",
+          "alexa_support": "Compatibilidad con Amazon Alexa / Echo (experimental)"
         },
         "data_description": {
           "speakers": "Déjalo vacío para mostrar todos los altavoces de las integraciones compatibles (Google Cast, Sonos, ESPHome, DLNA, Music Assistant y más), sin televisores. Elige aquí para añadir otros reproductores, como integraciones personalizadas.",
           "set_volume": "El altavoz vuelve a su volumen original al terminar el mensaje.",
           "announce_volume": "En Sonos, Music Assistant, Squeezebox y Bang & Olufsen el mensaje suena a su propio volumen sobre la música, sin tocar el volumen de la música. Desactivado: se cambia y restaura el volumen, como en los demás.",
+          "resume_playback": "En altavoces sin modo de anuncios nativo (como Google Cast y DLNA), intenta reanudar flujos, URL y fuentes multimedia reproducibles directamente al terminar el mensaje. Las sesiones de apps como Spotify o YouTube Music no se pueden reanudar.",
           "custom_chime": "Archivo de audio local opcional (MP3, WAV, OGG...) en una carpeta permitida (allowlist_external_dirs). Habilita la opción Personalizado en el selector de sonido.",
           "normalize": "Hace que las grabaciones bajas y altas suenen al mismo nivel.",
           "voice_enhancement": "Aplica supresión de ruido, cancelación de eco, ganancia automática del micrófono, filtro paso alto y recorte de silencios. Desactívalo para audio sin procesar.",
@@ -45,7 +49,8 @@
           "quiet_mode": "Elige si limitar el volumen de los anuncios u omitir los altavoces afectados durante el horario de silencio.",
           "quiet_speakers": "Déjalo vacío para aplicar el horario de silencio a todos los altavoces.",
           "quiet_entity": "input_boolean o binary_sensor opcional que activa el horario de silencio cuando está encendido.",
-          "intercom": "Añade una cámara por altavoz con botón para hablar, usando el audio bidireccional de Home Assistant (Ajustes > Sistema > Labs). Instala aiortc la primera vez."
+          "intercom": "Añade una cámara por altavoz con botón para hablar, usando el audio bidireccional de Home Assistant (Ajustes > Sistema > Labs). Instala aiortc la primera vez.",
+          "alexa_support": "Añade altavoces Amazon Echo de las integraciones Alexa Devices o Alexa Media Player mediante audio SSML. Requiere una URL externa HTTPS accesible desde Amazon (Home Assistant Cloud o dominio público HTTPS)."
         }
       }
     }
@@ -54,7 +59,8 @@
     "error": {
       "path_not_allowed": "La ruta no está en una carpeta que Home Assistant pueda leer (allowlist_external_dirs).",
       "file_not_found": "El archivo no existe.",
-      "custom_chime_missing": "Configura primero la ruta de un archivo de audio personalizado antes de elegir Personalizado."
+      "custom_chime_missing": "Configura primero la ruta de un archivo de audio personalizado antes de elegir Personalizado.",
+      "external_https_required": "La compatibilidad con Alexa requiere una URL externa HTTPS (como Home Assistant Cloud o un dominio público HTTPS en Ajustes > Sistema > Red)."
     },
     "step": {
       "init": {
@@ -64,6 +70,7 @@
           "set_volume": "Establecer volumen para los mensajes",
           "volume": "Volumen del mensaje",
           "announce_volume": "Usar el volumen de anuncios del altavoz",
+          "resume_playback": "Reanudar la reproducción tras los mensajes (mejor esfuerzo)",
           "chime": "Sonido antes del mensaje",
           "custom_chime": "Ruta de archivo de sonido personalizado",
           "normalize": "Igualar el nivel de volumen",
@@ -78,12 +85,14 @@
           "quiet_speakers": "Altavoces en horario de silencio",
           "quiet_entity": "Interruptor o sensor de horario de silencio",
           "show_panel": "Mostrar Anuncios en la barra lateral",
-          "intercom": "Cámaras de intercomunicador (audio bidireccional de Labs)"
+          "intercom": "Cámaras de intercomunicador (audio bidireccional de Labs)",
+          "alexa_support": "Compatibilidad con Amazon Alexa / Echo (experimental)"
         },
         "data_description": {
           "speakers": "Déjalo vacío para mostrar todos los altavoces de las integraciones compatibles (Google Cast, Sonos, ESPHome, DLNA, Music Assistant y más), sin televisores. Elige aquí para añadir otros reproductores, como integraciones personalizadas.",
           "set_volume": "El altavoz vuelve a su volumen original al terminar el mensaje.",
           "announce_volume": "En Sonos, Music Assistant, Squeezebox y Bang & Olufsen el mensaje suena a su propio volumen sobre la música, sin tocar el volumen de la música. Desactivado: se cambia y restaura el volumen, como en los demás.",
+          "resume_playback": "En altavoces sin modo de anuncios nativo (como Google Cast y DLNA), intenta reanudar flujos, URL y fuentes multimedia reproducibles directamente al terminar el mensaje. Las sesiones de apps como Spotify o YouTube Music no se pueden reanudar.",
           "custom_chime": "Archivo de audio local opcional (MP3, WAV, OGG...) en una carpeta permitida (allowlist_external_dirs). Habilita la opción Personalizado en el selector de sonido.",
           "normalize": "Hace que las grabaciones bajas y altas suenen al mismo nivel.",
           "voice_enhancement": "Aplica supresión de ruido, cancelación de eco, ganancia automática del micrófono, filtro paso alto y recorte de silencios. Desactívalo para audio sin procesar.",
@@ -92,7 +101,8 @@
           "quiet_mode": "Elige si limitar el volumen de los anuncios u omitir los altavoces afectados durante el horario de silencio.",
           "quiet_speakers": "Déjalo vacío para aplicar el horario de silencio a todos los altavoces.",
           "quiet_entity": "input_boolean o binary_sensor opcional que activa el horario de silencio cuando está encendido.",
-          "intercom": "Añade una cámara por altavoz con botón para hablar, usando el audio bidireccional de Home Assistant (Ajustes > Sistema > Labs). Instala aiortc la primera vez."
+          "intercom": "Añade una cámara por altavoz con botón para hablar, usando el audio bidireccional de Home Assistant (Ajustes > Sistema > Labs). Instala aiortc la primera vez.",
+          "alexa_support": "Añade altavoces Amazon Echo de las integraciones Alexa Devices o Alexa Media Player mediante audio SSML. Requiere una URL externa HTTPS accesible desde Amazon (Home Assistant Cloud o dominio público HTTPS)."
         }
       }
     }
@@ -174,6 +184,12 @@
     },
     "no_message": {
       "message": "No hay ningún mensaje reciente para repetir."
+    },
+    "external_https_required": {
+      "message": "Los altavoces Alexa requieren una URL externa HTTPS configurada en Ajustes > Sistema > Red (como Home Assistant Cloud)."
+    },
+    "alexa_disabled": {
+      "message": "La compatibilidad con Alexa está desactivada. Actívala en las opciones de HA-nnounce para reproducir anuncios en altavoces Echo."
     }
   },
   "services": {

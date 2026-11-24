@@ -6,7 +6,8 @@
     "error": {
       "path_not_allowed": "Il percorso non è in una cartella che Home Assistant può leggere (allowlist_external_dirs).",
       "file_not_found": "Il file non esiste.",
-      "custom_chime_missing": "Imposta il percorso di un file audio personalizzato prima di scegliere Personalizzato."
+      "custom_chime_missing": "Imposta il percorso di un file audio personalizzato prima di scegliere Personalizzato.",
+      "external_https_required": "Il supporto Alexa richiede un URL esterno HTTPS (come Home Assistant Cloud o un dominio pubblico HTTPS in Impostazioni > Sistema > Rete)."
     },
     "step": {
       "user": {
@@ -17,6 +18,7 @@
           "set_volume": "Imposta il volume dei messaggi",
           "volume": "Volume dei messaggi",
           "announce_volume": "Usa il volume degli annunci dell'altoparlante",
+          "resume_playback": "Riprendi la riproduzione dopo i messaggi (best effort)",
           "chime": "Suono prima del messaggio",
           "custom_chime": "Percorso file suono personalizzato",
           "normalize": "Uniforma il volume della voce",
@@ -31,12 +33,14 @@
           "quiet_speakers": "Altoparlanti in orari di silenzio",
           "quiet_entity": "Interruttore o sensore orari di silenzio",
           "show_panel": "Mostra Annunci nella barra laterale",
-          "intercom": "Interfono come telecamera (audio bidirezionale di Labs)"
+          "intercom": "Interfono come telecamera (audio bidirezionale di Labs)",
+          "alexa_support": "Supporto Amazon Alexa / Echo (sperimentale)"
         },
         "data_description": {
           "speakers": "Lascia vuoto per proporre tutti gli altoparlanti delle integrazioni supportate (Google Cast, Sonos, ESPHome, DLNA, Music Assistant e altre), esclusi i televisori. Sceglili qui per aggiungere altri lettori, come quelli di integrazioni personalizzate.",
           "set_volume": "Alla fine del messaggio l'altoparlante torna al suo volume.",
           "announce_volume": "Su Sonos, Music Assistant, Squeezebox e Bang & Olufsen il messaggio si sente al suo volume sopra la musica, senza toccare il volume della musica. Se disattivato, il volume dell'altoparlante viene cambiato e poi ripristinato, come sugli altri.",
+          "resume_playback": "Sugli altoparlanti senza modalità annunci nativa (come Google Cast e DLNA), prova a riprendere flussi radio, URL e media source riproducibili direttamente al termine del messaggio. Le sessioni di app come Spotify o YouTube Music non possono essere riprese.",
           "custom_chime": "File audio locale facoltativo (MP3, WAV, OGG...) in una cartella consentita (allowlist_external_dirs). Abilita la voce Personalizzato nel selettore del suono.",
           "normalize": "Le registrazioni piano e forti si sentono allo stesso livello.",
           "voice_enhancement": "Applica riduzione rumore, cancellazione eco, guadagno automatico del microfono, filtro passa-alto e taglio dei silenzi. Disattiva per audio naturale senza filtri.",
@@ -45,7 +49,8 @@
           "quiet_mode": "Scegli se limitare il volume degli annunci oppure saltare gli altoparlanti interessati durante gli orari di silenzio.",
           "quiet_speakers": "Lascia vuoto per applicare gli orari di silenzio a tutti gli altoparlanti.",
           "quiet_entity": "input_boolean o binary_sensor facoltativo che attiva la modalità silenzio quando è acceso.",
-          "intercom": "Aggiunge una telecamera per ogni altoparlante con il pulsante per parlare, usando l'audio bidirezionale di Home Assistant (Two-way audio in Impostazioni > Sistema > Laboratori). La prima volta installa aiortc."
+          "intercom": "Aggiunge una telecamera per ogni altoparlante con il pulsante per parlare, usando l'audio bidirezionale di Home Assistant (Two-way audio in Impostazioni > Sistema > Laboratori). La prima volta installa aiortc.",
+          "alexa_support": "Aggiunge gli altoparlanti Amazon Echo dalle integrazioni Alexa Devices o Alexa Media Player tramite audio SSML. Richiede un URL esterno HTTPS raggiungibile da Amazon (Home Assistant Cloud o dominio pubblico HTTPS)."
         }
       }
     }
@@ -54,7 +59,8 @@
     "error": {
       "path_not_allowed": "Il percorso non è in una cartella che Home Assistant può leggere (allowlist_external_dirs).",
       "file_not_found": "Il file non esiste.",
-      "custom_chime_missing": "Imposta il percorso di un file audio personalizzato prima di scegliere Personalizzato."
+      "custom_chime_missing": "Imposta il percorso di un file audio personalizzato prima di scegliere Personalizzato.",
+      "external_https_required": "Il supporto Alexa richiede un URL esterno HTTPS (come Home Assistant Cloud o un dominio pubblico HTTPS in Impostazioni > Sistema > Rete)."
     },
     "step": {
       "init": {
@@ -64,6 +70,7 @@
           "set_volume": "Imposta il volume dei messaggi",
           "volume": "Volume dei messaggi",
           "announce_volume": "Usa il volume degli annunci dell'altoparlante",
+          "resume_playback": "Riprendi la riproduzione dopo i messaggi (best effort)",
           "chime": "Suono prima del messaggio",
           "custom_chime": "Percorso file suono personalizzato",
           "normalize": "Uniforma il volume della voce",
@@ -78,12 +85,14 @@
           "quiet_speakers": "Altoparlanti in orari di silenzio",
           "quiet_entity": "Interruttore o sensore orari di silenzio",
           "show_panel": "Mostra Annunci nella barra laterale",
-          "intercom": "Interfono come telecamera (audio bidirezionale di Labs)"
+          "intercom": "Interfono come telecamera (audio bidirezionale di Labs)",
+          "alexa_support": "Supporto Amazon Alexa / Echo (sperimentale)"
         },
         "data_description": {
           "speakers": "Lascia vuoto per proporre tutti gli altoparlanti delle integrazioni supportate (Google Cast, Sonos, ESPHome, DLNA, Music Assistant e altre), esclusi i televisori. Sceglili qui per aggiungere altri lettori, come quelli di integrazioni personalizzate.",
           "set_volume": "Alla fine del messaggio l'altoparlante torna al suo volume.",
           "announce_volume": "Su Sonos, Music Assistant, Squeezebox e Bang & Olufsen il messaggio si sente al suo volume sopra la musica, senza toccare il volume della musica. Se disattivato, il volume dell'altoparlante viene cambiato e poi ripristinato, come sugli altri.",
+          "resume_playback": "Sugli altoparlanti senza modalità annunci nativa (come Google Cast e DLNA), prova a riprendere flussi radio, URL e media source riproducibili direttamente al termine del messaggio. Le sessioni di app come Spotify o YouTube Music non possono essere riprese.",
           "custom_chime": "File audio locale facoltativo (MP3, WAV, OGG...) in una cartella consentita (allowlist_external_dirs). Abilita la voce Personalizzato nel selettore del suono.",
           "normalize": "Le registrazioni piano e forti si sentono allo stesso livello.",
           "voice_enhancement": "Applica riduzione rumore, cancellazione eco, guadagno automatico del microfono, filtro passa-alto e taglio dei silenzi. Disattiva per audio naturale senza filtri.",
@@ -92,7 +101,8 @@
           "quiet_mode": "Scegli se limitare il volume degli annunci oppure saltare gli altoparlanti interessati durante gli orari di silenzio.",
           "quiet_speakers": "Lascia vuoto per applicare gli orari di silenzio a tutti gli altoparlanti.",
           "quiet_entity": "input_boolean o binary_sensor facoltativo che attiva la modalità silenzio quando è acceso.",
-          "intercom": "Aggiunge una telecamera per ogni altoparlante con il pulsante per parlare, usando l'audio bidirezionale di Home Assistant (Two-way audio in Impostazioni > Sistema > Laboratori). La prima volta installa aiortc."
+          "intercom": "Aggiunge una telecamera per ogni altoparlante con il pulsante per parlare, usando l'audio bidirezionale di Home Assistant (Two-way audio in Impostazioni > Sistema > Laboratori). La prima volta installa aiortc.",
+          "alexa_support": "Aggiunge gli altoparlanti Amazon Echo dalle integrazioni Alexa Devices o Alexa Media Player tramite audio SSML. Richiede un URL esterno HTTPS raggiungibile da Amazon (Home Assistant Cloud o dominio pubblico HTTPS)."
         }
       }
     }
@@ -174,6 +184,12 @@
     },
     "no_message": {
       "message": "Non c'è un messaggio recente da ripetere."
+    },
+    "external_https_required": {
+      "message": "Gli altoparlanti Alexa richiedono un URL esterno HTTPS configurato in Impostazioni > Sistema > Rete (come Home Assistant Cloud)."
+    },
+    "alexa_disabled": {
+      "message": "Il supporto Alexa è disattivato. Attivalo nelle opzioni di HA-nnounce per inviare annunci agli altoparlanti Echo."
     }
   },
   "services": {

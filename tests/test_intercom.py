@@ -198,3 +198,35 @@ def test_intercom_screen_handles_unicode_and_ascii_fallback() -> None:
         assert fallback._unicode_font is False
         fallback.set("error")
         assert fallback.jpeg()[:2] == b"\xff\xd8"
+
+
+def test_intercom_strings_cover_all_languages() -> None:
+    """Every integration language has complete intercom screen strings with no long dashes."""
+    from pathlib import Path  # noqa: PLC0415
+
+    from custom_components.hannounce import TEXT, intercom  # noqa: PLC0415
+
+    translations_dir = (
+        Path(__file__).resolve().parent.parent
+        / "custom_components"
+        / "hannounce"
+        / "translations"
+    )
+    languages = {path.stem for path in translations_dir.glob("*.json")}
+    assert set(intercom.STRINGS) == languages
+    assert set(intercom.STRINGS) == set(TEXT)
+
+    expected_keys = set(intercom.STRINGS["en"])
+    for lang, table in intercom.STRINGS.items():
+        assert set(table) == expected_keys, f"key mismatch in intercom.STRINGS[{lang!r}]"
+        for key, value in table.items():
+            assert value.strip(), f"empty value in intercom.STRINGS[{lang!r}][{key!r}]"
+            assert "\u2013" not in value and "\u2014" not in value, (
+                f"long dash in intercom.STRINGS[{lang!r}][{key!r}]: {value}"
+            )
+
+    assert intercom.strings("de-DE")["recording"] == "Aufnahme"
+    assert intercom.strings("fr-FR")["idle"] == "Prêt à parler"
+    assert intercom.strings("es-ES")["sent"] == "Enviado"
+    assert intercom.strings("nl-NL")["to"] == "Naar"
+    assert intercom.strings("xx-XX") == intercom.STRINGS["en"]

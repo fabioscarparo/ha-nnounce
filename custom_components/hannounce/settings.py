@@ -28,8 +28,10 @@ from homeassistant.helpers import (
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    ALEXA_PLATFORMS,
     ALL_CHIMES,
     CHIME_CUSTOM,
+    CONF_ALEXA_SUPPORT,
     CONF_ANNOUNCE_VOLUME,
     CONF_CHIME,
     CONF_CUSTOM_CHIME,
@@ -43,12 +45,14 @@ from .const import (
     CONF_QUIET_SPEAKERS,
     CONF_QUIET_START,
     CONF_QUIET_VOLUME,
+    CONF_RESUME_PLAYBACK,
     CONF_SET_VOLUME,
     CONF_SHOW_PANEL,
     CONF_SPEAKERS,
     CONF_TTS_ENTITY,
     CONF_VOICE_ENHANCEMENT,
     CONF_VOLUME,
+    DEFAULT_ALEXA_SUPPORT,
     DEFAULT_ANNOUNCE_VOLUME,
     DEFAULT_CHIME,
     DEFAULT_INTERCOM,
@@ -59,6 +63,7 @@ from .const import (
     DEFAULT_QUIET_MODE,
     DEFAULT_QUIET_START,
     DEFAULT_QUIET_VOLUME,
+    DEFAULT_RESUME_PLAYBACK,
     DEFAULT_SET_VOLUME,
     DEFAULT_SHOW_PANEL,
     DEFAULT_VOICE_ENHANCEMENT,
@@ -68,6 +73,7 @@ from .const import (
 )
 
 CAST_GROUP_MODEL = "Google Cast Group"
+ALEXA_GROUP_MODEL = "WHA"
 
 
 def parse_clock(value: str | None) -> time | None:
@@ -102,6 +108,8 @@ class AnnounceSettings:
     show_panel: bool
     intercom: bool
     announce_volume: bool
+    resume_playback: bool = DEFAULT_RESUME_PLAYBACK
+    alexa_support: bool = DEFAULT_ALEXA_SUPPORT
     voice_enhancement: bool = DEFAULT_VOICE_ENHANCEMENT
     custom_chime: str | None = None
     tts_entity: str | None = None
@@ -141,6 +149,12 @@ class AnnounceSettings:
             intercom=bool(options.get(CONF_INTERCOM, DEFAULT_INTERCOM)),
             announce_volume=bool(
                 options.get(CONF_ANNOUNCE_VOLUME, DEFAULT_ANNOUNCE_VOLUME)
+            ),
+            resume_playback=bool(
+                options.get(CONF_RESUME_PLAYBACK, DEFAULT_RESUME_PLAYBACK)
+            ),
+            alexa_support=bool(
+                options.get(CONF_ALEXA_SUPPORT, DEFAULT_ALEXA_SUPPORT)
             ),
             custom_chime=custom_chime,
             tts_entity=tts_entity,
@@ -209,11 +223,16 @@ def speaker_ids(hass: HomeAssistant, settings: AnnounceSettings) -> list[str]:
             or er.async_get(hass).async_get(entity_id) is not None
         ]
     registry = er.async_get(hass)
+    allowed_platforms = (
+        MEDIA_SOURCE_PLATFORMS | ALEXA_PLATFORMS
+        if settings.alexa_support
+        else MEDIA_SOURCE_PLATFORMS
+    )
     return sorted(
         entry.entity_id
         for entry in registry.entities.values()
         if entry.domain == MEDIA_PLAYER_DOMAIN
-        and entry.platform in MEDIA_SOURCE_PLATFORMS
+        and entry.platform in allowed_platforms
         and not entry.disabled
         and not entry.hidden
         and (entry.device_class or entry.original_device_class)
@@ -246,7 +265,7 @@ def describe_speakers(hass: HomeAssistant, entity_ids: list[str]) -> list[dict]:
                 "area_id": area.id if area else None,
                 "area_icon": area.icon if area else None,
                 "group": bool(
-                    (device and device.model == CAST_GROUP_MODEL)
+                    (device and device.model in (CAST_GROUP_MODEL, ALEXA_GROUP_MODEL))
                     or (entry and entry.platform == "group")
                 ),
                 "platform": entry.platform if entry else None,

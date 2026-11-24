@@ -32,9 +32,10 @@ HA-nnounce turns Home Assistant `media_player` entities into a local, whole-home
 
 - **UI:** Dedicated sidebar panel and `custom:hannounce-card` (no dashboard resource to add, visual editor, separated area shortcuts & compact speaker dialog for large homes, voice or text-to-speech mode, quiet hours indicators, chime preview, EN/IT/DE/FR/ES/NL/RO, light/dark themes).
 - **Audio pipeline:** Local `ffmpeg` processing with optional voice enhancement (microphone DSP, high-pass filter, silence trimming) and EBU R128 loudness normalization, synthesized or custom audio chimes, and MP3 encoding.
-- **Playback control:** Dedicated announcement volume (where supported) or temporary volume/mute override with automatic restoration, plus configurable quiet hours (volume cap or speaker skip).
+- **Playback control:** Dedicated announcement volume (where supported) or temporary volume/mute override with automatic restoration, optional best-effort playback resume for direct streams/URLs on non-announce speakers, plus configurable quiet hours (volume cap or speaker skip).
 - **Text-to-speech mode:** Uses Home Assistant's configured TTS engine (Piper, PicoTTS, HA Cloud, Google Translate...) and routes the generated audio through HA-nnounce's chime, volume, and quiet hours pipeline.
-- **Two-way audio intercom (Labs):** Exposes speakers as WebRTC intercom cameras via `aiortc` for Home Assistant's native *Start talking* UI.
+- **Two-way audio intercom (Labs):** Exposes speakers as WebRTC intercom cameras via `aiortc` for Home Assistant's native *Start talking* UI (translated in all 7 supported languages).
+- **Optional Amazon Alexa / Echo support (experimental):** Opt-in delivery to Echo devices via `alexa_devices` or HACS `alexa_media` using on-demand 48 kbps / 24 kHz SSML `<audio>` (requires an external HTTPS URL).
 - **Automations & history:** `hannounce.announce` (voice file, URL, or TTS text) and `hannounce.replay` actions with native Home Assistant targets (entities, areas, floors, devices, labels) and quiet hours override (`force`), `hannounce_announced` event, diagnostics download, and 1-hour retention in the Media panel.
 
 ## Architecture
@@ -69,13 +70,16 @@ Works with any Home Assistant `media_player` integration capable of playing audi
 |---|---|
 | **Sonos, Music Assistant, Squeezebox, Bang & Olufsen** | Native announcement mode: ducks music, plays at the speaker's announcement volume, resumes playback. |
 | **ESPHome (incl. Voice PE)** | Native announcement mode: ducks music and resumes playback. |
-| **Google Cast (Home, Nest, Chromecast, groups)** | Local Cast playback as standard audio (music stops and does not resume). No Google cloud/SDK required. |
-| **DLNA/UPnP, HEOS, Bluesound, LinkPlay, WiiM, MusicCast, SoundTouch, OpenHome, MPD, VLC, Kodi, Apple TV, forked-daapd, Fully Kiosk, UniFi Protect, Roku, Dune HD, Panasonic Viera** | Plays as a standard audio track. |
+| **Google Cast (Home, Nest, Chromecast, groups)** | Local Cast playback as standard audio (no Google cloud/SDK required). Optional best-effort resume for direct streams, URLs, and media sources; app sessions like Spotify do not resume. |
+| **DLNA/UPnP, HEOS, Bluesound, LinkPlay, WiiM, MusicCast, SoundTouch, OpenHome, MPD, VLC, Kodi, Apple TV, forked-daapd, Fully Kiosk, UniFi Protect, Roku, Dune HD, Panasonic Viera** | Plays as a standard audio track (optional best-effort resume for direct streams/URLs/media sources). |
+| **Amazon Alexa / Echo (`alexa_devices` & HACS `alexa_media`)** | **Optional (off by default, experimental):** sends SSML `<audio>` with an on-demand CBR 48 kbps / 24 kHz MP3 (max 240s) served over Home Assistant's external HTTPS URL. |
 | **Custom integrations (e.g. Browser Mod)** | Receives a signed audio URL (add manually in integration options). |
 
 **Google Home:** speakers work through Home Assistant's Google Cast integration. Google Assistant broadcast only accepts text, so it cannot play a recording.
 
-**Not supported:** Players that cannot play arbitrary audio URLs (e.g., Alexa/Echo, Spotify).  
+**Amazon Alexa / Echo:** Echo devices cannot fetch local LAN URLs; Amazon's servers fetch the signed MP3 directly, so enabling Alexa support requires a valid external HTTPS URL (Home Assistant Cloud / Nabu Casa or a public HTTPS domain).
+
+**Not supported:** Players that cannot play arbitrary audio URLs (e.g., Spotify, or Alexa without an external HTTPS URL).  
 *Note: Tested on HA 2026.11.1 with simulated players; not every listed hardware integration has been verified on physical devices.*
 
 ## Requirements & Installation
@@ -108,6 +112,7 @@ Add **HA-nnounce** with the button above, or from **Settings > Devices & service
 | Speakers | All supported | Filter available speakers or manually add custom integrations (TVs excluded by default). |
 | Set volume / Message volume | On / 60% | Temporarily sets volume (and unmutes muted speakers) and restores them after playback (preserves manual changes made mid-playback). |
 | Use speaker announcement volume | On | Uses native announcement volume on Sonos, Music Assistant, Squeezebox, and B&O. |
+| Resume playback (best effort) | Off | On non-announce speakers (Google Cast, DLNA...), tries to resume directly playable `http(s)://` streams and `media-source://` tracks after restoring volume (seeks back when supported). |
 | Chime | Ding dong | Pre-message chime: `None`, `Ding dong`, `Soft`, `3 tones`, or `Custom`. |
 | Custom chime file path | Empty | Optional local audio file (inside `allowlist_external_dirs`) to enable the `Custom` chime option and preview. |
 | Even out loudness | On | EBU R128 loudness normalization. |
@@ -117,6 +122,7 @@ Add **HA-nnounce** with the button above, or from **Settings > Devices & service
 | Quiet hours | Off (`22:00`-`07:00`) | Limit announcement volume (default `25%`) or skip selected speakers during the schedule or while an optional `input_boolean`/`binary_sensor` is `on`. |
 | Sidebar panel | On | Adds the Announcements panel to the sidebar. |
 | Intercom cameras (Labs) | Off | Creates WebRTC intercom cameras (installs `aiortc` on first use). |
+| Amazon Alexa / Echo support (experimental) | Off | Enables Echo speakers via `alexa_devices` (`notify.send_message`) or `alexa_media` (`notify.alexa_media`) using SSML `<audio>`. Requires an external HTTPS URL. |
 
 ## Usage
 
@@ -195,7 +201,7 @@ Fired on every announcement with payload: `id`, `targets`, `duration` (seconds, 
 
 See [tools/README.md](tools/README.md).
 
-- **Backend tests:** `pip install -r requirements_test.txt && pytest` (51 tests via `pytest-homeassistant`).
+- **Backend tests:** `pip install -r requirements_test.txt && pytest` (61 tests via `pytest-homeassistant`).
 - **Frontend tests:** `node --test tools/tests/*.test.mjs`.
 
 Released under the [MIT License](LICENSE).

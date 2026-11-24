@@ -7,12 +7,20 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
-from .const import CHIME_CUSTOM, CHIME_NONE, MAX_CUSTOM_CHIME_SECONDS
+from .const import (
+    ALEXA_MAX_DURATION,
+    CHIME_CUSTOM,
+    CHIME_NONE,
+    MAX_CUSTOM_CHIME_SECONDS,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 SAMPLE_RATE = 44100
 BITRATE = 96_000
+# Amazon Alexa SSML <audio> requires CBR 48 kbps MP3 at 24 kHz (or 16 kHz)
+ALEXA_SAMPLE_RATE = 24000
+ALEXA_BITRATE = 48_000
 # Cast speakers often swallow the first fraction of a second
 LEAD_IN_MS = 350
 TAIL_SECONDS = 0.4
@@ -258,3 +266,44 @@ async def async_render(
     if duration - LEAD_IN_MS / 1000 - TAIL_SECONDS - chime_seconds < required:
         raise NoVoiceError("The recording is empty or silent")
     return RenderedAudio(target, duration)
+
+
+def build_alexa_ffmpeg_args(
+    ffmpeg_binary: str, source: Path, target: Path
+) -> list[str]:
+    """Build ffmpeg args for an Alexa SSML-compliant CBR 48 kbps 24 kHz mono MP3."""
+    return [
+        ffmpeg_binary,
+        "-hide_banner",
+        "-nostdin",
+        "-loglevel",
+        "error",
+        "-y",
+        "-t",
+        f"{ALEXA_MAX_DURATION:g}",
+        "-i",
+        str(source),
+        "-ac",
+        "1",
+        "-ar",
+        str(ALEXA_SAMPLE_RATE),
+        "-c:a",
+        "libmp3lame",
+        "-b:a",
+        str(ALEXA_BITRATE),
+        "-write_xing",
+        "0",
+        "-id3v2_version",
+        "0",
+        "-f",
+        "mp3",
+        str(target),
+    ]
+
+
+async def async_render_alexa(
+    ffmpeg_binary: str, source: Path, target: Path
+) -> Path:
+    """Transcode a rendered announcement MP3 into Amazon Alexa SSML format."""
+    await _run(build_alexa_ffmpeg_args(ffmpeg_binary, source, target))
+    return target

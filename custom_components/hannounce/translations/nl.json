@@ -6,7 +6,8 @@
     "error": {
       "path_not_allowed": "Het pad staat niet in een map die Home Assistant mag lezen (allowlist_external_dirs).",
       "file_not_found": "Het bestand bestaat niet.",
-      "custom_chime_missing": "Stel eerst het pad van een eigen geluidsbestand in voordat je Aangepast kiest."
+      "custom_chime_missing": "Stel eerst het pad van een eigen geluidsbestand in voordat je Aangepast kiest.",
+      "external_https_required": "Alexa-ondersteuning vereist een externe HTTPS-URL (zoals Home Assistant Cloud of een openbaar HTTPS-domein onder Instellingen > Systeem > Netwerk)."
     },
     "step": {
       "user": {
@@ -17,6 +18,7 @@
           "set_volume": "Volume voor berichten instellen",
           "volume": "Berichtvolume",
           "announce_volume": "Omroepvolume van de luidspreker gebruiken",
+          "resume_playback": "Afspelen hervatten na berichten (best effort)",
           "chime": "Geluid voor het bericht",
           "custom_chime": "Pad naar eigen geluidsbestand",
           "normalize": "Luidheid gelijktrekken",
@@ -31,12 +33,14 @@
           "quiet_speakers": "Luidsprekers voor stille uren",
           "quiet_entity": "Schakelaar of sensor voor stille uren",
           "show_panel": "Omroepen tonen in de zijbalk",
-          "intercom": "Intercomcamera's (Labs tweerichtingsaudio)"
+          "intercom": "Intercomcamera's (Labs tweerichtingsaudio)",
+          "alexa_support": "Amazon Alexa / Echo-ondersteuning (experimenteel)"
         },
         "data_description": {
           "speakers": "Laat leeg om alle luidsprekers van ondersteunde integraties aan te bieden (Google Cast, Sonos, ESPHome, DLNA, Music Assistant en meer), exclusief televisies. Kies hier om andere mediaspelers toe te voegen, zoals aangepaste integraties.",
           "set_volume": "De luidspreker keert na het bericht terug naar het vorige volume.",
           "announce_volume": "Op Sonos, Music Assistant, Squeezebox en Bang & Olufsen speelt het bericht op eigen volume over de muziek heen, zonder het muziekvolume te wijzigen. Uit: het volume wordt tijdelijk gewijzigd en daarna hersteld, zoals bij de andere.",
+          "resume_playback": "Op luidsprekers zonder eigen omroepmodus (zoals Google Cast en DLNA) wordt geprobeerd rechtstreeks afspeelbare streams, URL's en mediabronnen na het bericht te hervatten. App-sessies zoals Spotify of YouTube Music kunnen niet worden hervat.",
           "custom_chime": "Optioneel lokaal audiobestand (MP3, WAV, OGG...) in een toegestane map (allowlist_external_dirs). Schakelt de optie Aangepast in bij de geluidskeuze.",
           "normalize": "Laat zachte en luide opnames even luid klinken.",
           "voice_enhancement": "Past ruisonderdrukking, echo-onderdrukking, automatische versterking van de microfoon, hoogdoorlaatfilter en stilte-inkorting toe. Schakel uit voor onbewerkte audio.",
@@ -45,7 +49,8 @@
           "quiet_mode": "Kies of het volume tijdens stille uren wordt begrensd of dat gekozen luidsprekers worden overgeslagen.",
           "quiet_speakers": "Laat leeg om stille uren op alle luidsprekers toe te passen.",
           "quiet_entity": "Optionele input_boolean of binary_sensor die stille uren activeert zodra deze aan staat.",
-          "intercom": "Voegt per luidspreker een camera met spreekknop toe via tweerichtingsaudio van Home Assistant (Instellingen > Systeem > Labs). Installeert de eerste keer aiortc."
+          "intercom": "Voegt per luidspreker een camera met spreekknop toe via tweerichtingsaudio van Home Assistant (Instellingen > Systeem > Labs). Installeert de eerste keer aiortc.",
+          "alexa_support": "Voegt Amazon Echo-luidsprekers uit de integraties Alexa Devices of Alexa Media Player toe via SSML-audio. Vereist een door Amazon bereikbare externe HTTPS-URL (Home Assistant Cloud of openbaar HTTPS-domein)."
         }
       }
     }
@@ -54,7 +59,8 @@
     "error": {
       "path_not_allowed": "Het pad staat niet in een map die Home Assistant mag lezen (allowlist_external_dirs).",
       "file_not_found": "Het bestand bestaat niet.",
-      "custom_chime_missing": "Stel eerst het pad van een eigen geluidsbestand in voordat je Aangepast kiest."
+      "custom_chime_missing": "Stel eerst het pad van een eigen geluidsbestand in voordat je Aangepast kiest.",
+      "external_https_required": "Alexa-ondersteuning vereist een externe HTTPS-URL (zoals Home Assistant Cloud of een openbaar HTTPS-domein onder Instellingen > Systeem > Netwerk)."
     },
     "step": {
       "init": {
@@ -64,6 +70,7 @@
           "set_volume": "Volume voor berichten instellen",
           "volume": "Berichtvolume",
           "announce_volume": "Omroepvolume van de luidspreker gebruiken",
+          "resume_playback": "Afspelen hervatten na berichten (best effort)",
           "chime": "Geluid voor het bericht",
           "custom_chime": "Pad naar eigen geluidsbestand",
           "normalize": "Luidheid gelijktrekken",
@@ -78,12 +85,14 @@
           "quiet_speakers": "Luidsprekers voor stille uren",
           "quiet_entity": "Schakelaar of sensor voor stille uren",
           "show_panel": "Omroepen tonen in de zijbalk",
-          "intercom": "Intercomcamera's (Labs tweerichtingsaudio)"
+          "intercom": "Intercomcamera's (Labs tweerichtingsaudio)",
+          "alexa_support": "Amazon Alexa / Echo-ondersteuning (experimenteel)"
         },
         "data_description": {
           "speakers": "Laat leeg om alle luidsprekers van ondersteunde integraties aan te bieden (Google Cast, Sonos, ESPHome, DLNA, Music Assistant en meer), exclusief televisies. Kies hier om andere mediaspelers toe te voegen, zoals aangepaste integraties.",
           "set_volume": "De luidspreker keert na het bericht terug naar het vorige volume.",
           "announce_volume": "Op Sonos, Music Assistant, Squeezebox en Bang & Olufsen speelt het bericht op eigen volume over de muziek heen, zonder het muziekvolume te wijzigen. Uit: het volume wordt tijdelijk gewijzigd en daarna hersteld, zoals bij de andere.",
+          "resume_playback": "Op luidsprekers zonder eigen omroepmodus (zoals Google Cast en DLNA) wordt geprobeerd rechtstreeks afspeelbare streams, URL's en mediabronnen na het bericht te hervatten. App-sessies zoals Spotify of YouTube Music kunnen niet worden hervat.",
           "custom_chime": "Optioneel lokaal audiobestand (MP3, WAV, OGG...) in een toegestane map (allowlist_external_dirs). Schakelt de optie Aangepast in bij de geluidskeuze.",
           "normalize": "Laat zachte en luide opnames even luid klinken.",
           "voice_enhancement": "Past ruisonderdrukking, echo-onderdrukking, automatische versterking van de microfoon, hoogdoorlaatfilter en stilte-inkorting toe. Schakel uit voor onbewerkte audio.",
@@ -92,7 +101,8 @@
           "quiet_mode": "Kies of het volume tijdens stille uren wordt begrensd of dat gekozen luidsprekers worden overgeslagen.",
           "quiet_speakers": "Laat leeg om stille uren op alle luidsprekers toe te passen.",
           "quiet_entity": "Optionele input_boolean of binary_sensor die stille uren activeert zodra deze aan staat.",
-          "intercom": "Voegt per luidspreker een camera met spreekknop toe via tweerichtingsaudio van Home Assistant (Instellingen > Systeem > Labs). Installeert de eerste keer aiortc."
+          "intercom": "Voegt per luidspreker een camera met spreekknop toe via tweerichtingsaudio van Home Assistant (Instellingen > Systeem > Labs). Installeert de eerste keer aiortc.",
+          "alexa_support": "Voegt Amazon Echo-luidsprekers uit de integraties Alexa Devices of Alexa Media Player toe via SSML-audio. Vereist een door Amazon bereikbare externe HTTPS-URL (Home Assistant Cloud of openbaar HTTPS-domein)."
         }
       }
     }
@@ -174,6 +184,12 @@
     },
     "no_message": {
       "message": "Er is geen recent bericht om opnieuw af te spelen."
+    },
+    "external_https_required": {
+      "message": "Alexa-luidsprekers vereisen een externe HTTPS-URL onder Instellingen > Systeem > Netwerk (zoals Home Assistant Cloud)."
+    },
+    "alexa_disabled": {
+      "message": "Alexa-ondersteuning is uitgeschakeld. Schakel deze in bij de opties van HA-nnounce om berichten op Echo-luidsprekers af te spelen."
     }
   },
   "services": {

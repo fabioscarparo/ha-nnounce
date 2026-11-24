@@ -171,6 +171,7 @@ async def test_service_supports_area_floor_and_label_targets(
             DOMAIN, "announce", {"file": wav, "chime": "none"}, target={"area_id": empty.id},
             blocking=True,
         )
+    await hass.async_block_till_done(wait_background_tasks=True)
 
 
 async def test_info_exposes_areas_custom_chime_quiet_and_tts(

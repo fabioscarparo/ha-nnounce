@@ -158,7 +158,8 @@ async def ws_say(
         connection.send_error(msg["id"], "quiet_hours", str(err))
         return
     except HomeAssistantError as err:
-        connection.send_error(msg["id"], "no_targets", str(err))
+        code = getattr(err, "translation_key", None) or "no_targets"
+        connection.send_error(msg["id"], code, str(err))
         return
 
     try:
@@ -244,8 +245,12 @@ def ws_route(hass: HomeAssistant, connection: websocket_api.ActiveConnection, ms
         return
     try:
         targets = runtime.announcer.check_targets(msg["targets"])
+        runtime.announcer.check_delivery(
+            targets, alexa_support=runtime.settings.alexa_support
+        )
     except HomeAssistantError as err:
-        connection.send_error(msg["id"], "no_targets", str(err))
+        code = getattr(err, "translation_key", None) or "no_targets"
+        connection.send_error(msg["id"], code, str(err))
         return
     runtime.set_route(
         targets,

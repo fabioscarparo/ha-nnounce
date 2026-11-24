@@ -6,7 +6,8 @@
     "error": {
       "path_not_allowed": "Le chemin ne se trouve pas dans un dossier que Home Assistant peut lire (allowlist_external_dirs).",
       "file_not_found": "Le fichier n'existe pas.",
-      "custom_chime_missing": "Indiquez d'abord le chemin d'un fichier audio personnalisé avant de choisir Personnalisé."
+      "custom_chime_missing": "Indiquez d'abord le chemin d'un fichier audio personnalisé avant de choisir Personnalisé.",
+      "external_https_required": "La prise en charge d'Alexa nécessite une URL externe HTTPS (comme Home Assistant Cloud ou un domaine public HTTPS dans Paramètres > Système > Réseau)."
     },
     "step": {
       "user": {
@@ -17,6 +18,7 @@
           "set_volume": "Définir le volume des messages",
           "volume": "Volume des messages",
           "announce_volume": "Utiliser le volume d'annonce du haut-parleur",
+          "resume_playback": "Reprendre la lecture après les messages (au mieux)",
           "chime": "Carillon avant le message",
           "custom_chime": "Chemin du carillon personnalisé",
           "normalize": "Égaliser le niveau sonore",
@@ -31,12 +33,14 @@
           "quiet_speakers": "Haut-parleurs concernés",
           "quiet_entity": "Interrupteur ou capteur d'heures silencieuses",
           "show_panel": "Afficher Annonces dans la barre latérale",
-          "intercom": "Caméras interphone (audio bidirectionnel Labs)"
+          "intercom": "Caméras interphone (audio bidirectionnel Labs)",
+          "alexa_support": "Prise en charge Amazon Alexa / Echo (expérimental)"
         },
         "data_description": {
           "speakers": "Laissez vide pour proposer tous les haut-parleurs des intégrations prises en charge (Google Cast, Sonos, ESPHome, DLNA, Music Assistant et autres), sans les téléviseurs. Choisissez ici pour ajouter d'autres lecteurs, comme des intégrations personnalisées.",
           "set_volume": "Le haut-parleur revient à son volume précédent à la fin du message.",
           "announce_volume": "Sur Sonos, Music Assistant, Squeezebox et Bang & Olufsen, le message est diffusé à son propre volume par-dessus la musique, sans modifier le volume de la musique. Désactivé : le volume est modifié puis rétabli, comme sur les autres.",
+          "resume_playback": "Sur les haut-parleurs sans mode annonce natif (comme Google Cast et DLNA), tente de reprendre les flux, URL et sources multimédias directement lisibles après le message. Les sessions d'applications comme Spotify ou YouTube Music ne peuvent pas être reprises.",
           "custom_chime": "Fichier audio local facultatif (MP3, WAV, OGG...) dans un dossier autorisé (allowlist_external_dirs). Active l'option Personnalisé dans le sélecteur de carillon.",
           "normalize": "Rend les enregistrements faibles et forts audibles au même niveau.",
           "voice_enhancement": "Applique réduction de bruit, annulation d'écho, gain automatique du micro, filtre passe-haut et suppression des silences. Désactivez pour un audio brut.",
@@ -45,7 +49,8 @@
           "quiet_mode": "Choisissez de limiter le volume ou d'ignorer les haut-parleurs concernés pendant les heures silencieuses.",
           "quiet_speakers": "Laissez vide pour appliquer les heures silencieuses à tous les haut-parleurs.",
           "quiet_entity": "input_boolean ou binary_sensor facultatif qui active les heures silencieuses lorsqu'il est activé.",
-          "intercom": "Ajoute une caméra par haut-parleur avec un bouton pour parler, en utilisant l'audio bidirectionnel de Home Assistant (Paramètres > Système > Labs). Installe aiortc la première fois."
+          "intercom": "Ajoute une caméra par haut-parleur avec un bouton pour parler, en utilisant l'audio bidirectionnel de Home Assistant (Paramètres > Système > Labs). Installe aiortc la première fois.",
+          "alexa_support": "Ajoute les haut-parleurs Amazon Echo des intégrations Alexa Devices ou Alexa Media Player via l'audio SSML. Nécessite une URL externe HTTPS accessible par Amazon (Home Assistant Cloud ou domaine public HTTPS)."
         }
       }
     }
@@ -54,7 +59,8 @@
     "error": {
       "path_not_allowed": "Le chemin ne se trouve pas dans un dossier que Home Assistant peut lire (allowlist_external_dirs).",
       "file_not_found": "Le fichier n'existe pas.",
-      "custom_chime_missing": "Indiquez d'abord le chemin d'un fichier audio personnalisé avant de choisir Personnalisé."
+      "custom_chime_missing": "Indiquez d'abord le chemin d'un fichier audio personnalisé avant de choisir Personnalisé.",
+      "external_https_required": "La prise en charge d'Alexa nécessite une URL externe HTTPS (comme Home Assistant Cloud ou un domaine public HTTPS dans Paramètres > Système > Réseau)."
     },
     "step": {
       "init": {
@@ -64,6 +70,7 @@
           "set_volume": "Définir le volume des messages",
           "volume": "Volume des messages",
           "announce_volume": "Utiliser le volume d'annonce du haut-parleur",
+          "resume_playback": "Reprendre la lecture après les messages (au mieux)",
           "chime": "Carillon avant le message",
           "custom_chime": "Chemin du carillon personnalisé",
           "normalize": "Égaliser le niveau sonore",
@@ -78,12 +85,14 @@
           "quiet_speakers": "Haut-parleurs concernés",
           "quiet_entity": "Interrupteur ou capteur d'heures silencieuses",
           "show_panel": "Afficher Annonces dans la barre latérale",
-          "intercom": "Caméras interphone (audio bidirectionnel Labs)"
+          "intercom": "Caméras interphone (audio bidirectionnel Labs)",
+          "alexa_support": "Prise en charge Amazon Alexa / Echo (expérimental)"
         },
         "data_description": {
           "speakers": "Laissez vide pour proposer tous les haut-parleurs des intégrations prises en charge (Google Cast, Sonos, ESPHome, DLNA, Music Assistant et autres), sans les téléviseurs. Choisissez ici pour ajouter d'autres lecteurs, comme des intégrations personnalisées.",
           "set_volume": "Le haut-parleur revient à son volume précédent à la fin du message.",
           "announce_volume": "Sur Sonos, Music Assistant, Squeezebox et Bang & Olufsen, le message est diffusé à son propre volume par-dessus la musique, sans modifier le volume de la musique. Désactivé : le volume est modifié puis rétabli, comme sur les autres.",
+          "resume_playback": "Sur les haut-parleurs sans mode annonce natif (comme Google Cast et DLNA), tente de reprendre les flux, URL et sources multimédias directement lisibles après le message. Les sessions d'applications comme Spotify ou YouTube Music ne peuvent pas être reprises.",
           "custom_chime": "Fichier audio local facultatif (MP3, WAV, OGG...) dans un dossier autorisé (allowlist_external_dirs). Active l'option Personnalisé dans le sélecteur de carillon.",
           "normalize": "Rend les enregistrements faibles et forts audibles au même niveau.",
           "voice_enhancement": "Applique réduction de bruit, annulation d'écho, gain automatique du micro, filtre passe-haut et suppression des silences. Désactivez pour un audio brut.",
@@ -92,7 +101,8 @@
           "quiet_mode": "Choisissez de limiter le volume ou d'ignorer les haut-parleurs concernés pendant les heures silencieuses.",
           "quiet_speakers": "Laissez vide pour appliquer les heures silencieuses à tous les haut-parleurs.",
           "quiet_entity": "input_boolean ou binary_sensor facultatif qui active les heures silencieuses lorsqu'il est activé.",
-          "intercom": "Ajoute une caméra par haut-parleur avec un bouton pour parler, en utilisant l'audio bidirectionnel de Home Assistant (Paramètres > Système > Labs). Installe aiortc la première fois."
+          "intercom": "Ajoute une caméra par haut-parleur avec un bouton pour parler, en utilisant l'audio bidirectionnel de Home Assistant (Paramètres > Système > Labs). Installe aiortc la première fois.",
+          "alexa_support": "Ajoute les haut-parleurs Amazon Echo des intégrations Alexa Devices ou Alexa Media Player via l'audio SSML. Nécessite une URL externe HTTPS accessible par Amazon (Home Assistant Cloud ou domaine public HTTPS)."
         }
       }
     }
@@ -174,6 +184,12 @@
     },
     "no_message": {
       "message": "Il n'y a aucun message récent à réécouter."
+    },
+    "external_https_required": {
+      "message": "Les haut-parleurs Alexa nécessitent une URL externe HTTPS configurée dans Paramètres > Système > Réseau (comme Home Assistant Cloud)."
+    },
+    "alexa_disabled": {
+      "message": "La prise en charge d'Alexa est désactivée. Activez-la dans les options de HA-nnounce pour diffuser des annonces sur les haut-parleurs Echo."
     }
   },
   "services": {

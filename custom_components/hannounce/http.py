@@ -16,6 +16,7 @@ from homeassistant.exceptions import HomeAssistantError
 from .announcer import QuietHoursError
 from .audio import AudioError, NoVoiceError
 from .const import (
+    ALEXA_AUDIO_SUFFIX,
     ALL_CHIMES,
     API_ANNOUNCE,
     API_AUDIO,
@@ -154,7 +155,8 @@ class AnnounceUploadView(HomeAssistantView):
         except QuietHoursError as err:
             return _error(str(err), HTTPStatus.UNPROCESSABLE_ENTITY, "quiet_hours")
         except HomeAssistantError as err:
-            return _error(str(err), HTTPStatus.BAD_REQUEST, "no_targets")
+            code = getattr(err, "translation_key", None) or "no_targets"
+            return _error(str(err), HTTPStatus.BAD_REQUEST, code)
 
         source = announcer.folder / f"in_{announcer.new_id()}{suffix}"
         await hass.async_add_executor_job(source.write_bytes, bytes(recording))
@@ -203,11 +205,20 @@ class AnnounceAudioView(HomeAssistantView):
         """Return the MP3 file."""
         if (runtime := _runtime(request)) is None:
             raise web.HTTPNotFound
-        announcement = runtime.announcer.get(announcement_id.removesuffix(".mp3"))
-        if announcement is None:
-            raise web.HTTPNotFound
+        if announcement_id.endswith(ALEXA_AUDIO_SUFFIX):
+            announcement = runtime.announcer.get(
+                announcement_id.removesuffix(ALEXA_AUDIO_SUFFIX)
+            )
+            if announcement is None or announcement.alexa_path is None:
+                raise web.HTTPNotFound
+            path = announcement.alexa_path
+        else:
+            announcement = runtime.announcer.get(announcement_id.removesuffix(".mp3"))
+            if announcement is None:
+                raise web.HTTPNotFound
+            path = announcement.path
         return web.FileResponse(
-            announcement.path,
+            path,
             headers={
                 "Content-Type": "audio/mpeg",
                 "Cache-Control": "private, max-age=3600",

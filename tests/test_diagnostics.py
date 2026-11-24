@@ -33,6 +33,8 @@ async def test_diagnostics_reports_runtime_without_leaking_url(
 
     runtime = data["runtime"]
     assert runtime["custom_chime_configured"] is True
+    assert runtime["resume_playback"] is False
+    assert runtime["alexa"] == {"enabled": False, "external_https_available": False}
     assert runtime["tts"] == {"available": False, "engine": None}
     assert runtime["quiet"]["enabled"] is False
     assert runtime["intercom"]["enabled"] is False
@@ -43,7 +45,24 @@ async def test_diagnostics_reports_runtime_without_leaking_url(
     assert set(by_id) == {"media_player.desk", "media_player.kitchen", "media_player.living_room"}
     assert by_id["media_player.kitchen"]["is_volume_muted"] is True
     assert by_id["media_player.kitchen"]["features"]["volume_mute"] is True
+    assert by_id["media_player.kitchen"]["features"]["seek"] is False
     assert by_id["media_player.living_room"]["features"]["media_announce"] is True
+
+
+async def test_diagnostics_alexa_enabled_does_not_leak_external_url(
+    hass: HomeAssistant, players, setup_integration
+) -> None:
+    hass.config.external_url = "https://secret-instance.ui.nabu.casa"
+    entry = await setup_integration(alexa_support=True, resume_playback=True)
+
+    data = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert data["runtime"]["resume_playback"] is True
+    assert data["runtime"]["alexa"] == {
+        "enabled": True,
+        "external_https_available": True,
+    }
+    assert "secret-instance" not in json.dumps(data)
 
 
 def _flat_items(obj: dict, prefix: str = "") -> dict[str, str]:

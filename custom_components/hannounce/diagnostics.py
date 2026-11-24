@@ -46,6 +46,15 @@ def _url_status(hass: HomeAssistant) -> dict[str, Any]:
     return {"available": True, "scheme": parsed.scheme or None}
 
 
+def _external_https_available(hass: HomeAssistant) -> bool:
+    """Return whether Home Assistant exposes an external HTTPS URL without leaking it."""
+    try:
+        get_url(hass, allow_internal=False, allow_ip=False, require_ssl=True)
+    except NoURLAvailableError:
+        return False
+    return True
+
+
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: HannounceConfigEntry
 ) -> dict[str, Any]:
@@ -96,6 +105,7 @@ async def async_get_config_entry_diagnostics(
                         "volume_mute": bool(
                             features & MediaPlayerEntityFeature.VOLUME_MUTE
                         ),
+                        "seek": bool(features & MediaPlayerEntityFeature.SEEK),
                     },
                 }
             )
@@ -104,6 +114,11 @@ async def async_get_config_entry_diagnostics(
                 "found": bool(ffmpeg_found),
             },
             "custom_chime_configured": bool(runtime.settings.custom_chime),
+            "resume_playback": runtime.settings.resume_playback,
+            "alexa": {
+                "enabled": runtime.settings.alexa_support,
+                "external_https_available": _external_https_available(hass),
+            },
             "tts": runtime.tts_info(),
             "quiet": runtime.quiet_info(),
             "intercom": {

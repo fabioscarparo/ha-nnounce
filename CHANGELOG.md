@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+- **Complete intercom screen translations:** Added German (`de`), French (`fr`), Spanish (`es`), and Dutch (`nl`) strings to the WebRTC intercom status screen so all 7 supported languages (`en`, `it`, `de`, `fr`, `es`, `nl`, `ro`) have full parity.
+- **Best-effort playback resume (opt-in):** Added the `Resume playback after messages (best effort)` option (off by default) for speakers without native `MEDIA_ANNOUNCE` support (such as Google Cast and DLNA). Resumes directly playable `http(s)://` streams and `media-source://` tracks after restoring volume and mute, seeking back to the previous position on finite tracks when `SEEK` is supported.
+- **Optional Amazon Alexa / Echo support (experimental):** Added the opt-in `Amazon Alexa / Echo support` option (off by default) supporting both Home Assistant's official `alexa_devices` integration (`notify.send_message` to sibling `_speak` or `_announce` entities, including `WHA` speaker groups) and HACS `alexa_media` (`notify.alexa_media` with `type: tts`). Transcodes on demand to Amazon SSML-compliant CBR 48 kbps / 24 kHz mono MP3 (capped at 240s) served via signed external HTTPS URL (`/api/hannounce/audio/<id>-alexa.mp3`), with config flow validation and diagnostics reporting.
+
 ## 0.3.3
 
 - **Prevent duplicate playback on speaker groups:** Selecting `All` or an area shortcut now selects individual speakers instead of also selecting a speaker group alongside its own members (falling back to groups only when no individual speakers exist).

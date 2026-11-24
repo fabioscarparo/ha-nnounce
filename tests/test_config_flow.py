@@ -45,6 +45,8 @@ async def test_options_flow_saves_and_reloads(hass: HomeAssistant, players, setu
     }
     assert defaults["volume"] == 70
     assert defaults["announce_volume"] is True
+    assert defaults["resume_playback"] is False
+    assert defaults["alexa_support"] is False
     assert defaults["voice_enhancement"] is True
     assert defaults["quiet_hours"] is False
 
@@ -54,6 +56,7 @@ async def test_options_flow_saves_and_reloads(hass: HomeAssistant, players, setu
             **DEFAULT_OPTIONS,
             "volume": 40,
             "chime": "soft",
+            "resume_playback": True,
             "voice_enhancement": False,
             "quiet_hours": True,
             "quiet_start": "22:30:00",
@@ -70,6 +73,8 @@ async def test_options_flow_saves_and_reloads(hass: HomeAssistant, players, setu
     assert entry.options["volume"] == 40
     settings = entry.runtime_data.settings
     assert settings.chime == "soft"
+    assert settings.resume_playback is True
+    assert settings.alexa_support is False
     assert settings.voice_enhancement is False
     assert settings.quiet_hours is True
     assert settings.quiet_start == "22:30:00"
@@ -122,3 +127,46 @@ async def test_custom_chime_validation(
     await hass.async_block_till_done()
     assert entry.runtime_data.settings.chime == "custom"
     assert entry.runtime_data.settings.custom_chime == str(chime_file)
+
+
+async def test_alexa_support_requires_external_https_url(
+    hass: HomeAssistant, players, setup_integration
+) -> None:
+    entry = await setup_integration()
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    # No external URL configured
+    no_ext = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {**DEFAULT_OPTIONS, "alexa_support": True},
+    )
+    assert no_ext["type"] is FlowResultType.FORM
+    assert no_ext["errors"] == {"alexa_support": "external_https_required"}
+
+    # Plain HTTP external URL is rejected
+    hass.config.external_url = "http://my-home.example.com"
+    http_ext = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {**DEFAULT_OPTIONS, "alexa_support": True},
+    )
+    assert http_ext["type"] is FlowResultType.FORM
+    assert http_ext["errors"] == {"alexa_support": "external_https_required"}
+
+    # Raw IP HTTPS URL is rejected (Amazon requires a domain with trusted cert)
+    hass.config.external_url = "https://203.0.113.10:8123"
+    ip_ext = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {**DEFAULT_OPTIONS, "alexa_support": True},
+    )
+    assert ip_ext["type"] is FlowResultType.FORM
+    assert ip_ext["errors"] == {"alexa_support": "external_https_required"}
+
+    # Valid external HTTPS domain succeeds
+    hass.config.external_url = "https://my-home.ui.nabu.casa"
+    ok = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {**DEFAULT_OPTIONS, "alexa_support": True},
+    )
+    assert ok["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    assert entry.runtime_data.settings.alexa_support is True

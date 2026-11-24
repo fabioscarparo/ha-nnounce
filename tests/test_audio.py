@@ -153,3 +153,32 @@ async def test_broken_file_is_an_audio_error(tmp_path: Path) -> None:
     source.write_bytes(b"not audio")
     with pytest.raises(audio.AudioError):
         await audio.async_render(_executor, "ffmpeg", source, tmp_path / "out.mp3", chime="none", normalize=True, max_duration=60)
+
+
+def test_command_for_alexa() -> None:
+    args = audio.build_alexa_ffmpeg_args("ffmpeg", Path("in.mp3"), Path("out-alexa.mp3"))
+    assert args[args.index("-t") + 1] == "240"
+    assert args[args.index("-ac") + 1] == "1"
+    assert args[args.index("-ar") + 1] == "24000"
+    assert args[args.index("-b:a") + 1] == "48000"
+    assert args[args.index("-write_xing") + 1] == "0"
+    assert args[args.index("-id3v2_version") + 1] == "0"
+    assert args[-1] == "out-alexa.mp3"
+
+
+@needs_ffmpeg
+async def test_render_alexa_mp3(tmp_path: Path, make_wav) -> None:
+    from mutagen.mp3 import MP3
+
+    source = make_wav(seconds=1.2)
+    standard = await audio.async_render(
+        _executor, "ffmpeg", source, tmp_path / "out.mp3", chime="soft", normalize=True, max_duration=60
+    )
+    alexa_path = await audio.async_render_alexa(
+        "ffmpeg", standard.path, tmp_path / "out-alexa.mp3"
+    )
+    info = MP3(str(alexa_path)).info
+    assert info.sample_rate == 24000
+    assert info.bitrate == 48000
+    assert info.channels == 1
+    assert abs(info.length - standard.duration) < 0.25
